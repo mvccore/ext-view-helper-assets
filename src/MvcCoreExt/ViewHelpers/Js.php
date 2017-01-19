@@ -264,11 +264,11 @@ class MvcCoreExt_ViewHelpers_Js extends MvcCoreExt_ViewHelpers_Assets
 		$appCompilation = MvcCore::GetInstance()->GetCompiled();
 		foreach ($items as $item) {
 			if ($item->external) {
-				$item->src = $this->AssetUrl($this->_downloadFileToTmpAndGetNewHref($item, $minify));
+				$item->src = $this->CssJsFileUrl($this->_downloadFileToTmpAndGetNewHref($item, $minify));
 			} else if ($minify && !$item->doNotMinify) {
-				$item->src = $this->AssetUrl($this->_renderFileToTmpAndGetNewHref($item, $minify));
+				$item->src = $this->CssJsFileUrl($this->_renderFileToTmpAndGetNewHref($item, $minify));
 			} else {
-				$item->src = $this->AssetUrl($item->path);
+				$item->src = $this->CssJsFileUrl($item->path);
 			}
 			if (!$appCompilation) {
 				if ($item->external) {
@@ -512,7 +512,7 @@ class MvcCoreExt_ViewHelpers_Js extends MvcCoreExt_ViewHelpers_Assets
 		// complete <link> tag with tmp file path in $tmpFileFullPath variable
 		$firstItem = array_merge((array) $itemsToRender[0], array());
 		$pathToTmp = substr($tmpFileFullPath, strlen($this->getAppRoot()));
-		$firstItem['src'] = $this->AssetUrl($pathToTmp);
+		$firstItem['src'] = $this->CssJsFileUrl($pathToTmp);
 		/*
 		echo '<pre><code>';
 		var_dump($firstItem);

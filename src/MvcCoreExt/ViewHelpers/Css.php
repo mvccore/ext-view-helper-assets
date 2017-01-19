@@ -347,7 +347,7 @@ class MvcCoreExt_ViewHelpers_Css extends MvcCoreExt_ViewHelpers_Assets
 		// complete <link> tag with tmp file path in $tmpFileFullPath variable
 		$firstItem = array_merge((array) $itemsToRender[0], array());
 		$pathToTmp = substr($tmpFileFullPath, strlen($this->getAppRoot()));
-		$firstItem['href'] = $this->AssetUrl($pathToTmp);
+		$firstItem['href'] = $this->CssJsFileUrl($pathToTmp);
 		return $this->_renderItemSeparated((object) $firstItem);
 	}
 	
@@ -446,7 +446,7 @@ class MvcCoreExt_ViewHelpers_Css extends MvcCoreExt_ViewHelpers_Assets
 			
 			// complete stylesheet new path
 			$webPath = mb_substr($urlFullPath, mb_strlen($this->getAppRoot()));
-			$webPath = $this->AssetUrl($webPath);
+			$webPath = $this->CssJsFileUrl($webPath);
 
 			// replace the url part
 			$fullPathContent = mb_substr($fullPathContent, 0, $lastUrlBeginStrPos)
@@ -533,9 +533,9 @@ class MvcCoreExt_ViewHelpers_Css extends MvcCoreExt_ViewHelpers_Assets
 		$appCompilation = MvcCore::GetCompiled();
 		foreach ($items as $item) {
 			if ($item->render || ($minify && !$item->doNotMinify)) {
-				$item->href = $this->AssetUrl($this->_renderFileToTmpAndGetNewHref($item, $minify));
+				$item->href = $this->CssJsFileUrl($this->_renderFileToTmpAndGetNewHref($item, $minify));
 			} else {
-				$item->href = $this->AssetUrl($item->path);
+				$item->href = $this->CssJsFileUrl($item->path);
 			}
 			if (!$appCompilation) {
 				$item->href = $this->addFileModificationImprintToHrefUrl($item->href, $item->path);

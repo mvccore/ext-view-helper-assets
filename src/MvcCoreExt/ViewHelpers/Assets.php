@@ -44,7 +44,21 @@ class MvcCoreExt_ViewHelpers_Assets
 	protected $streamWrapper = '';
 
 	/**
-	 * Global options about joining and minifying which can bee overwrited by single settings throw calling for eeample: append() method as another param
+	 * Global options about joining and minifying which 
+	 * can bee overwrited by single settings throw calling 
+	 * for eeample: append() method as another param.
+	 * All possible options and meanings:
+	 * - jsJoin			- boolean	- join JS files in JS group together into single file in tmp dir
+	 * - jsMinify		- boolean	- minify JS file in any group by default (it's possible to override for each file)
+	 * - cssJoin		- boolean	- join CSS files in CSS group together into single file in tmp dir
+	 * - cssMinify		- boolean	- minify CSS file in any group by default (it's possible to override for each file)
+	 * - tmpDir			- string	- relative path to temporary dir from application document root, by default: '/Var/Tmp'
+	 * - fileChecking	- string	- php function names: md5_file | filemtime (filemtime is not working for PHAR packages, 
+	 *								  for PHAR packages use slower 'md5_file' value)
+	 * - assetsUrl		- boolean	- strictly enable or disable special packge assets url completion in form:
+	 *								  '?controller=controller&action=asset&path=...', by default, this switch is 
+	 *								  automaticly detected by application comple mode. In every compile mode except 
+	 *								  development mode and strict hdd mode is this switch configured internaly to true.
 	 * @var array
 	 */
 	protected static $globalOptions = array(
@@ -53,7 +67,8 @@ class MvcCoreExt_ViewHelpers_Assets
 		'cssJoin'		=> 0,
 		'cssMinify'		=> 0,
 		'tmpDir'		=> '/Var/Tmp',
-		'fileChecking'	=> 'filemtime', // md5_file | filemtime (filemtime is not working for PHAR packages, for PHAR packages use slower 'md5_file' value)
+		'fileChecking'	=> 'filemtime',
+		'assetsUrl'		=> NULL,
 	);
 	
 	/**
@@ -63,7 +78,8 @@ class MvcCoreExt_ViewHelpers_Assets
 	protected static $appRoot = '';
 	
 	/**
-	 * Relative path to store joined and minified files from application root directory
+	 * Relative path to store joined and minified files 
+	 * from application root directory.
 	 * @var string
 	 */
 	protected static $tmpDir = '';
@@ -75,7 +91,8 @@ class MvcCoreExt_ViewHelpers_Assets
 	protected static $basePath = NULL;
 
 	/**
-	 * If true, all messages are logged on hard drive, all exceptions are thrown
+	 * If true, all messages are logged on hard drive, 
+	 * all exceptions are thrown.
 	 * @var boolean
 	 */
 	protected static $logingAndExceptions = TRUE;
@@ -93,10 +110,11 @@ class MvcCoreExt_ViewHelpers_Assets
 	protected static $fileRendering = TRUE;
 
 	/**
-	 * If true, method AssetUrl in all css files returns to index.php?controller=controller&action=asset&path=...
+	 * If true, method AssetUrl in all css files returns 
+	 * to: 'index.php?controller=controller&action=asset&path=...'.
 	 * @var boolean
 	 */
-	protected static $assetUrlCompletion = FALSE;
+	protected static $assetsUrlCompletion = NULL;
 
 	/**
 	 * Hash completed as md5(json_encode()) from self::$globalOptions
@@ -120,31 +138,57 @@ class MvcCoreExt_ViewHelpers_Assets
 		// file rendering is tru for classic development state and SFU app mode
 		self::$fileRendering = substr($mvcCoreCompiledMode, 0, 3) != 'PHP' && $mvcCoreCompiledMode != 'PHAR';
 		self::$systemConfigHash = md5(json_encode(self::$globalOptions));
-		if ($mvcCoreCompiledMode && substr($mvcCoreCompiledMode, 0, 12) != 'PHP_PRESERVE' && $mvcCoreCompiledMode != 'PHP_STRICT_HDD') {
-			self::$assetUrlCompletion = TRUE;
+		if (is_null(self::$assetsUrlCompletion)) {
+			if ($mvcCoreCompiledMode && $mvcCoreCompiledMode != 'PHP_STRICT_HDD') {
+				self::$assetsUrlCompletion = TRUE;
+			} else {
+				self::$assetsUrlCompletion = FALSE;
+			}
 		}
 	}
 
 	/**
-	 * Set global static $basePath to load assets from any static cdn domain or any other place
+	 * Set global static options about minifying and joining together 
+	 * which can bee overwrited by single settings throw calling for 
+	 * example: append() method as another param.
+	 * 
+	 * @see MvcCoreExt_ViewHelpers_Assets::$globalOptions
+	 * @param array $options whether or not to auto escape output
+	 * @return void
+	 */
+	public static function SetGlobalOptions ($options = array()) {
+		self::$globalOptions = array_merge(self::$globalOptions, (array) $options);
+		if (isset($options['assetsUrl']) && !is_null($options['assetsUrl'])) {
+			self::$assetsUrlCompletion = (bool) $options['assetsUrl'];
+		}
+	}
+
+	/**
+	 * Strictly enable/disable assets url completing in form 
+	 * '?controller=controller&action=asset&path=...'. Use this 
+	 * method only for cases, when you want to pack your application 
+	 * and you want to have all url adresses to css/js/fonts and 
+	 * images directly to hard drive.
+	 * @param bool $enable
+	 * @return void
+	 */
+	public static function SetAssetUrlCompletion ($enable = TRUE) {
+		self::$assetsUrlCompletion = $enable;
+	}
+
+	/**
+	 * Set global static $basePath to load assets from 
+	 * any static cdn domain or any other place.
 	 * @param string $basePath
 	 * @return void
 	 */
 	public static function SetBasePath ($basePath) {
 		self::$basePath = $basePath;
 	}
-	
-	/**
-	 * Set global static options about minifying and joining together which can bee overwrited by single settings throw calling for eeample: append() method as another param
-	 * @param array $options whether or not to auto escape output
-	 * @return void
-	 */
-	public static function SetGlobalOptions($options = array()) {
-		self::$globalOptions = array_merge(self::$globalOptions, (array) $options);
-	}
 
 	/**
-	 * Returns file modification imprint by global settings - by md5_file() or by filemtime() - always as a string
+	 * Returns file modification imprint by global settings - 
+	 * by md5_file() or by filemtime() - always as a string
 	 * @param string $fullPath
 	 * @return string
 	 */
@@ -156,29 +200,6 @@ class MvcCoreExt_ViewHelpers_Assets
 			return (string) call_user_func($fileChecking, $fullPath);
 		}
 	}
-	
-	/**
-	 * Creates a MvcCore Url - always from one place
-	 * @param  string $path
-	 * @return string
-	 */
-	public function AssetUrl ($path = '') {
-		$result = '';
-		/**
-		 *	Feel free to change assets url completion to any way.
-		 *	There could be typically only: "$result = self::$basePath . $path;",
-		 *	but if you want to complete url for assets on hard drive or 
-		 *	to any other cdn place, use App_Views_Helpers_Assets::SetBasePath($cdnBasePath);
-		 */
-		if (self::$assetUrlCompletion) {
-			// for MvcCore::GetInstance()->GetCompiled() equal to: 'PHAR', 'SFU', 'PHP_STRICT_PACKAGE'
-			$result = $this->view->AssetUrl($path);
-		} else {
-			// for MvcCore::GetInstance()->GetCompiled() equal to: '' (development), 'PHP_PRESERVE_PACKAGE', 'PHP_PRESERVE_HDD', 'PHP_STRICT_HDD'
-			$result = self::$basePath . $path;
-		}
-		return $result;
-	}
 
 	/**
 	 * Render assets group.
@@ -186,6 +207,70 @@ class MvcCoreExt_ViewHelpers_Assets
 	 */
 	public function __toString () {
 		return $this->Render();
+	}
+
+	/**
+	 * Completes font or image file url inside CSS/JS file content.
+	 *
+	 * If application compile mode is in development state or packed in strict hdd mode,
+	 * there is generated standard url with MvcCore_Request->BasePath (current app location)
+	 * plus called $path param. Because those application compile modes presume by default,
+	 * that those files are placed beside php code on hard drive.
+	 *
+	 * If application compile mode is in php preserve package, php preserve hdd,
+	 * php strict package or in single file url mode, there is generated url by MvcCore
+	 * in form: '?controller=controller&action=asset&path=...'.
+	 *
+	 * Feel free to change this css/js file url completion to any custom way.
+	 * There could be typically only: "$result = self::$basePath . $path;",
+	 * but if you want to complete url for assets on hard drive or
+	 * to any other cdn place, use App_Views_Helpers_Assets::SetBasePath($cdnBasePath);
+	 *
+	 * @param  string $path relative path from application document root with slash in begin
+	 * @return string
+	 */
+	public function AssetUrl ($path = '') {
+		$result = '';
+		if (self::$assetsUrlCompletion) {
+			// for MvcCore::GetInstance()->GetCompiled() equal to: 'PHAR', 'SFU', 'PHP_STRICT_PACKAGE', 'PHP_PRESERVE_PACKAGE', 'PHP_PRESERVE_HDD'
+			$result = '?controller=controller&action=asset&path=' . $path;
+		} else {
+			// for MvcCore::GetInstance()->GetCompiled() equal to: '' (development), 'PHP_STRICT_HDD'
+			$result = self::$basePath . $path;
+		}
+		return $result;
+	}
+
+	/**
+	 * Completes CSS or JS file url.
+	 *
+	 * If application compile mode is in development state or packed in strict hdd mode, 
+	 * there is generated standard url with MvcCore_Request->BasePath (current app location) 
+	 * plus called $path param. Because those application compile modes presume by default, 
+	 * that those files are placed beside php code on hard drive.
+	 * 
+	 * If application compile mode is in php preserve package, php preserve hdd, 
+	 * php strict package or in single file url mode, there is generated url by MvcCore
+	 * in form: 'index.php?controller=controller&action=asset&path=...'.
+	 * 
+	 * Feel free to change this css/js file url completion to any custom way.
+	 * There could be typically only: "$result = self::$basePath . $path;",
+	 * but if you want to complete url for assets on hard drive or
+	 * to any other cdn place, use App_Views_Helpers_Assets::SetBasePath($cdnBasePath);
+	 * 
+	 * @param  string $path relative path from application document root with slash in begin
+	 * @return string
+	 */
+	public function CssJsFileUrl ($path = '') {
+		$result = '';
+		if (self::$assetsUrlCompletion) {
+			// for MvcCore::GetInstance()->GetCompiled() equal to: 'PHAR', 'SFU', 'PHP_STRICT_PACKAGE', 'PHP_PRESERVE_PACKAGE', 'PHP_PRESERVE_HDD'
+			$result = $this->view->AssetUrl($path);
+		} else {
+			// for MvcCore::GetInstance()->GetCompiled() equal to: '' (development), 'PHP_STRICT_HDD'
+			$result = self::$basePath . $path;
+		}
+		return $result;
 	}
 
 	/**
@@ -298,7 +383,7 @@ class MvcCoreExt_ViewHelpers_Assets
 					try {
 						@chmod($tmpDir, 0777);
 					} catch (Exception $e) {
-						throw new Exception('[App_Views_Helpers_Assets] ' . $e->getMessage());
+						throw new Exception('['.__CLASS__.'] ' . $e->getMessage());
 					}
 				}
 			}
@@ -397,6 +482,12 @@ class MvcCoreExt_ViewHelpers_Assets
 		var_dump(array($this->getTmpDir(), $filesGroupInfo, $minify, $extension));
 		echo '</pre>';
 		*/
+		if (!self::$assetsUrlCompletion) {
+			// for MvcCore::GetInstance()->GetCompiled() equal to: '' (development), 'PHP_STRICT_HDD'
+			$filesGroupInfo[] = self::$basePath;
+		}/* else {
+			// for MvcCore::GetInstance()->GetCompiled() equal to: 'PHAR', 'SFU', 'PHP_STRICT_PACKAGE', 'PHP_PRESERVE_PACKAGE', 'PHP_PRESERVE_HDD'
+		}*/
 		return implode('', array(
 			$this->getTmpDir(),
 			'/' . ($minify ? 'minified' : 'rendered') . '_' . $extension . '_',
