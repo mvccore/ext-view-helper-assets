@@ -130,8 +130,8 @@ class MvcCoreExt_ViewHelpers_Js extends MvcCoreExt_ViewHelpers_Assets
 	 */
 	public function Prepend ($path = '', $async = FALSE, $defer = FALSE, $doNotMinify = FALSE, $external = FALSE) {
 		$item = $this->_completeItem($path, $async, $defer, $doNotMinify, $external);
-		$actialGroupItems = & $this->_getScriptsGroupContainer($this->actualGroupName);
-		array_unshift($actialGroupItems[$this->actualGroupName], $item);
+		$actualGroupItems = & $this->_getScriptsGroupContainer($this->actualGroupName);
+		array_unshift($actualGroupItems, $item);
 		return $this;
 	}
 
