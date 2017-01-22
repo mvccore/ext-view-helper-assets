@@ -101,13 +101,13 @@ class MvcCoreExt_ViewHelpers_Assets
 	 * If true, all assets sources existences are checked
 	 * @var boolean
 	 */
-	protected static $fileChecking = TRUE;
+	protected static $fileChecking = FALSE;
 
 	/**
 	 * If true, all temporary files are rendered
 	 * @var boolean
 	 */
-	protected static $fileRendering = TRUE;
+	protected static $fileRendering = FALSE;
 
 	/**
 	 * If true, method AssetUrl in all css files returns 
@@ -133,18 +133,26 @@ class MvcCoreExt_ViewHelpers_Assets
 		if (is_null(self::$basePath)) self::$basePath = $request->BasePath;
 		self::$logingAndExceptions = MvcCore_Config::IsDevelopment();
 		$mvcCoreCompiledMode = $app->GetCompiled();
+
 		// file checking is true only for classic development mode, not for single file mode
-		self::$fileChecking = strlen($mvcCoreCompiledMode) > 0 ? FALSE : TRUE ;
-		// file rendering is tru for classic development state and SFU app mode
-		self::$fileRendering = substr($mvcCoreCompiledMode, 0, 3) != 'PHP' && $mvcCoreCompiledMode != 'PHAR';
-		self::$systemConfigHash = md5(json_encode(self::$globalOptions));
+		if (!$mvcCoreCompiledMode) self::$fileChecking = TRUE;
+
+		// file rendering is true for classic development state, SFU app mode
+		if (!$mvcCoreCompiledMode || $mvcCoreCompiledMode == 'SFU') {
+			self::$fileRendering = TRUE;
+		}
+
 		if (is_null(self::$assetsUrlCompletion)) {
+			// set url adresses complatition to true by default for:
+			// - vsechny package mody mimo PHP_STRICT_HDD a mimo development
 			if ($mvcCoreCompiledMode && $mvcCoreCompiledMode != 'PHP_STRICT_HDD') {
 				self::$assetsUrlCompletion = TRUE;
 			} else {
 				self::$assetsUrlCompletion = FALSE;
 			}
 		}
+
+		self::$systemConfigHash = md5(json_encode(self::$globalOptions));
 	}
 
 	/**
@@ -235,8 +243,9 @@ class MvcCoreExt_ViewHelpers_Assets
 			// for MvcCore::GetInstance()->GetCompiled() equal to: 'PHAR', 'SFU', 'PHP_STRICT_PACKAGE', 'PHP_PRESERVE_PACKAGE', 'PHP_PRESERVE_HDD'
 			$result = '?controller=controller&action=asset&path=' . $path;
 		} else {
-			// for MvcCore::GetInstance()->GetCompiled() equal to: '' (development), 'PHP_STRICT_HDD'
-			$result = self::$basePath . $path;
+			// for MvcCore::GetInstance()->GetCompiled(), by default equal to: '' (development), 'PHP_STRICT_HDD'
+			//$result = self::$basePath . $path;
+			$result = '__RELATIVE_BASE_PATH__' . $path;
 		}
 		return $result;
 	}
@@ -477,17 +486,6 @@ class MvcCoreExt_ViewHelpers_Assets
 	 * @return string
 	 */
 	protected function getTmpFileFullPathByPartFilesInfo ($filesGroupInfo = array(), $minify = FALSE, $extension = '') {
-		/*
-		echo '<pre>';
-		var_dump(array($this->getTmpDir(), $filesGroupInfo, $minify, $extension));
-		echo '</pre>';
-		*/
-		if (!self::$assetsUrlCompletion) {
-			// for MvcCore::GetInstance()->GetCompiled() equal to: '' (development), 'PHP_STRICT_HDD'
-			$filesGroupInfo[] = self::$basePath;
-		}/* else {
-			// for MvcCore::GetInstance()->GetCompiled() equal to: 'PHAR', 'SFU', 'PHP_STRICT_PACKAGE', 'PHP_PRESERVE_PACKAGE', 'PHP_PRESERVE_HDD'
-		}*/
 		return implode('', array(
 			$this->getTmpDir(),
 			'/' . ($minify ? 'minified' : 'rendered') . '_' . $extension . '_',

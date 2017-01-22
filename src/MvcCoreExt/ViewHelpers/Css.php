@@ -268,8 +268,6 @@ class MvcCoreExt_ViewHelpers_Css extends MvcCoreExt_ViewHelpers_Assets
 	 * @return string
 	 */
 	private function _renderItemsTogether ($actualGroupName = '', $items = array(), $indent = 0, $minify = FALSE) {
-		$appCompilation = MvcCore::GetInstance()->GetCompiled();
-
 		// some configurations is not possible to render together and minimized
 		list($itemsToRenderMinimized, $itemsToRenderSeparately) = $this->filterItemsForNotPossibleMinifiedAndPossibleMinifiedItems($items);
 		
@@ -299,6 +297,7 @@ class MvcCoreExt_ViewHelpers_Css extends MvcCoreExt_ViewHelpers_Assets
 	 * @return string
 	 */
 	private function _renderItemsTogetherAsGroup ($itemsToRender = array(), $minify = FALSE) {
+		
 		// complete tmp filename by source filenames and source files modification times
 		$filesGroupInfo = array();
 		foreach ($itemsToRender as $item) {
@@ -313,20 +312,13 @@ class MvcCoreExt_ViewHelpers_Css extends MvcCoreExt_ViewHelpers_Assets
 			}
 		}
 		$tmpFileFullPath = $this->getTmpFileFullPathByPartFilesInfo($filesGroupInfo, $minify, 'css');
-		/*
-		echo '<pre><code>';
-		var_dump(array(self::$fileRendering, self::$fileChecking));
-		var_dump(MvcCore::GetInstance()->GetCompiled());
-		var_dump($filesGroupInfo);
-		var_dump($tmpFileFullPath);
-		echo '</code></pre>';
-		*/
+		
 		// check, if the rendered, together completed and minimized file is in tmp cache already
 		if (self::$fileRendering) {
 			if (!file_exists($tmpFileFullPath)) {
 				// load all items and join them together
 				$resultContent = '';
-				foreach ($itemsToRender as $hashKey => $item) {
+				foreach ($itemsToRender as & $item) {
 					$srcFileFullPath = $this->getAppRoot() . $item->path;
 					if ($item->render) {
 						$fileContent = $this->_renderFile($srcFileFullPath);
@@ -344,6 +336,7 @@ class MvcCoreExt_ViewHelpers_Css extends MvcCoreExt_ViewHelpers_Assets
 				$this->log("Css files group rendered ('$tmpFileFullPath').", 'debug');
 			}
 		}
+
 		// complete <link> tag with tmp file path in $tmpFileFullPath variable
 		$firstItem = array_merge((array) $itemsToRender[0], array());
 		$pathToTmp = substr($tmpFileFullPath, strlen($this->getAppRoot()));
@@ -456,8 +449,8 @@ class MvcCoreExt_ViewHelpers_Css extends MvcCoreExt_ViewHelpers_Assets
 			// shift the position property
 			$position = $lastUrlBeginStrPos + mb_strlen($webPath) + 3;
 		}
-		
-		return $fullPathContent;
+
+		return str_replace('__RELATIVE_BASE_PATH__', '../..', $fullPathContent);
 	}
 	
 	/**

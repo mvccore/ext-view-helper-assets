@@ -429,7 +429,6 @@ class MvcCoreExt_ViewHelpers_Js extends MvcCoreExt_ViewHelpers_Assets
 	 * @return string
 	 */
 	private function _renderItemsTogether ($actualGroupName = '', $items = array(), $indent, $minify = FALSE) {
-		$appCompilation = MvcCore::GetInstance()->GetCompiled();
 		
 		// some configurations is not possible to render together and minimized
 		list($itemsToRenderMinimized, $itemsToRenderSeparately) = $this->filterItemsForNotPossibleMinifiedAndPossibleMinifiedItems($items);
@@ -439,12 +438,12 @@ class MvcCoreExt_ViewHelpers_Js extends MvcCoreExt_ViewHelpers_Assets
 		if (self::$fileRendering) $resultItems[] = '<!-- js group begin: ' . $actualGroupName . ' -->';
 		
 		// process array with groups, which are not possible to minimize
-		foreach ($itemsToRenderSeparately as $attrHashKey => $itemsToRender) {
+		foreach ($itemsToRenderSeparately as & $itemsToRender) {
 			$resultItems[] = $this->_renderItemsTogetherAsGroup($itemsToRender, FALSE);
 		}
 		
 		// process array with groups to minimize
-		foreach ($itemsToRenderMinimized as $attrHashKey => $itemsToRender) {
+		foreach ($itemsToRenderMinimized as & $itemsToRender) {
 			$resultItems[] = $this->_renderItemsTogetherAsGroup($itemsToRender, $minify);
 		}
 
@@ -460,6 +459,7 @@ class MvcCoreExt_ViewHelpers_Js extends MvcCoreExt_ViewHelpers_Assets
 	 * @return string
 	 */
 	private function _renderItemsTogetherAsGroup ($itemsToRender = array(), $minify = FALSE) {
+		
 		// complete tmp filename by source filenames and source files modification times
 		$filesGroupInfo = array();
 		foreach ($itemsToRender as $item) {
@@ -479,13 +479,7 @@ class MvcCoreExt_ViewHelpers_Js extends MvcCoreExt_ViewHelpers_Assets
 			}
 		}
 		$tmpFileFullPath = $this->getTmpFileFullPathByPartFilesInfo($filesGroupInfo, $minify, 'js');
-		/*
-		echo '<pre><code>';
-		var_dump(array(self::$fileRendering, self::$fileChecking));
-		var_dump($filesGroupInfo);
-		var_dump($tmpFileFullPath);
-		echo '</code></pre>';
-		*/
+		
 		// check, if the rendered, together completed and minimized file is in tmp cache already
 		if (self::$fileRendering) {
 			if (!file_exists($tmpFileFullPath)) {
@@ -509,15 +503,12 @@ class MvcCoreExt_ViewHelpers_Js extends MvcCoreExt_ViewHelpers_Assets
 				$this->log("Js files group rendered ('$tmpFileFullPath').", 'debug');
 			}
 		}
+
 		// complete <link> tag with tmp file path in $tmpFileFullPath variable
 		$firstItem = array_merge((array) $itemsToRender[0], array());
 		$pathToTmp = substr($tmpFileFullPath, strlen($this->getAppRoot()));
 		$firstItem['src'] = $this->CssJsFileUrl($pathToTmp);
-		/*
-		echo '<pre><code>';
-		var_dump($firstItem);
-		echo '</code></pre>';
-		*/
+		
 		return $this->_renderItemSeparated((object) $firstItem);
 	}
 }
