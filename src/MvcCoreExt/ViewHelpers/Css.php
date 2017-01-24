@@ -403,7 +403,7 @@ class MvcCoreExt_ViewHelpers_Css extends MvcCoreExt_ViewHelpers_Assets
 			
 			// then check of between that are only [a-zA-Z\./ ]
 			$endOfUrlBlockChars = mb_substr($fullPathContent, $doubleDotsPos + 3, $firstUrlEndStrPos - ($doubleDotsPos + 3));
-			$endOfUrlBlockChars = preg_replace("#[a-zA-Z\./ \"'_\-\?\&]#", "", $endOfUrlBlockChars);
+			$endOfUrlBlockChars = preg_replace("#[a-zA-Z\./ \"'_\-\?\&\#]#", "", $endOfUrlBlockChars);
 			if (mb_strlen($endOfUrlBlockChars) > 0) {
 				$position = $firstUrlEndStrPos + 1;
 				continue;
