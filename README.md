@@ -40,7 +40,10 @@ Layout template code:
 ```html
 <html>
 	<head>
-		<!-- only one file will be delivered: '/Var/Tmp/temp-file-name.css' -->
+		<!--
+		   only one file will be generated and delivered:
+		   <link rel="stylesheet" href="/Var/Tmp/temp-file-name.css" />
+		-->
 		<?php echo $this->->Css('head')->Render(); ?>
 	</head>
 	<body>...</body>
