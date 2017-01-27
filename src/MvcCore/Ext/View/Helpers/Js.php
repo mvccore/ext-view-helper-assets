@@ -8,10 +8,12 @@
  * the LICENSE.md file that are distributed with this source code.
  *
  * @copyright	Copyright (c) 2016 Tom Flídr (https://github.com/mvccore/mvccore)
- * @license		https://mvccore.github.io/docs/mvccore/3.0.0/LICENCE.md
+ * @license		https://mvccore.github.io/docs/mvccore/4.0.0/LICENCE.md
  */
 
-class MvcCoreExt_ViewHelpers_Js extends MvcCoreExt_ViewHelpers_Assets
+namespace MvcCore\Ext\View\Helpers;
+
+class Js extends Assets
 {	
 	/**
 	 * Whatever Expires header is send over http protocol, 
@@ -25,7 +27,7 @@ class MvcCoreExt_ViewHelpers_Js extends MvcCoreExt_ViewHelpers_Assets
 	 * Array with full class name and public method accepted as first param javascript code and returning minified code
 	 * @var callable
 	 */
-	public static $MinifyCallable = array('JSMin', 'minify');
+	public static $MinifyCallable = array('\JSMin', 'minify');
 
 	/**
 	 * Array with all defined files to create specific script tags
@@ -36,7 +38,7 @@ class MvcCoreExt_ViewHelpers_Js extends MvcCoreExt_ViewHelpers_Assets
 	/**
 	 * View Helper Method, returns current object instance.
 	 * @param  string $groupName string identifier
-	 * @return MvcCoreExt_ViewHelpers_Js
+	 * @return \MvcCore\Ext\View\Helpers\Js
 	 */
 	public function Js ($groupName = self::GROUP_NAME_DEFAULT) {
 		$this->actualGroupName = $groupName;
@@ -72,7 +74,7 @@ class MvcCoreExt_ViewHelpers_Js extends MvcCoreExt_ViewHelpers_Assets
 	 * @param  boolean $async
 	 * @param  boolean $defer
 	 * @param  boolean $doNotMinify
-	 * @return MvcCoreExt_ViewHelpers_Js
+	 * @return \MvcCore\Ext\View\Helpers\Js
 	 */
 	public function AppendExternal ($path = '', $async = FALSE, $defer = FALSE, $doNotMinify = FALSE) {
 		return $this->Append($path, $async, $defer, $doNotMinify, TRUE);
@@ -84,7 +86,7 @@ class MvcCoreExt_ViewHelpers_Js extends MvcCoreExt_ViewHelpers_Assets
 	 * @param  boolean $async
 	 * @param  boolean $defer
 	 * @param  boolean $doNotMinify
-	 * @return MvcCoreExt_ViewHelpers_Js
+	 * @return \MvcCore\Ext\View\Helpers\Js
 	 */
 	public function PrependExternal ($path = '', $async = FALSE, $defer = FALSE, $doNotMinify = FALSE) {
 		return $this->Prepend($path, $async, $defer, $doNotMinify, TRUE);
@@ -97,7 +99,7 @@ class MvcCoreExt_ViewHelpers_Js extends MvcCoreExt_ViewHelpers_Assets
 	 * @param  boolean $async
 	 * @param  boolean $defer
 	 * @param  boolean $doNotMinify
-	 * @return MvcCoreExt_ViewHelpers_Js
+	 * @return \MvcCore\Ext\View\Helpers\Js
 	 */
 	public function OffsetExternal ($index = 0, $path = '', $async = FALSE, $defer = FALSE, $doNotMinify = FALSE) {
 		return $this->Offset($index, $path, $async, $defer, $doNotMinify, TRUE);
@@ -110,7 +112,7 @@ class MvcCoreExt_ViewHelpers_Js extends MvcCoreExt_ViewHelpers_Assets
 	 * @param  boolean $defer
 	 * @param  boolean $doNotMinify
 	 * @param  boolean $external
-	 * @return MvcCoreExt_ViewHelpers_Js
+	 * @return \MvcCore\Ext\View\Helpers\Js
 	 */
 	public function Append ($path = '', $async = FALSE, $defer = FALSE, $doNotMinify = FALSE, $external = FALSE) {
 		$item = $this->_completeItem($path, $async, $defer, $doNotMinify, $external);
@@ -126,7 +128,7 @@ class MvcCoreExt_ViewHelpers_Js extends MvcCoreExt_ViewHelpers_Assets
 	 * @param  boolean $defer
 	 * @param  boolean $doNotMinify
 	 * @param  boolean $external
-	 * @return MvcCoreExt_ViewHelpers_Js
+	 * @return \MvcCore\Ext\View\Helpers\Js
 	 */
 	public function Prepend ($path = '', $async = FALSE, $defer = FALSE, $doNotMinify = FALSE, $external = FALSE) {
 		$item = $this->_completeItem($path, $async, $defer, $doNotMinify, $external);
@@ -143,7 +145,7 @@ class MvcCoreExt_ViewHelpers_Js extends MvcCoreExt_ViewHelpers_Assets
 	 * @param  boolean $defer
 	 * @param  boolean $doNotMinify
 	 * @param  boolean $external
-	 * @return MvcCoreExt_ViewHelpers_Js
+	 * @return \MvcCore\Ext\View\Helpers\Js
 	 */
 	public function Offset ($index = 0, $path = '', $async = FALSE, $defer = FALSE, $doNotMinify = FALSE, $external = FALSE) {
 		$item = $this->_completeItem($path, $async, $defer, $doNotMinify, $external);
@@ -185,7 +187,7 @@ class MvcCoreExt_ViewHelpers_Js extends MvcCoreExt_ViewHelpers_Assets
 	 * @param  boolean $defer
 	 * @param  boolean $doNotMinify
 	 * @param  boolean $external
-	 * @return stdClass
+	 * @return \stdClass
 	 */
 	private function _completeItem ($path, $async, $defer, $doNotMinify, $external) {
 		if (self::$logingAndExceptions) {
@@ -261,7 +263,7 @@ class MvcCoreExt_ViewHelpers_Js extends MvcCoreExt_ViewHelpers_Assets
 		$indentStr = $this->getIndentString($indent);
 		$resultItems = array();
 		if (self::$fileRendering) $resultItems[] = '<!-- js group begin: ' . $actualGroupName . ' -->';
-		$appCompilation = MvcCore::GetInstance()->GetCompiled();
+		$appCompilation = \MvcCore::GetInstance()->GetCompiled();
 		foreach ($items as $item) {
 			if ($item->external) {
 				$item->src = $this->CssJsFileUrl($this->_downloadFileToTmpAndGetNewHref($item, $minify));
@@ -271,11 +273,11 @@ class MvcCoreExt_ViewHelpers_Js extends MvcCoreExt_ViewHelpers_Assets
 				$item->src = $this->CssJsFileUrl($item->path);
 			}
 			if (!$appCompilation) {
-				if ($item->external) {
+				/*if ($item->external) {
 					$tmpOrSrcPath = substr($item->src, strlen(self::$basePath));
 				} else {
 					$tmpOrSrcPath = $item->src;
-				}
+				}*/
 				$item->src = $this->addFileModificationImprintToHrefUrl($item->src, $item->path);
 			}
 			$resultItems[] = $this->_renderItemSeparated($item);
@@ -286,7 +288,7 @@ class MvcCoreExt_ViewHelpers_Js extends MvcCoreExt_ViewHelpers_Assets
 	
 	/**
 	 * Render js file by path and store result in tmp directory and return new href value
-	 * @param stdClass $item
+	 * @param \stdClass $item
 	 * @param boolean  $minify
 	 * @return string
 	 */
@@ -323,7 +325,7 @@ class MvcCoreExt_ViewHelpers_Js extends MvcCoreExt_ViewHelpers_Assets
 	
 	/**
 	 * Download js file by path and store result in tmp directory and return new href value
-	 * @param stdClass $item
+	 * @param \stdClass $item
 	 * @param boolean  $minify
 	 * @return string
 	 */
@@ -384,10 +386,10 @@ class MvcCoreExt_ViewHelpers_Js extends MvcCoreExt_ViewHelpers_Assets
 	
 	/**
 	 * Create HTML script element from data item
-	 * @param  stdClass $item
+	 * @param  \stdClass $item
 	 * @return string
 	 */
-	private function _renderItemSeparated (stdClass $item) {
+	private function _renderItemSeparated (\stdClass $item) {
 		$result = '<script type="text/javascript"';
 		if ($item->async) $result .= ' async="async"';
 		if ($item->async) $result .= ' defer="defer"';
@@ -409,19 +411,22 @@ class MvcCoreExt_ViewHelpers_Js extends MvcCoreExt_ViewHelpers_Assets
 	 */
 	private function _minify (& $js, $path) {
 		$result = '';
-		if (!class_exists(static::$MinifyCallable[0])) {
-			$this->exception("Class '" . static::$MinifyCallable[0] . "' doesn't exist. Use: https://github.com/mrclay/minify -> /min/lib/JSMin.php");
+		if (!is_callable(static::$MinifyCallable)) {
+			$this->exception(
+				"Configured callable object for JS minification doesn't exist. "
+				."Use: https://github.com/mrclay/minify -> /min/lib/JSMin.php"
+			);
 		}
 		try {
 			$result = call_user_func(static::$MinifyCallable, $js);
-		} catch (Exception $e) {
+		} catch (\Exception $e) {
 			$this->exception("Unable to minify javascript ('$path').");
 		}
 		return $result;
 	}
 
 	/**
-	 * Render data items as one <script> html tag or all another <script> html tags after with files which is not possible to minify
+	 * Render data items as one <script> html tag or all another <script> html tags after with files which is not possible to minify.
 	 * @param string  $actualGroupName 
 	 * @param array   $items 
 	 * @param int     $indent 
@@ -453,7 +458,7 @@ class MvcCoreExt_ViewHelpers_Js extends MvcCoreExt_ViewHelpers_Assets
 	}
 
 	/**
-	 * Render all items in group together, when application is compiled, do not check source files and changes
+	 * Render all items in group together, when application is compiled, do not check source files and changes.
 	 * @param array   $itemsToRender 
 	 * @param boolean $minify 
 	 * @return string
@@ -485,7 +490,7 @@ class MvcCoreExt_ViewHelpers_Js extends MvcCoreExt_ViewHelpers_Assets
 			if (!file_exists($tmpFileFullPath)) {
 				// load all items and join them together
 				$resultContent = '';
-				foreach ($itemsToRender as $hashKey => $item) {
+				foreach ($itemsToRender as & $item) {
 					$srcFileFullPath = $this->getAppRoot() . $item->path;
 					if ($item->external) {
 						$srcFileFullPath = $this->_downloadFileToTmpAndGetNewHref($item, $minify);

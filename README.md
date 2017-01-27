@@ -1,10 +1,17 @@
-# MvcCore Extension - View Helper Assets
+# MvcCore Extension - View Helper - Assets
 
-[![Latest Stable Version](https://img.shields.io/badge/Stable-v3.1.2-brightgreen.svg?style=plastic)](https://github.com/mvccore/example-helloworld/releases)
-[![License](https://img.shields.io/badge/Licence-BSD-brightgreen.svg?style=plastic)](https://github.com/mvccore/example-helloworld/blob/master/LICENCE.md)
+[![Latest Stable Version](https://img.shields.io/badge/Stable-v4.0.0-brightgreen.svg?style=plastic)](https://github.com/mvccore/ext-view-helper-assets/releases)
+[![License](https://img.shields.io/badge/Licence-BSD-brightgreen.svg?style=plastic)](https://mvccore.github.io/docs/mvccore/4.0.0/LICENCE.md)
 ![PHP Version](https://img.shields.io/badge/PHP->=5.3-brightgreen.svg?style=plastic)
 
-View helper extension for:
+MvcCore View Helper extensin to group, render, minify and cache javascript and css files, to prepare all application assets for final application packing.
+
+## Installation
+```shell
+composer require mvccore/ext-view-helper-assets
+```
+
+## Features
 - grouping files together to deliver them in one response
 - optional rendering PHP code inside group files
 - optional completing assets url adresses targeting into index.php
@@ -22,10 +29,12 @@ View helper extension for:
 
 Base controller code:
 ```php
-class App_Controllers_Base {
+namespace App\Controllers;
+
+class Base {
 	public function PreDispatch () {
 		parent::PreDispatch();
-		MvcCoreExt_ViewHelpers_Assets::SetGlobalOptions(array(
+		\MvcCore\Ext\View\Helpers\Assets::SetGlobalOptions(array(
 			cssMinify	=> TRUE,
 			cssJoin		=> TRUE,
 		));

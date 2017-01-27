@@ -8,16 +8,18 @@
  * the LICENSE.md file that are distributed with this source code.
  *
  * @copyright	Copyright (c) 2016 Tom Flídr (https://github.com/mvccore/mvccore)
- * @license		https://mvccore.github.io/docs/mvccore/3.0.0/LICENCE.md
+ * @license		https://mvccore.github.io/docs/mvccore/4.0.0/LICENCE.md
  */
 
-class MvcCoreExt_ViewHelpers_Css extends MvcCoreExt_ViewHelpers_Assets
+namespace MvcCore\Ext\View\Helpers;
+
+class Css extends Assets
 {
 	/**
 	 * Array with full class name and public method accepted as first param css code and returning minified code
 	 * @var callable
 	 */
-	public static $MinifyCallable = array('Minify_CSS', 'minify');
+	public static $MinifyCallable = array('\Minify_CSS', 'minify');
 
 	/**
 	 * Allowed media types for <link> tag
@@ -33,7 +35,7 @@ class MvcCoreExt_ViewHelpers_Css extends MvcCoreExt_ViewHelpers_Assets
 	
 	/**
 	 * View Helper Method, returns current object instance.
-	 * @return $this
+	 * @return \MvcCore\Ext\View\Helpers\Css
 	 */
 	public function Css ($groupName = self::GROUP_NAME_DEFAULT) {
 		$this->actualGroupName = $groupName;
@@ -67,7 +69,7 @@ class MvcCoreExt_ViewHelpers_Css extends MvcCoreExt_ViewHelpers_Assets
 	 * @param  string  $path
 	 * @param  string  $media
 	 * @param  boolean $doNotMinify
-	 * @return MvcCoreExt_ViewHelpers_Css
+	 * @return \MvcCore\Ext\View\Helpers\Css
 	 */
 	public function AppendRendered($path = '', $media = 'all', $doNotMinify = FALSE) {
 		return $this->Append($path, $media, TRUE, $doNotMinify);
@@ -79,7 +81,7 @@ class MvcCoreExt_ViewHelpers_Css extends MvcCoreExt_ViewHelpers_Assets
 	 * @param  string  $media
 	 * @param  boolean $renderPhpTags
 	 * @param  boolean $doNotMinify
-	 * @return MvcCoreExt_ViewHelpers_Css
+	 * @return \MvcCore\Ext\View\Helpers\Css
 	 */
 	public function PrependRendered($path = '', $media = 'all', $doNotMinify = FALSE) {
 		return $this->Prepend($path, $media, TRUE, $doNotMinify);
@@ -92,7 +94,7 @@ class MvcCoreExt_ViewHelpers_Css extends MvcCoreExt_ViewHelpers_Assets
 	 * @param  string  $media
 	 * @param  boolean $renderPhpTags
 	 * @param  boolean $doNotMinify
-	 * @return MvcCoreExt_ViewHelpers_Css
+	 * @return \MvcCore\Ext\View\Helpers\Css
 	 */
 	public function OffsetSetRendered($index = 0, $path = '', $media = 'all', $doNotMinify = FALSE) {
 		return $this->OffsetSet($index, $path, $media, TRUE, $doNotMinify);
@@ -104,7 +106,7 @@ class MvcCoreExt_ViewHelpers_Css extends MvcCoreExt_ViewHelpers_Assets
 	 * @param  string  $media
 	 * @param  boolean $renderPhpTags
 	 * @param  boolean $doNotMinify
-	 * @return MvcCoreExt_ViewHelpers_Css
+	 * @return \MvcCore\Ext\View\Helpers\Css
 	 */
 	public function Append($path = '', $media = 'all', $renderPhpTags = FALSE, $doNotMinify = FALSE) {
 		$item = $this->_completeItem($path, $media, $renderPhpTags, $doNotMinify);
@@ -119,7 +121,7 @@ class MvcCoreExt_ViewHelpers_Css extends MvcCoreExt_ViewHelpers_Assets
 	 * @param  string  $media
 	 * @param  boolean $renderPhpTags
 	 * @param  boolean $doNotMinify
-	 * @return MvcCoreExt_ViewHelpers_Css
+	 * @return \MvcCore\Ext\View\Helpers\Css
 	 */
 	public function Prepend($path = '', $media = 'all', $renderPhpTags = FALSE, $doNotMinify = FALSE) {
 		$item = $this->_completeItem($path, $media, $renderPhpTags, $doNotMinify);
@@ -135,7 +137,7 @@ class MvcCoreExt_ViewHelpers_Css extends MvcCoreExt_ViewHelpers_Assets
 	 * @param  string  $media
 	 * @param  boolean $renderPhpTags
 	 * @param  boolean $doNotMinify
-	 * @return MvcCoreExt_ViewHelpers_Css
+	 * @return \MvcCore\Ext\View\Helpers\Css
 	 */
 	public function OffsetSet ($index = 0, $path = '', $media = 'all', $renderPhpTags = FALSE, $doNotMinify = FALSE) {
 		$item = $this->_completeItem($path, $media, $renderPhpTags, $doNotMinify);
@@ -160,7 +162,7 @@ class MvcCoreExt_ViewHelpers_Css extends MvcCoreExt_ViewHelpers_Assets
 	 * @param  string  $media
 	 * @param  boolean $render
 	 * @param  boolean $doNotMinify
-	 * @return stdClass
+	 * @return \stdClass
 	 */
 	private function _completeItem ($path, $media, $render, $doNotMinify) {
 		if (self::$fileChecking) {
@@ -197,7 +199,7 @@ class MvcCoreExt_ViewHelpers_Css extends MvcCoreExt_ViewHelpers_Assets
 	}
 
 	/**
-	 * Render link elements as html code with links to original files or temporary rendered files
+	 * Render link elements as html code with links to original files or temporary rendered files.
 	 * @param int $indent
 	 * @return string
 	 */
@@ -225,7 +227,7 @@ class MvcCoreExt_ViewHelpers_Css extends MvcCoreExt_ViewHelpers_Assets
 	}
 
 	/**
-	 * Get actualy dispatched controller/action group name
+	 * Get actualy dispatched controller/action group name.
 	 * @param string $name
 	 * @return array
 	 */
@@ -241,26 +243,29 @@ class MvcCoreExt_ViewHelpers_Css extends MvcCoreExt_ViewHelpers_Assets
 	}
 
 	/**
-	 * Minify stylesheet string and return minified result
+	 * Minify stylesheet string and return minified result.
 	 * @param string $css
 	 * @param string $path 
 	 * @return string
 	 */
 	private function _minify (& $css, $path) {
 		$result = '';
-		if (!class_exists(static::$MinifyCallable[0])) {
-			$this->exception("Class '" . static::$MinifyCallable[0] . "' doesn't exist. Use: https://github.com/mrclay/minify -> /min/lib/Minify/CSS.php");
+		if (!is_callable(static::$MinifyCallable)) {
+			$this->exception(
+				"Configured callable object for CSS minification doesn't exist. "
+				.'Use: https://github.com/mrclay/minify -> /min/lib/Minify/CSS.php'
+			);
 		}
 		try {
 			$result = call_user_func(static::$MinifyCallable, $css);
-		} catch (Exception $e) {
+		} catch (\Exception $e) {
 			$this->exception("Unable to minify stylesheet ('$path').");
 		}
 		return $result;
 	}
 
 	/**
-	 * Render data items as one <link> html tag or all another <link> html tags after with files which is not possible to minify
+	 * Render data items as one <link> html tag or all another <link> html tags after with files which is not possible to minify.
 	 * @param string  $actualGroupName 
 	 * @param array   $items 
 	 * @param int     $indent 
@@ -276,12 +281,12 @@ class MvcCoreExt_ViewHelpers_Css extends MvcCoreExt_ViewHelpers_Assets
 		if (self::$fileRendering) $resultItems[] = '<!-- css group begin: ' . $actualGroupName . ' -->';
 		
 		// process array with groups, which are not possible to minimize
-		foreach ($itemsToRenderSeparately as $attrHashKey => $itemsToRender) {
+		foreach ($itemsToRenderSeparately as & $itemsToRender) {
 			$resultItems[] = $this->_renderItemsTogetherAsGroup($itemsToRender, $minify);
 		}
 		
 		// process array with groups to minimize
-		foreach ($itemsToRenderMinimized as $attrHashKey => $itemsToRender) {
+		foreach ($itemsToRenderMinimized as & $itemsToRender) {
 			$resultItems[] = $this->_renderItemsTogetherAsGroup($itemsToRender, $minify);
 		}
 		
@@ -291,7 +296,7 @@ class MvcCoreExt_ViewHelpers_Css extends MvcCoreExt_ViewHelpers_Assets
 	}
 	
 	/**
-	 * Render all items in group together, when application is compiled, do not check source files and changes
+	 * Render all items in group together, when application is compiled, do not check source files and changes.
 	 * @param array   $itemsToRender 
 	 * @param boolean $minify 
 	 * @return string
@@ -353,14 +358,14 @@ class MvcCoreExt_ViewHelpers_Css extends MvcCoreExt_ViewHelpers_Assets
 		ob_start();
 		try {
 			include($absolutePath);
-		} catch (Exception $e) {
+		} catch (\Exception $e) {
 			$this->exceptionHandler($e);
 		}
 		return ob_get_clean();
 	}
 	
 	/**
-	 * Converts all relative paths in all css rules to absolute paths with MvcCore Url structures
+	 * Converts all relative paths in all css rules to absolute paths with \MvcCore Url structures
 	 * @param mixed $fullPathContent css file full path
 	 * @param mixed $href css file href value
 	 * @return string
@@ -455,7 +460,7 @@ class MvcCoreExt_ViewHelpers_Css extends MvcCoreExt_ViewHelpers_Assets
 	
 	/**
 	 * Render css file by path as php file and store result in tmp directory and return new href value
-	 * @param stdClass $item
+	 * @param \stdClass $item
 	 * @param boolean  $minify
 	 * @return string
 	 */
@@ -495,10 +500,10 @@ class MvcCoreExt_ViewHelpers_Css extends MvcCoreExt_ViewHelpers_Assets
 	
 	/**
 	 * Create HTML link element from data item
-	 * @param  stdClass $item
+	 * @param  \stdClass $item
 	 * @return string
 	 */
-	private function _renderItemSeparated (stdClass $item) {
+	private function _renderItemSeparated (\stdClass $item) {
 		$result = '<link rel="stylesheet"';
 		if ($item->media !== 'all') $result .= ' media="' . $item->media . '"';
 		if (!$item->render && self::$fileChecking) {
@@ -523,7 +528,7 @@ class MvcCoreExt_ViewHelpers_Css extends MvcCoreExt_ViewHelpers_Assets
 		$indentStr = $this->getIndentString($indent);
 		$resultItems = array();
 		if (self::$fileRendering) $resultItems[] = '<!-- css group begin: ' . $actualGroupName . ' -->';
-		$appCompilation = MvcCore::GetCompiled();
+		$appCompilation = \MvcCore::GetCompiled();
 		foreach ($items as $item) {
 			if ($item->render || ($minify && !$item->doNotMinify)) {
 				$item->href = $this->CssJsFileUrl($this->_renderFileToTmpAndGetNewHref($item, $minify));

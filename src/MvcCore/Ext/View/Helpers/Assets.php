@@ -8,11 +8,20 @@
  * the LICENSE.md file that are distributed with this source code.
  *
  * @copyright	Copyright (c) 2016 Tom Flídr (https://github.com/mvccore/mvccore)
- * @license		https://mvccore.github.io/docs/mvccore/3.0.0/LICENCE.md
+ * @license		https://mvccore.github.io/docs/mvccore/4.0.0/LICENCE.md
  */
 
-class MvcCoreExt_ViewHelpers_Assets
+namespace MvcCore\Ext\View\Helpers;
+
+class Assets
 {
+	/**
+	 * MvcCore Extension - View Helper - Assets - version:
+	 * Comparation by PHP function version_compare();
+	 * @see http://php.net/manual/en/function.version-compare.php
+	 */
+	const VERSION = '4.0.0';
+
 	/**
 	 * Default link group name
 	 * @const string
@@ -27,7 +36,7 @@ class MvcCoreExt_ViewHelpers_Assets
 	
 	/**
 	 * Simple app view object
-	 * @var MvcCore_View
+	 * @var \MvcCore\View
 	 */
 	protected $view;
 	
@@ -123,15 +132,16 @@ class MvcCoreExt_ViewHelpers_Assets
 	protected static $systemConfigHash = '';
 
 	/**
-	 * Insert a MvcCore_View in each helper constructing
+	 * Insert a \MvcCore\View in each helper constructing
+	 * @param \MvcCore\View $view
 	 */
 	public function __construct ($view) {
 		$this->view = $view;
-		$app = MvcCore::GetInstance();
+		$app = \MvcCore::GetInstance();
 		$request = $app->GetRequest();
 		self::$appRoot = $request->AppRoot;
 		if (is_null(self::$basePath)) self::$basePath = $request->BasePath;
-		self::$logingAndExceptions = MvcCore_Config::IsDevelopment();
+		self::$logingAndExceptions = \MvcCore\Config::IsDevelopment();
 		$mvcCoreCompiledMode = $app->GetCompiled();
 
 		// file checking is true only for classic development mode, not for single file mode
@@ -160,7 +170,7 @@ class MvcCoreExt_ViewHelpers_Assets
 	 * which can bee overwrited by single settings throw calling for 
 	 * example: append() method as another param.
 	 * 
-	 * @see MvcCoreExt_ViewHelpers_Assets::$globalOptions
+	 * @see \MvcCore\Ext\View\Helpers\Assets::$globalOptions
 	 * @param array $options whether or not to auto escape output
 	 * @return void
 	 */
@@ -221,18 +231,18 @@ class MvcCoreExt_ViewHelpers_Assets
 	 * Completes font or image file url inside CSS/JS file content.
 	 *
 	 * If application compile mode is in development state or packed in strict hdd mode,
-	 * there is generated standard url with MvcCore_Request->BasePath (current app location)
+	 * there is generated standard url with \MvcCore\Request::$BasePath (current app location)
 	 * plus called $path param. Because those application compile modes presume by default,
 	 * that those files are placed beside php code on hard drive.
 	 *
 	 * If application compile mode is in php preserve package, php preserve hdd,
-	 * php strict package or in single file url mode, there is generated url by MvcCore
+	 * php strict package or in single file url mode, there is generated url by \MvcCore
 	 * in form: '?controller=controller&action=asset&path=...'.
 	 *
 	 * Feel free to change this css/js file url completion to any custom way.
 	 * There could be typically only: "$result = self::$basePath . $path;",
 	 * but if you want to complete url for assets on hard drive or
-	 * to any other cdn place, use App_Views_Helpers_Assets::SetBasePath($cdnBasePath);
+	 * to any other cdn place, use \MvcCore\Ext\View\Helpers\Assets::SetBasePath($cdnBasePath);
 	 *
 	 * @param  string $path relative path from application document root with slash in begin
 	 * @return string
@@ -240,10 +250,10 @@ class MvcCoreExt_ViewHelpers_Assets
 	public function AssetUrl ($path = '') {
 		$result = '';
 		if (self::$assetsUrlCompletion) {
-			// for MvcCore::GetInstance()->GetCompiled() equal to: 'PHAR', 'SFU', 'PHP_STRICT_PACKAGE', 'PHP_PRESERVE_PACKAGE', 'PHP_PRESERVE_HDD'
+			// for \MvcCore::GetInstance()->GetCompiled() equal to: 'PHAR', 'SFU', 'PHP_STRICT_PACKAGE', 'PHP_PRESERVE_PACKAGE', 'PHP_PRESERVE_HDD'
 			$result = '?controller=controller&action=asset&path=' . $path;
 		} else {
-			// for MvcCore::GetInstance()->GetCompiled(), by default equal to: '' (development), 'PHP_STRICT_HDD'
+			// for \MvcCore::GetInstance()->GetCompiled(), by default equal to: '' (development), 'PHP_STRICT_HDD'
 			//$result = self::$basePath . $path;
 			$result = '__RELATIVE_BASE_PATH__' . $path;
 		}
@@ -254,18 +264,18 @@ class MvcCoreExt_ViewHelpers_Assets
 	 * Completes CSS or JS file url.
 	 *
 	 * If application compile mode is in development state or packed in strict hdd mode, 
-	 * there is generated standard url with MvcCore_Request->BasePath (current app location) 
+	 * there is generated standard url with \MvcCore\Request->BasePath (current app location) 
 	 * plus called $path param. Because those application compile modes presume by default, 
 	 * that those files are placed beside php code on hard drive.
 	 * 
 	 * If application compile mode is in php preserve package, php preserve hdd, 
-	 * php strict package or in single file url mode, there is generated url by MvcCore
+	 * php strict package or in single file url mode, there is generated url by \MvcCore
 	 * in form: 'index.php?controller=controller&action=asset&path=...'.
 	 * 
 	 * Feel free to change this css/js file url completion to any custom way.
 	 * There could be typically only: "$result = self::$basePath . $path;",
 	 * but if you want to complete url for assets on hard drive or
-	 * to any other cdn place, use App_Views_Helpers_Assets::SetBasePath($cdnBasePath);
+	 * to any other cdn place, use \MvcCore\Ext\View\Helpers\Assets::SetBasePath($cdnBasePath);
 	 * 
 	 * @param  string $path relative path from application document root with slash in begin
 	 * @return string
@@ -273,10 +283,10 @@ class MvcCoreExt_ViewHelpers_Assets
 	public function CssJsFileUrl ($path = '') {
 		$result = '';
 		if (self::$assetsUrlCompletion) {
-			// for MvcCore::GetInstance()->GetCompiled() equal to: 'PHAR', 'SFU', 'PHP_STRICT_PACKAGE', 'PHP_PRESERVE_PACKAGE', 'PHP_PRESERVE_HDD'
+			// for \MvcCore::GetInstance()->GetCompiled() equal to: 'PHAR', 'SFU', 'PHP_STRICT_PACKAGE', 'PHP_PRESERVE_PACKAGE', 'PHP_PRESERVE_HDD'
 			$result = $this->view->AssetUrl($path);
 		} else {
-			// for MvcCore::GetInstance()->GetCompiled() equal to: '' (development), 'PHP_STRICT_HDD'
+			// for \MvcCore::GetInstance()->GetCompiled() equal to: '' (development), 'PHP_STRICT_HDD'
 			$result = self::$basePath . $path;
 		}
 		return $result;
@@ -287,7 +297,7 @@ class MvcCoreExt_ViewHelpers_Assets
 	 * @return string
 	 */
 	protected function getCtrlActionKey () {
-		$requestParams = MvcCore::GetInstance()->GetRequest()->Params;
+		$requestParams = \MvcCore::GetInstance()->GetRequest()->Params;
 		return $requestParams['controller'] . '/' . $requestParams['action'];
 	}
 	
@@ -381,18 +391,19 @@ class MvcCoreExt_ViewHelpers_Assets
 
 	/**
 	 * Return and store application document root from controller view request object
+	 * @throws \Exception 
 	 * @return string
 	 */
 	protected function getTmpDir() {
 		if (!self::$tmpDir) {
 			$tmpDir = $this->getAppRoot() . self::$globalOptions['tmpDir'];
-			if (!MvcCore::GetInstance()->GetCompiled()) {
+			if (!\MvcCore::GetInstance()->GetCompiled()) {
 				if (!is_dir($tmpDir)) mkdir($tmpDir, 0777, TRUE);
 				if (!is_writable($tmpDir)) {
 					try {
 						@chmod($tmpDir, 0777);
 					} catch (Exception $e) {
-						throw new Exception('['.__CLASS__.'] ' . $e->getMessage());
+						throw new \Exception('['.__CLASS__.'] ' . $e->getMessage());
 					}
 				}
 			}
@@ -410,12 +421,13 @@ class MvcCoreExt_ViewHelpers_Assets
 	protected function saveFileContent ($fullPath = '', & $fileContent = '') {
 		$streamWrapper = '';
 		// https://github.com/nette/safe-stream/blob/master/src/SafeStream/SafeStream.php
-		$netteSafeStreamClass = 'Nette\Utils\SafeStream';
+		$netteSafeStreamClass = '\Nette\Utils\SafeStream';
+		$netteSafeStreamProtocol = '';
 		$netteSafeStreamExists = class_exists($netteSafeStreamClass);
 		if (self::$fileRendering) {
 			if ($netteSafeStreamExists) {
 				$netteSafeStreamProtocol = constant($netteSafeStreamClass.'::PROTOCOL');
-				(new ReflectionMethod($netteSafeStreamClass, 'register'))->invoke(NULL);
+				(new \ReflectionMethod($netteSafeStreamClass, 'register'))->invoke(NULL);
 				$streamWrapper = $netteSafeStreamProtocol . '://';
 			}
 		}
@@ -442,40 +454,41 @@ class MvcCoreExt_ViewHelpers_Assets
 	 */
 	protected function log ($msg = '', $logType = 'debug') {
 		if (self::$logingAndExceptions) {
-			MvcCore_Debug::Log($msg, $logType);
+			\MvcCore\Debug::Log($msg, $logType);
 		}
 	}
 
 	/**
 	 * Throw exception with given message with actual helper class name before
 	 * @param string $msg
-	 * @throws Exception text by given message
+	 * @throws \Exception text by given message
+	 * @return void
 	 */
 	protected function exception ($msg) {
 		if (self::$logingAndExceptions) {
-			throw new Exception('[' . get_class($this) . '] ' . $msg);
+			throw new \Exception('[' . get_class($this) . '] ' . $msg);
 		}
 	}
 
 	/**
 	 * Throw exception with given message with actual helper class name before
 	 * @param string $msg
-	 * @throws Exception text by given message
+	 * @return void
 	 */
 	protected function warning ($msg) {
 		if (self::$logingAndExceptions) {
-			MvcCore_Debug::BarDump('[' . get_class($this) . '] ' . $msg, MvcCore_Debug::DEBUG);
+			\MvcCore\Debug::BarDump('[' . get_class($this) . '] ' . $msg, \MvcCore\Debug::DEBUG);
 		}
 	}
 
 	/**
 	 * Render given exception
-	 * @param Exception $e
-	 * @throws Exception
+	 * @param \Exception $e
+	 * @return void
 	 */
-	protected function exceptionHandler ($e) {
+	protected function exceptionHandler (\Exception $e) {
 		if (self::$logingAndExceptions) {
-			MvcCore_Debug::Exception($e);
+			\MvcCore\Debug::Exception($e);
 		}
 	}
 
