@@ -402,7 +402,7 @@ class Assets
 				if (!is_writable($tmpDir)) {
 					try {
 						@chmod($tmpDir, 0777);
-					} catch (Exception $e) {
+					} catch (\Exception $e) {
 						throw new \Exception('['.__CLASS__.'] ' . $e->getMessage());
 					}
 				}
