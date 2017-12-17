@@ -20,32 +20,32 @@ class Assets
 	 * Comparation by PHP function version_compare();
 	 * @see http://php.net/manual/en/function.version-compare.php
 	 */
-	const VERSION = '4.2.0';
+	const VERSION = '4.3.1';
 
 	/**
 	 * Default link group name
 	 * @const string
 	 */
 	const GROUP_NAME_DEFAULT   = 'default';
-	
+
 	/**
 	 * Date format for ?_fmd param timestamp in admin development mode
 	 * @const string
 	 */
 	const FILE_MODIFICATION_DATE_FORMAT = 'Y-m-d_H-i-s';
-	
+
 	/**
 	 * Simple app view object
 	 * @var \MvcCore\View
 	 */
 	protected $view;
-	
+
 	/**
 	 * Called $_linksGroupContainer index throw helper function Css() or Js()
 	 * @var string
 	 */
 	protected $actualGroupName = '';
-	
+
 	/**
 	 * Stream wrapper for actual file save operations (http://php.net/stream_wrapper_register)
 	 * @var string
@@ -53,8 +53,8 @@ class Assets
 	protected $streamWrapper = '';
 
 	/**
-	 * Global options about joining and minifying which 
-	 * can bee overwrited by single settings throw calling 
+	 * Global options about joining and minifying which
+	 * can bee overwrited by single settings throw calling
 	 * for eeample: append() method as another param.
 	 * All possible options and meanings:
 	 * - jsJoin			- boolean	- join JS files in JS group together into single file in tmp dir
@@ -62,11 +62,11 @@ class Assets
 	 * - cssJoin		- boolean	- join CSS files in CSS group together into single file in tmp dir
 	 * - cssMinify		- boolean	- minify CSS file in any group by default (it's possible to override for each file)
 	 * - tmpDir			- string	- relative path to temporary dir from application document root, by default: '/Var/Tmp'
-	 * - fileChecking	- string	- php function names: md5_file | filemtime (filemtime is not working for PHAR packages, 
+	 * - fileChecking	- string	- php function names: md5_file | filemtime (filemtime is not working for PHAR packages,
 	 *								  for PHAR packages use slower 'md5_file' value)
 	 * - assetsUrl		- boolean	- strictly enable or disable special packge assets url completion in form:
-	 *								  '?controller=controller&action=asset&path=...', by default, this switch is 
-	 *								  automaticly detected by application comple mode. In every compile mode except 
+	 *								  '?controller=controller&action=asset&path=...', by default, this switch is
+	 *								  automaticly detected by application comple mode. In every compile mode except
 	 *								  development mode and strict hdd mode is this switch configured internaly to true.
 	 * @var array
 	 */
@@ -79,20 +79,20 @@ class Assets
 		'fileChecking'	=> 'filemtime',
 		'assetsUrl'		=> NULL,
 	);
-	
+
 	/**
 	 * Application root directory from request object
 	 * @var string
 	 */
 	protected static $appRoot = '';
-	
+
 	/**
-	 * Relative path to store joined and minified files 
+	 * Relative path to store joined and minified files
 	 * from application root directory.
 	 * @var string
 	 */
 	protected static $tmpDir = '';
-	
+
 	/**
 	 * Base not compiled url path from localhost if necessary
 	 * @var string
@@ -100,7 +100,7 @@ class Assets
 	protected static $basePath = NULL;
 
 	/**
-	 * If true, all messages are logged on hard drive, 
+	 * If true, all messages are logged on hard drive,
 	 * all exceptions are thrown.
 	 * @var boolean
 	 */
@@ -119,7 +119,7 @@ class Assets
 	protected static $fileRendering = FALSE;
 
 	/**
-	 * If true, method AssetUrl in all css files returns 
+	 * If true, method AssetUrl in all css files returns
 	 * to: 'index.php?controller=controller&action=asset&path=...'.
 	 * @var boolean
 	 */
@@ -166,10 +166,10 @@ class Assets
 	}
 
 	/**
-	 * Set global static options about minifying and joining together 
-	 * which can bee overwrited by single settings throw calling for 
+	 * Set global static options about minifying and joining together
+	 * which can bee overwrited by single settings throw calling for
 	 * example: append() method as another param.
-	 * 
+	 *
 	 * @see \MvcCore\Ext\View\Helpers\Assets::$globalOptions
 	 * @param array $options whether or not to auto escape output
 	 * @return void
@@ -182,10 +182,10 @@ class Assets
 	}
 
 	/**
-	 * Strictly enable/disable assets url completing in form 
-	 * '?controller=controller&action=asset&path=...'. Use this 
-	 * method only for cases, when you want to pack your application 
-	 * and you want to have all url adresses to css/js/fonts and 
+	 * Strictly enable/disable assets url completing in form
+	 * '?controller=controller&action=asset&path=...'. Use this
+	 * method only for cases, when you want to pack your application
+	 * and you want to have all url adresses to css/js/fonts and
 	 * images directly to hard drive.
 	 * @param bool $enable
 	 * @return void
@@ -195,7 +195,7 @@ class Assets
 	}
 
 	/**
-	 * Set global static $basePath to load assets from 
+	 * Set global static $basePath to load assets from
 	 * any static cdn domain or any other place.
 	 * @param string $basePath
 	 * @return void
@@ -205,7 +205,7 @@ class Assets
 	}
 
 	/**
-	 * Returns file modification imprint by global settings - 
+	 * Returns file modification imprint by global settings -
 	 * by md5_file() or by filemtime() - always as a string
 	 * @param string $fullPath
 	 * @return string
@@ -263,20 +263,20 @@ class Assets
 	/**
 	 * Completes CSS or JS file url.
 	 *
-	 * If application compile mode is in development state or packed in strict hdd mode, 
-	 * there is generated standard url with \MvcCore\Request->BasePath (current app location) 
-	 * plus called $path param. Because those application compile modes presume by default, 
+	 * If application compile mode is in development state or packed in strict hdd mode,
+	 * there is generated standard url with \MvcCore\Request->BasePath (current app location)
+	 * plus called $path param. Because those application compile modes presume by default,
 	 * that those files are placed beside php code on hard drive.
-	 * 
-	 * If application compile mode is in php preserve package, php preserve hdd, 
+	 *
+	 * If application compile mode is in php preserve package, php preserve hdd,
 	 * php strict package or in single file url mode, there is generated url by \MvcCore
 	 * in form: 'index.php?controller=controller&action=asset&path=...'.
-	 * 
+	 *
 	 * Feel free to change this css/js file url completion to any custom way.
 	 * There could be typically only: "$result = self::$basePath . $path;",
 	 * but if you want to complete url for assets on hard drive or
 	 * to any other cdn place, use \MvcCore\Ext\View\Helpers\Assets::SetBasePath($cdnBasePath);
-	 * 
+	 *
 	 * @param  string $path relative path from application document root with slash in begin
 	 * @return string
 	 */
@@ -300,10 +300,10 @@ class Assets
 		$requestParams = \MvcCore::GetInstance()->GetRequest()->Params;
 		return $requestParams['controller'] . '/' . $requestParams['action'];
 	}
-	
+
 	/**
 	 * Look for every item to render if there is any 'doNotMinify' record to render item separately
-	 * @param array $items 
+	 * @param array $items
 	 * @return array[] $itemsToRenderMinimized $itemsToRenderSeparately
 	 */
 	protected function filterItemsForNotPossibleMinifiedAndPossibleMinifiedItems ($items) {
@@ -335,7 +335,7 @@ class Assets
 			$itemsToRenderSeparately,
 		);
 	}
-	
+
 	/**
 	 * Add to href url file modification param by original file
 	 * @param  string $url
@@ -358,7 +358,7 @@ class Assets
 		}
 		return $url;
 	}
-	
+
 	/**
 	 * Get indent string
 	 * @param string|int $indent
@@ -391,7 +391,7 @@ class Assets
 
 	/**
 	 * Return and store application document root from controller view request object
-	 * @throws \Exception 
+	 * @throws \Exception
 	 * @return string
 	 */
 	protected function getTmpDir() {
@@ -414,8 +414,8 @@ class Assets
 
 	/**
 	 * Save atomicly file content in full path by 1 MB to not overflow any memory limits
-	 * @param string $fullPath 
-	 * @param string $fileContent 
+	 * @param string $fullPath
+	 * @param string $fileContent
 	 * @return void
 	 */
 	protected function saveFileContent ($fullPath = '', & $fileContent = '') {
@@ -494,8 +494,8 @@ class Assets
 
 	/**
 	 * Complete items group tmp directory file name by group source files info
-	 * @param array   $filesGroupInfo 
-	 * @param boolean $minify 
+	 * @param array   $filesGroupInfo
+	 * @param boolean $minify
 	 * @return string
 	 */
 	protected function getTmpFileFullPathByPartFilesInfo ($filesGroupInfo = array(), $minify = FALSE, $extension = '') {
@@ -506,5 +506,5 @@ class Assets
 			'.' . $extension
 		));
 	}
-	
+
 }
