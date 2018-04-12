@@ -35,7 +35,7 @@
 	}],
 	"require": {
 		"php": ">=5.3.0",
-		"mvccore/mvccore": "^4.3.1@dev",
+		"mvccore/mvccore": "@dev",
 		"mrclay/minify": "^2.2",
 		"nette/safe-stream": "^2.3"
 	},
