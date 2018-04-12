@@ -39,7 +39,7 @@
 		"mrclay/minify": "^2.2",
 		"nette/safe-stream": "^2.3"
 	},
-	"require": {
+	"require-dev": {
 		"php": ">=5.4.0",
 		"mvccore/mvccore": "@dev",
 		"mrclay/minify": "@dev",
