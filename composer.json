@@ -34,10 +34,10 @@
 		"url": "../../packages"
 	}],
 	"require": {
-		"php": ">=5.3.0",
-		"mvccore/mvccore": "^4.3.1",
-		"mrclay/minify": "^2.2",
-		"nette/safe-stream": "^2.3"
+		"php": ">=5.4.0",
+		"mvccore/mvccore": "@dev",
+		"mrclay/minify": "@dev",
+		"nette/safe-stream": "@dev"
 	},
 	"require-dev": {
 		"php": ">=5.4.0",
