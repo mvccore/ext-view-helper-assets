@@ -263,7 +263,7 @@ class Js extends Assets
 		$indentStr = $this->getIndentString($indent);
 		$resultItems = array();
 		if (self::$fileRendering) $resultItems[] = '<!-- js group begin: ' . $actualGroupName . ' -->';
-		$appCompilation = \MvcCore::GetInstance()->GetCompiled();
+		$appCompilation = \MvcCore\Application::GetInstance()->GetCompiled();
 		foreach ($items as $item) {
 			if ($item->external) {
 				$item->src = $this->CssJsFileUrl($this->_downloadFileToTmpAndGetNewHref($item, $minify));

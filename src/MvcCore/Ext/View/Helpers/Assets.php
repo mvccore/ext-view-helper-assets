@@ -20,7 +20,7 @@ class Assets
 	 * Comparation by PHP function version_compare();
 	 * @see http://php.net/manual/en/function.version-compare.php
 	 */
-	const VERSION = '4.3.1';
+	const VERSION = '5.0.0-alpha';
 
 	/**
 	 * Default link group name
@@ -137,10 +137,10 @@ class Assets
 	 */
 	public function __construct ($view) {
 		$this->view = $view;
-		$app = \MvcCore::GetInstance();
+		$app = \MvcCore\Application::GetInstance();
 		$request = $app->GetRequest();
-		self::$appRoot = $request->AppRoot;
-		if (is_null(self::$basePath)) self::$basePath = $request->BasePath;
+		self::$appRoot = $request->GetAppRoot();
+		if (is_null(self::$basePath)) self::$basePath = $request->GetBasePath();
 		self::$logingAndExceptions = \MvcCore\Config::IsDevelopment();
 		$mvcCoreCompiledMode = $app->GetCompiled();
 
@@ -250,10 +250,10 @@ class Assets
 	public function AssetUrl ($path = '') {
 		$result = '';
 		if (self::$assetsUrlCompletion) {
-			// for \MvcCore::GetInstance()->GetCompiled() equal to: 'PHAR', 'SFU', 'PHP_STRICT_PACKAGE', 'PHP_PRESERVE_PACKAGE', 'PHP_PRESERVE_HDD'
+			// for \MvcCore\Application::GetInstance()->GetCompiled() equal to: 'PHAR', 'SFU', 'PHP_STRICT_PACKAGE', 'PHP_PRESERVE_PACKAGE', 'PHP_PRESERVE_HDD'
 			$result = '?controller=controller&action=asset&path=' . $path;
 		} else {
-			// for \MvcCore::GetInstance()->GetCompiled(), by default equal to: '' (development), 'PHP_STRICT_HDD'
+			// for \MvcCore\Application::GetInstance()->GetCompiled(), by default equal to: '' (development), 'PHP_STRICT_HDD'
 			//$result = self::$basePath . $path;
 			$result = '__RELATIVE_BASE_PATH__' . $path;
 		}
@@ -283,10 +283,10 @@ class Assets
 	public function CssJsFileUrl ($path = '') {
 		$result = '';
 		if (self::$assetsUrlCompletion) {
-			// for \MvcCore::GetInstance()->GetCompiled() equal to: 'PHAR', 'SFU', 'PHP_STRICT_PACKAGE', 'PHP_PRESERVE_PACKAGE', 'PHP_PRESERVE_HDD'
+			// for \MvcCore\Application::GetInstance()->GetCompiled() equal to: 'PHAR', 'SFU', 'PHP_STRICT_PACKAGE', 'PHP_PRESERVE_PACKAGE', 'PHP_PRESERVE_HDD'
 			$result = $this->view->AssetUrl($path);
 		} else {
-			// for \MvcCore::GetInstance()->GetCompiled() equal to: '' (development), 'PHP_STRICT_HDD'
+			// for \MvcCore\Application::GetInstance()->GetCompiled() equal to: '' (development), 'PHP_STRICT_HDD'
 			$result = self::$basePath . $path;
 		}
 		return $result;
@@ -297,7 +297,7 @@ class Assets
 	 * @return string
 	 */
 	protected function getCtrlActionKey () {
-		$requestParams = \MvcCore::GetInstance()->GetRequest()->Params;
+		$requestParams = \MvcCore\Application::GetInstance()->GetRequest()->Params;
 		return $requestParams['controller'] . '/' . $requestParams['action'];
 	}
 
@@ -397,7 +397,7 @@ class Assets
 	protected function getTmpDir() {
 		if (!self::$tmpDir) {
 			$tmpDir = $this->getAppRoot() . self::$globalOptions['tmpDir'];
-			if (!\MvcCore::GetInstance()->GetCompiled()) {
+			if (!\MvcCore\Application::GetInstance()->GetCompiled()) {
 				if (!is_dir($tmpDir)) mkdir($tmpDir, 0777, TRUE);
 				if (!is_writable($tmpDir)) {
 					try {

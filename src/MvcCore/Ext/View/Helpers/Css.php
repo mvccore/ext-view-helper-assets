@@ -528,7 +528,7 @@ class Css extends Assets
 		$indentStr = $this->getIndentString($indent);
 		$resultItems = array();
 		if (self::$fileRendering) $resultItems[] = '<!-- css group begin: ' . $actualGroupName . ' -->';
-		$appCompilation = \MvcCore::GetInstance()->GetCompiled();
+		$appCompilation = \MvcCore\Application::GetInstance()->GetCompiled();
 		foreach ($items as $item) {
 			if ($item->render || ($minify && !$item->doNotMinify)) {
 				$item->href = $this->CssJsFileUrl($this->_renderFileToTmpAndGetNewHref($item, $minify));
