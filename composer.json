@@ -29,10 +29,6 @@
 		"name": "Tom Flidr",
 		"homepage": "https://github.com/tomFlidr"
 	}],
-	"repositories": [{
-		"type": "path",
-		"url": "../../packages"
-	}],
 	"require": {
 		"php": ">=5.4.0",
 		"mvccore/mvccore": "dev-master",
