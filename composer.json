@@ -38,14 +38,14 @@
 		"mvccore/mvccore": "dev-master",
 		"mvccore/ext-view-helper": "dev-master",
 		"nette/safe-stream": "dev-master",
-		"mrclay/minify": "^2.2"
+		"mrclay/minify": "2.*"
 	},
 	"require-dev": {
 		"php": ">=5.4.0",
 		"mvccore/mvccore": "@dev",
 		"mvccore/ext-view-helper": "@dev",
 		"nette/safe-stream": "@dev",
-		"mrclay/minify": "^2.2"
+		"mrclay/minify": "2.*"
 	},
 	"autoload": {
 		"classmap": ["src/"]
