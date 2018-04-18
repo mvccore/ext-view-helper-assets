@@ -29,15 +29,21 @@
 		"name": "Tom Flidr",
 		"homepage": "https://github.com/tomFlidr"
 	}],
+	"repositories": [{
+		"type": "path",
+		"url": "../../packages"
+	}],
 	"require": {
 		"php": ">=5.4.0",
 		"mvccore/mvccore": "dev-master",
+		"mvccore/ext-view-helper": "dev-master",
 		"mrclay/minify": "dev-master",
 		"nette/safe-stream": "dev-master"
 	},
 	"require-dev": {
 		"php": ">=5.4.0",
 		"mvccore/mvccore": "@dev",
+		"mvccore/ext-view-helper": "@dev",
 		"mrclay/minify": "@dev",
 		"nette/safe-stream": "@dev"
 	},

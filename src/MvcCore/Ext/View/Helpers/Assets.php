@@ -13,7 +13,7 @@
 
 namespace MvcCore\Ext\View\Helpers;
 
-class Assets
+class Assets extends AbstractHelper
 {
 	/**
 	 * MvcCore Extension - View Helper - Assets - version:
@@ -36,7 +36,7 @@ class Assets
 
 	/**
 	 * Simple app view object
-	 * @var \MvcCore\Interfaces\View
+	 * @var \MvcCore\View
 	 */
 	protected $view;
 
@@ -91,7 +91,7 @@ class Assets
 	 * from application root directory.
 	 * @var string
 	 */
-	protected static $tmpDir = '';
+	protected static $tmpDir = NULL;
 
 	/**
 	 * Base not compiled url path from localhost if necessary
@@ -133,16 +133,16 @@ class Assets
 
 	/**
 	 * Insert a \MvcCore\View in each helper constructing
-	 * @param \MvcCore\Interfaces\View $view
+	 * @param \MvcCore\View|\MvcCore\Interfaces\IView $view
+	 * @return \MvcCore\Ext\View\Helpers\AbstractHelper
 	 */
-	public function __construct (\MvcCore\Interfaces\View & $view) {
-		$this->view = $view;
-		$app = & \MvcCore\Application::GetInstance();
-		$request = & $app->GetRequest();
-		self::$appRoot = $request->GetAppRoot();
-		if (is_null(self::$basePath)) self::$basePath = $request->GetBasePath();
-		self::$logingAndExceptions = \MvcCore\Config::IsDevelopment();
-		$mvcCoreCompiledMode = $app->GetCompiled();
+	public function & SetView (\MvcCore\Interfaces\IView & $view) {
+		parent::SetView($view);
+
+		if (self::$appRoot === NULL) self::$appRoot = $this->request->GetAppRoot();
+		if (self::$basePath === NULL) self::$basePath = $this->request->GetBasePath();
+		self::$logingAndExceptions = \MvcCore\Config::IsDevelopment(TRUE);
+		$mvcCoreCompiledMode = $this->controller->GetApplication()->GetCompiled();
 
 		// file checking is true only for classic development mode, not for single file mode
 		if (!$mvcCoreCompiledMode) self::$fileChecking = TRUE;
@@ -297,8 +297,8 @@ class Assets
 	 * @return string
 	 */
 	protected function getCtrlActionKey () {
-		$request = \MvcCore\Application::GetInstance()->GetRequest();
-		return $request->GetControllerName() . '/' . $request->GetActionName();
+		$requestParams = \MvcCore\Application::GetInstance()->GetRequest()->Params;
+		return $requestParams['controller'] . '/' . $requestParams['action'];
 	}
 
 	/**
@@ -506,4 +506,5 @@ class Assets
 			'.' . $extension
 		));
 	}
+
 }
