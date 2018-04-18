@@ -14,10 +14,11 @@
 namespace MvcCore\Ext\View\Helpers;
 
 class Js extends Assets
-{	
+{
+	protected static $instance = null;
 	/**
-	 * Whatever Expires header is send over http protocol, 
-	 * minimal cache time for external files will be one 
+	 * Whatever Expires header is send over http protocol,
+	 * minimal cache time for external files will be one
 	 * day from last download
 	 * @const integer
 	 */
@@ -31,7 +32,7 @@ class Js extends Assets
 
 	/**
 	 * Array with all defined files to create specific script tags
-	 * @var array 
+	 * @var array
 	 */
 	protected static $scriptsGroupContainer = array();
 
@@ -91,7 +92,7 @@ class Js extends Assets
 	public function PrependExternal ($path = '', $async = FALSE, $defer = FALSE, $doNotMinify = FALSE) {
 		return $this->Prepend($path, $async, $defer, $doNotMinify, TRUE);
 	}
-	
+
 	/**
 	 * Add script into given index of scripts group array for later render process with downloading external content
 	 * @param  integer $index
@@ -179,7 +180,7 @@ class Js extends Assets
 		}
 		return self::$scriptsGroupContainer[$ctrlActionKey][$name];
 	}
-	
+
 	/**
 	 * Create data item to store for render process
 	 * @param  string  $path
@@ -222,7 +223,7 @@ class Js extends Assets
 		}
 		return $result;
 	}
-	
+
 	/**
 	 * Render script elements as html code with links to original files or temporary downloaded files
 	 * @param  int $indent
@@ -236,27 +237,27 @@ class Js extends Assets
 		if ($joinTogether) {
 			$result = $this->_renderItemsTogether(
 				$this->actualGroupName,
-				$actualGroupItems, 
-				$indent, 
+				$actualGroupItems,
+				$indent,
 				$minify
 			);
 		} else {
 			$result = $this->_renderItemsSeparated(
 				$this->actualGroupName,
-				$actualGroupItems, 
-				$indent, 
+				$actualGroupItems,
+				$indent,
 				$minify
 			);
 		}
 		return $result;
 	}
-	
+
 	/**
 	 * Render data items as separated <script> html tags
-	 * @param string  $actualGroupName 
-	 * @param array   $items 
-	 * @param int     $indent 
-	 * @param boolean $minify 
+	 * @param string  $actualGroupName
+	 * @param array   $items
+	 * @param int     $indent
+	 * @param boolean $minify
 	 * @return string
 	 */
 	private function _renderItemsSeparated ($actualGroupName = '', $items = array(), $indent = 0, $minify = FALSE) {
@@ -285,7 +286,7 @@ class Js extends Assets
 		if (self::$fileRendering) $resultItems[] = '<!-- js group end: ' . $actualGroupName . ' -->';
 		return $indentStr . implode(PHP_EOL . $indentStr, $resultItems);
 	}
-	
+
 	/**
 	 * Render js file by path and store result in tmp directory and return new href value
 	 * @param \stdClass $item
@@ -322,7 +323,7 @@ class Js extends Assets
 		$tmpPath = substr($tmpFileFullPath, strlen($this->getAppRoot()));
 		return $tmpPath;
 	}
-	
+
 	/**
 	 * Download js file by path and store result in tmp directory and return new href value
 	 * @param \stdClass $item
@@ -368,7 +369,7 @@ class Js extends Assets
 
 	/**
 	 * If there is any redirection in external content path - get redirect path
-	 * @param string $path 
+	 * @param string $path
 	 * @return string
 	 */
 	private function _getPossiblyRedirectedPath ($path = '') {
@@ -383,7 +384,7 @@ class Js extends Assets
 		}
 		return $path;
 	}
-	
+
 	/**
 	 * Create HTML script element from data item
 	 * @param  \stdClass $item
@@ -427,44 +428,44 @@ class Js extends Assets
 
 	/**
 	 * Render data items as one <script> html tag or all another <script> html tags after with files which is not possible to minify.
-	 * @param string  $actualGroupName 
-	 * @param array   $items 
-	 * @param int     $indent 
-	 * @param boolean $minify 
+	 * @param string  $actualGroupName
+	 * @param array   $items
+	 * @param int     $indent
+	 * @param boolean $minify
 	 * @return string
 	 */
 	private function _renderItemsTogether ($actualGroupName = '', $items = array(), $indent, $minify = FALSE) {
-		
+
 		// some configurations is not possible to render together and minimized
 		list($itemsToRenderMinimized, $itemsToRenderSeparately) = $this->filterItemsForNotPossibleMinifiedAndPossibleMinifiedItems($items);
-		
+
 		$indentStr = $this->getIndentString($indent);
 		$resultItems = array();
 		if (self::$fileRendering) $resultItems[] = '<!-- js group begin: ' . $actualGroupName . ' -->';
-		
+
 		// process array with groups, which are not possible to minimize
 		foreach ($itemsToRenderSeparately as & $itemsToRender) {
 			$resultItems[] = $this->_renderItemsTogetherAsGroup($itemsToRender, FALSE);
 		}
-		
+
 		// process array with groups to minimize
 		foreach ($itemsToRenderMinimized as & $itemsToRender) {
 			$resultItems[] = $this->_renderItemsTogetherAsGroup($itemsToRender, $minify);
 		}
 
 		if (self::$fileRendering) $resultItems[] = $indentStr . '<!-- js group end: ' . $actualGroupName . ' -->';
-		
+
 		return $indentStr . implode(PHP_EOL, $resultItems);
 	}
 
 	/**
 	 * Render all items in group together, when application is compiled, do not check source files and changes.
-	 * @param array   $itemsToRender 
-	 * @param boolean $minify 
+	 * @param array   $itemsToRender
+	 * @param boolean $minify
 	 * @return string
 	 */
 	private function _renderItemsTogetherAsGroup ($itemsToRender = array(), $minify = FALSE) {
-		
+
 		// complete tmp filename by source filenames and source files modification times
 		$filesGroupInfo = array();
 		foreach ($itemsToRender as $item) {
@@ -484,7 +485,7 @@ class Js extends Assets
 			}
 		}
 		$tmpFileFullPath = $this->getTmpFileFullPathByPartFilesInfo($filesGroupInfo, $minify, 'js');
-		
+
 		// check, if the rendered, together completed and minimized file is in tmp cache already
 		if (self::$fileRendering) {
 			if (!file_exists($tmpFileFullPath)) {
@@ -513,7 +514,7 @@ class Js extends Assets
 		$firstItem = array_merge((array) $itemsToRender[0], array());
 		$pathToTmp = substr($tmpFileFullPath, strlen($this->getAppRoot()));
 		$firstItem['src'] = $this->CssJsFileUrl($pathToTmp);
-		
+
 		return $this->_renderItemSeparated((object) $firstItem);
 	}
 }

@@ -15,6 +15,7 @@ namespace MvcCore\Ext\View\Helpers;
 
 class Css extends Assets
 {
+	protected static $instance = null;
 	/**
 	 * Array with full class name and public method accepted as first param css code and returning minified code
 	 * @var callable
@@ -26,13 +27,13 @@ class Css extends Assets
 	 * @var array
 	 */
 	private static $_allowedMediaTypes = array('all','aural','braille','handheld','projection','print','screen','tty','tv',);
-	
+
 	/**
 	 * Array with all defined files to create specific link tags
-	 * @var $scriptsGroupContainer array 
+	 * @var $scriptsGroupContainer array
 	 */
 	protected static $linksGroupContainer = array();
-	
+
 	/**
 	 * View Helper Method, returns current object instance.
 	 * @return \MvcCore\Ext\View\Helpers\Css
@@ -178,7 +179,7 @@ class Css extends Assets
 			'doNotMinify'	=> $doNotMinify,
 		);
 	}
-	
+
 	/**
 	 * Is the linked stylesheet duplicate?
 	 * @param  string $path
@@ -211,15 +212,15 @@ class Css extends Assets
 		if ($joinTogether) {
 			$result = $this->_renderItemsTogether(
 				$this->actualGroupName,
-				$currentGroupRecords, 
-				$indent, 
+				$currentGroupRecords,
+				$indent,
 				$minify
 			);
 		} else {
 			$result = $this->_renderItemsSeparated(
 				$this->actualGroupName,
-				$currentGroupRecords, 
-				$indent, 
+				$currentGroupRecords,
+				$indent,
 				$minify
 			);
 		}
@@ -245,7 +246,7 @@ class Css extends Assets
 	/**
 	 * Minify stylesheet string and return minified result.
 	 * @param string $css
-	 * @param string $path 
+	 * @param string $path
 	 * @return string
 	 */
 	private function _minify (& $css, $path) {
@@ -266,43 +267,43 @@ class Css extends Assets
 
 	/**
 	 * Render data items as one <link> html tag or all another <link> html tags after with files which is not possible to minify.
-	 * @param string  $actualGroupName 
-	 * @param array   $items 
-	 * @param int     $indent 
-	 * @param boolean $minify 
+	 * @param string  $actualGroupName
+	 * @param array   $items
+	 * @param int     $indent
+	 * @param boolean $minify
 	 * @return string
 	 */
 	private function _renderItemsTogether ($actualGroupName = '', $items = array(), $indent = 0, $minify = FALSE) {
 		// some configurations is not possible to render together and minimized
 		list($itemsToRenderMinimized, $itemsToRenderSeparately) = $this->filterItemsForNotPossibleMinifiedAndPossibleMinifiedItems($items);
-		
+
 		$indentStr = $this->getIndentString($indent);
 		$resultItems = array();
 		if (self::$fileRendering) $resultItems[] = '<!-- css group begin: ' . $actualGroupName . ' -->';
-		
+
 		// process array with groups, which are not possible to minimize
 		foreach ($itemsToRenderSeparately as & $itemsToRender) {
 			$resultItems[] = $this->_renderItemsTogetherAsGroup($itemsToRender, $minify);
 		}
-		
+
 		// process array with groups to minimize
 		foreach ($itemsToRenderMinimized as & $itemsToRender) {
 			$resultItems[] = $this->_renderItemsTogetherAsGroup($itemsToRender, $minify);
 		}
-		
+
 		if (self::$fileRendering) $resultItems[] = '<!-- css group end: ' . $actualGroupName . ' -->';
-		
+
 		return $indentStr . implode(PHP_EOL . $indentStr, $resultItems);
 	}
-	
+
 	/**
 	 * Render all items in group together, when application is compiled, do not check source files and changes.
-	 * @param array   $itemsToRender 
-	 * @param boolean $minify 
+	 * @param array   $itemsToRender
+	 * @param boolean $minify
 	 * @return string
 	 */
 	private function _renderItemsTogetherAsGroup ($itemsToRender = array(), $minify = FALSE) {
-		
+
 		// complete tmp filename by source filenames and source files modification times
 		$filesGroupInfo = array();
 		foreach ($itemsToRender as $item) {
@@ -317,7 +318,7 @@ class Css extends Assets
 			}
 		}
 		$tmpFileFullPath = $this->getTmpFileFullPathByPartFilesInfo($filesGroupInfo, $minify, 'css');
-		
+
 		// check, if the rendered, together completed and minimized file is in tmp cache already
 		if (self::$fileRendering) {
 			if (!file_exists($tmpFileFullPath)) {
@@ -348,7 +349,7 @@ class Css extends Assets
 		$firstItem['href'] = $this->CssJsFileUrl($pathToTmp);
 		return $this->_renderItemSeparated((object) $firstItem);
 	}
-	
+
 	/**
 	 * Render css file by absolute path as php file and return rendered result as string
 	 * @param string $absolutePath
@@ -363,7 +364,7 @@ class Css extends Assets
 		}
 		return ob_get_clean();
 	}
-	
+
 	/**
 	 * Converts all relative paths in all css rules to absolute paths with \MvcCore Url structures
 	 * @param mixed $fullPathContent css file full path
@@ -375,22 +376,22 @@ class Css extends Assets
 		$lastHrefSlashPos = mb_strrpos($href, '/');
 		if ($lastHrefSlashPos === FALSE) return $fullPathContent;
 		$stylesheetDirectoryRelative = mb_substr($href, 0, $lastHrefSlashPos + 1);
-		
+
 		// process content for all double dots
 		$position = 0;
 		while ($position < mb_strlen($fullPathContent)) {
 			$doubleDotsPos = mb_strpos($fullPathContent, '../', $position);
 			if ($doubleDotsPos === FALSE) break;
-			
+
 			// make sure that double dot string is in url('') or url("") block
-			
+
 			// try to find first occurance of url(" backwards
 			$lastUrlBeginStrPos = mb_strrpos(mb_substr($fullPathContent, 0, $doubleDotsPos), 'url(');
 			if ($lastUrlBeginStrPos === FALSE) {
 				$position = $doubleDotsPos + 3;
 				continue;
 			}
-			
+
 			// then check if between that are only [\./ ]
 			$beginOfUrlBlockChars = mb_substr($fullPathContent, $lastUrlBeginStrPos + 4, $doubleDotsPos - ($lastUrlBeginStrPos + 4));
 			$beginOfUrlBlockChars = preg_replace("#[\./ \"'_\-]#", "", $beginOfUrlBlockChars);
@@ -398,14 +399,14 @@ class Css extends Assets
 				$position = $lastUrlBeginStrPos + 4;
 				continue;
 			}
-			
+
 			// try to find first occurance of ")
 			$firstUrlEndStrPos = mb_strpos($fullPathContent, ')', $doubleDotsPos);
 			if ($firstUrlEndStrPos === FALSE) {
 				$position = $doubleDotsPos + 3;
 				continue;
 			}
-			
+
 			// then check of between that are only [a-zA-Z\./ ]
 			$endOfUrlBlockChars = mb_substr($fullPathContent, $doubleDotsPos + 3, $firstUrlEndStrPos - ($doubleDotsPos + 3));
 			$endOfUrlBlockChars = preg_replace("#[a-zA-Z\./ \"'_\-\?\&\#]#", "", $endOfUrlBlockChars);
@@ -413,13 +414,13 @@ class Css extends Assets
 				$position = $firstUrlEndStrPos + 1;
 				continue;
 			}
-			
+
 			// if it is not the Url block, shift the position and continue
-			
+
 			// replace relative path to absolute path
 			$lastUrlBeginStrPos += 4;
 			$urlSubStr = mb_substr($fullPathContent, $lastUrlBeginStrPos, $firstUrlEndStrPos - $lastUrlBeginStrPos);
-			
+
 			// get double or single quotes or no quotes
 			$firstStr = mb_substr($urlSubStr, 0, 1);
 			$lastStr = mb_substr($urlSubStr, mb_strlen($urlSubStr) - 1, 1);
@@ -432,16 +433,16 @@ class Css extends Assets
 			} else {
 				$quote = '"';
 			}
-			
+
 			// translate relative to web absolute path
 			$trimmedUrlSubStr = ltrim($urlSubStr, './');
 			$trimmedPartLength = mb_strlen($urlSubStr) - mb_strlen($trimmedUrlSubStr);
 			$trimmedPart = trim(mb_substr($urlSubStr, 0, $trimmedPartLength), '/');
 			$subjectRestPath = trim(mb_substr($urlSubStr, $trimmedPartLength), '/');
-			
+
 			$urlFullBasePath = str_replace('\\', '/', realpath($this->getAppRoot() . $stylesheetDirectoryRelative . $trimmedPart));
 			$urlFullPath = $urlFullBasePath . '/' . $subjectRestPath;
-			
+
 			// complete stylesheet new path
 			$webPath = mb_substr($urlFullPath, mb_strlen($this->getAppRoot()));
 			$webPath = $this->CssJsFileUrl($webPath);
@@ -450,14 +451,14 @@ class Css extends Assets
 			$fullPathContent = mb_substr($fullPathContent, 0, $lastUrlBeginStrPos)
 				. $quote . $webPath . $quote
 				. mb_substr($fullPathContent, $firstUrlEndStrPos);
-			
+
 			// shift the position property
 			$position = $lastUrlBeginStrPos + mb_strlen($webPath) + 3;
 		}
 
 		return str_replace('__RELATIVE_BASE_PATH__', '../..', $fullPathContent);
 	}
-	
+
 	/**
 	 * Render css file by path as php file and store result in tmp directory and return new href value
 	 * @param \stdClass $item
@@ -497,7 +498,7 @@ class Css extends Assets
 		$tmpPath = substr($tmpFileFullPath, strlen($this->getAppRoot()));
 		return $tmpPath;
 	}
-	
+
 	/**
 	 * Create HTML link element from data item
 	 * @param  \stdClass $item
@@ -518,10 +519,10 @@ class Css extends Assets
 
 	/**
 	 * Render data items as separated <link> html tags
-	 * @param string  $actualGroupName 
-	 * @param array   $items 
-	 * @param int     $indent 
-	 * @param boolean $minify 
+	 * @param string  $actualGroupName
+	 * @param array   $items
+	 * @param int     $indent
+	 * @param boolean $minify
 	 * @return string
 	 */
 	private function _renderItemsSeparated ($actualGroupName = '', $items = array(), $indent = 0, $minify = FALSE) {
@@ -540,7 +541,7 @@ class Css extends Assets
 			}
 			$resultItems[] = $this->_renderItemSeparated($item);
 		}
-		if (self::$fileRendering) $resultItems[] = '<!-- css group end: ' . $actualGroupName . ' -->';	
+		if (self::$fileRendering) $resultItems[] = '<!-- css group end: ' . $actualGroupName . ' -->';
 		return $indentStr . implode(PHP_EOL . $indentStr, $resultItems);
 	}
 }

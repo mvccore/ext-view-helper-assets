@@ -163,6 +163,8 @@ class Assets extends AbstractHelper
 		}
 
 		self::$systemConfigHash = md5(json_encode(self::$globalOptions));
+
+		return $this;
 	}
 
 	/**
