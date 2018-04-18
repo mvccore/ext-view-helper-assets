@@ -51,5 +51,6 @@ Temporary Items
 .hgignore
 .hgtags
 
+# Project files
 *.phpproj
 *.phpproj.user

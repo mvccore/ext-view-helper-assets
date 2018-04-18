@@ -36,7 +36,7 @@ class Assets
 
 	/**
 	 * Simple app view object
-	 * @var \MvcCore\View
+	 * @var \MvcCore\Interfaces\View
 	 */
 	protected $view;
 
@@ -133,12 +133,12 @@ class Assets
 
 	/**
 	 * Insert a \MvcCore\View in each helper constructing
-	 * @param \MvcCore\View $view
+	 * @param \MvcCore\Interfaces\View $view
 	 */
-	public function __construct ($view) {
+	public function __construct (\MvcCore\Interfaces\View & $view) {
 		$this->view = $view;
-		$app = \MvcCore\Application::GetInstance();
-		$request = $app->GetRequest();
+		$app = & \MvcCore\Application::GetInstance();
+		$request = & $app->GetRequest();
 		self::$appRoot = $request->GetAppRoot();
 		if (is_null(self::$basePath)) self::$basePath = $request->GetBasePath();
 		self::$logingAndExceptions = \MvcCore\Config::IsDevelopment();
@@ -297,8 +297,8 @@ class Assets
 	 * @return string
 	 */
 	protected function getCtrlActionKey () {
-		$requestParams = \MvcCore\Application::GetInstance()->GetRequest()->Params;
-		return $requestParams['controller'] . '/' . $requestParams['action'];
+		$request = \MvcCore\Application::GetInstance()->GetRequest();
+		return $request->GetControllerName() . '/' . $request->GetActionName();
 	}
 
 	/**
@@ -506,5 +506,4 @@ class Assets
 			'.' . $extension
 		));
 	}
-
 }
