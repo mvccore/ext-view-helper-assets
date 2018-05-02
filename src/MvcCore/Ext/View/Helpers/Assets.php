@@ -84,7 +84,7 @@ class Assets extends AbstractHelper
 	 * Application root directory from request object
 	 * @var string
 	 */
-	protected static $appRoot = '';
+	protected static $appRoot = NULL;
 
 	/**
 	 * Relative path to store joined and minified files
@@ -141,7 +141,8 @@ class Assets extends AbstractHelper
 
 		if (self::$appRoot === NULL) self::$appRoot = $this->request->GetAppRoot();
 		if (self::$basePath === NULL) self::$basePath = $this->request->GetBasePath();
-		self::$logingAndExceptions = \MvcCore\Config::IsDevelopment(TRUE);
+		$configClass = $view->GetController()->GetApplication()->GetConfigClass();
+		self::$logingAndExceptions = $configClass::IsDevelopment(TRUE);
 		$mvcCoreCompiledMode = $this->controller->GetApplication()->GetCompiled();
 
 		// file checking is true only for classic development mode, not for single file mode
