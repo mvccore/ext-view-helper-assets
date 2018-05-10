@@ -29,11 +29,27 @@
 		"name": "Tom Flidr",
 		"homepage": "https://github.com/tomFlidr"
 	}],
+	"repositories": [{
+		"packagist.org": false
+	},{
+		"type": "vcs",
+		"url": "../../../packages/mvccore/mvccore"
+	},{
+		"type": "vcs",
+		"url": "../../../packages/mvccore/ext-view-helper"
+	},{
+		"type": "vcs",
+		"url": "../../../packages/nette/safe-stream"
+	},{
+		"type": "vcs",
+		"url": "../../../packages/mrclay/minify"
+	}],
 	"require": {
-		"php": ">=5.3.0",
-		"mvccore/mvccore": "^4.3.1",
+		"php": ">=5.4.0",
+		"mvccore/mvccore": "@dev",
+		"mvccore/ext-view-helper": "@dev",
 		"nette/safe-stream": "2.3.*",
-		"mrclay/minify": "2.*"
+		"mrclay/minify": "@dev"
 	},
 	"autoload": {
 		"classmap": ["src/"]
