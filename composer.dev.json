@@ -48,8 +48,8 @@
 		"php": ">=5.4.0",
 		"mvccore/mvccore": "dev-master",
 		"mvccore/ext-view-helper": "dev-master",
-		"nette/safe-stream": "2.3.*",
-		"mrclay/minify": "2.3.*"
+		"nette/safe-stream": "^2.3",
+		"mrclay/minify": "^2.3"
 	},
 	"autoload": {
 		"classmap": ["src/"]
