@@ -38,17 +38,17 @@
 		"type": "vcs",
 		"url": "../../../packages/mvccore/ext-view-helper"
 	},{
-		"type": "vcs",
+		"type": "path",
 		"url": "../../../packages/nette/safe-stream"
 	},{
-		"type": "vcs",
+		"type": "path",
 		"url": "../../../packages/mrclay/minify"
 	}],
 	"require": {
 		"php": ">=5.4.0",
 		"mvccore/mvccore": "@dev",
 		"mvccore/ext-view-helper": "@dev",
-		"nette/safe-stream": "2.3.*",
+		"nette/safe-stream": "@dev",
 		"mrclay/minify": "@dev"
 	},
 	"autoload": {
