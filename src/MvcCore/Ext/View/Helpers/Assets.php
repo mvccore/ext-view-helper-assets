@@ -267,7 +267,7 @@ class Assets extends AbstractHelper
 	 * Completes CSS or JS file url.
 	 *
 	 * If application compile mode is in development state or packed in strict hdd mode,
-	 * there is generated standard url with \MvcCore\Request->BasePath (current app location)
+	 * there is generated standard url with \MvcCore\Request->GetBasePath() (current app location)
 	 * plus called $path param. Because those application compile modes presume by default,
 	 * that those files are placed beside php code on hard drive.
 	 *
@@ -300,7 +300,7 @@ class Assets extends AbstractHelper
 	 * @return string
 	 */
 	protected function getCtrlActionKey () {
-		$requestParams = \MvcCore\Application::GetInstance()->GetRequest()->Params;
+		$requestParams = \MvcCore\Application::GetInstance()->GetRequest()->GetParams();
 		return $requestParams['controller'] . '/' . $requestParams['action'];
 	}
 
