@@ -100,6 +100,12 @@ class Assets extends AbstractHelper
 	protected static $basePath = NULL;
 
 	/**
+	 * Request script name.
+	 * @var string
+	 */
+	protected static $scriptName = NULL;
+
+	/**
 	 * If true, all messages are logged on hard drive,
 	 * all exceptions are thrown.
 	 * @var boolean
@@ -141,6 +147,7 @@ class Assets extends AbstractHelper
 
 		if (self::$appRoot === NULL) self::$appRoot = $this->request->GetAppRoot();
 		if (self::$basePath === NULL) self::$basePath = $this->request->GetBasePath();
+		if (self::$scriptName === NULL) self::$scriptName = ltrim($this->request->GetScriptName(), '/.');
 		$configClass = $view->GetController()->GetApplication()->GetConfigClass();
 		self::$logingAndExceptions = $configClass::IsDevelopment(TRUE);
 		$mvcCoreCompiledMode = $this->controller->GetApplication()->GetCompiled();
@@ -254,7 +261,7 @@ class Assets extends AbstractHelper
 		$result = '';
 		if (self::$assetsUrlCompletion) {
 			// for \MvcCore\Application::GetInstance()->GetCompiled() equal to: 'PHAR', 'SFU', 'PHP_STRICT_PACKAGE', 'PHP_PRESERVE_PACKAGE', 'PHP_PRESERVE_HDD'
-			$result = '?controller=controller&action=asset&path=' . $path;
+			$result = self::$scriptName . '?controller=controller&action=asset&path=' . $path;
 		} else {
 			// for \MvcCore\Application::GetInstance()->GetCompiled(), by default equal to: '' (development), 'PHP_STRICT_HDD'
 			//$result = self::$basePath . $path;
