@@ -13,7 +13,7 @@
 
 namespace MvcCore\Ext\Views\Helpers;
 
-class Assets extends AbstractHelper
+class Assets extends \MvcCore\Ext\Views\Helpers\AbstractHelper
 {
 	/**
 	 * MvcCore Extension - View Helper - Assets - version:
