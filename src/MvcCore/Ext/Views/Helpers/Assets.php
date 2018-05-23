@@ -11,7 +11,7 @@
  * @license		https://mvccore.github.io/docs/mvccore/4.0.0/LICENCE.md
  */
 
-namespace MvcCore\Ext\View\Helpers;
+namespace MvcCore\Ext\Views\Helpers;
 
 class Assets extends AbstractHelper
 {
@@ -140,7 +140,7 @@ class Assets extends AbstractHelper
 	/**
 	 * Insert a \MvcCore\View in each helper constructing
 	 * @param \MvcCore\View|\MvcCore\Interfaces\IView $view
-	 * @return \MvcCore\Ext\View\Helpers\AbstractHelper
+	 * @return \MvcCore\Ext\Views\Helpers\AbstractHelper
 	 */
 	public function & SetView (\MvcCore\Interfaces\IView & $view) {
 		parent::SetView($view);
@@ -180,7 +180,7 @@ class Assets extends AbstractHelper
 	 * which can bee overwrited by single settings throw calling for
 	 * example: append() method as another param.
 	 *
-	 * @see \MvcCore\Ext\View\Helpers\Assets::$globalOptions
+	 * @see \MvcCore\Ext\Views\Helpers\Assets::$globalOptions
 	 * @param array $options whether or not to auto escape output
 	 * @return void
 	 */
@@ -252,7 +252,7 @@ class Assets extends AbstractHelper
 	 * Feel free to change this css/js file url completion to any custom way.
 	 * There could be typically only: "$result = self::$basePath . $path;",
 	 * but if you want to complete url for assets on hard drive or
-	 * to any other cdn place, use \MvcCore\Ext\View\Helpers\Assets::SetBasePath($cdnBasePath);
+	 * to any other cdn place, use \MvcCore\Ext\Views\Helpers\Assets::SetBasePath($cdnBasePath);
 	 *
 	 * @param  string $path relative path from application document root with slash in begin
 	 * @return string
@@ -285,7 +285,7 @@ class Assets extends AbstractHelper
 	 * Feel free to change this css/js file url completion to any custom way.
 	 * There could be typically only: "$result = self::$basePath . $path;",
 	 * but if you want to complete url for assets on hard drive or
-	 * to any other cdn place, use \MvcCore\Ext\View\Helpers\Assets::SetBasePath($cdnBasePath);
+	 * to any other cdn place, use \MvcCore\Ext\Views\Helpers\Assets::SetBasePath($cdnBasePath);
 	 *
 	 * @param  string $path relative path from application document root with slash in begin
 	 * @return string

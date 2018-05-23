@@ -11,7 +11,7 @@
  * @license		https://mvccore.github.io/docs/mvccore/4.0.0/LICENCE.md
  */
 
-namespace MvcCore\Ext\View\Helpers;
+namespace MvcCore\Ext\Views\Helpers;
 
 class Css extends Assets
 {
@@ -36,7 +36,7 @@ class Css extends Assets
 
 	/**
 	 * View Helper Method, returns current object instance.
-	 * @return \MvcCore\Ext\View\Helpers\Css
+	 * @return \MvcCore\Ext\Views\Helpers\Css
 	 */
 	public function Css ($groupName = self::GROUP_NAME_DEFAULT) {
 		$this->actualGroupName = $groupName;
@@ -70,7 +70,7 @@ class Css extends Assets
 	 * @param  string  $path
 	 * @param  string  $media
 	 * @param  boolean $doNotMinify
-	 * @return \MvcCore\Ext\View\Helpers\Css
+	 * @return \MvcCore\Ext\Views\Helpers\Css
 	 */
 	public function AppendRendered($path = '', $media = 'all', $doNotMinify = FALSE) {
 		return $this->Append($path, $media, TRUE, $doNotMinify);
@@ -82,7 +82,7 @@ class Css extends Assets
 	 * @param  string  $media
 	 * @param  boolean $renderPhpTags
 	 * @param  boolean $doNotMinify
-	 * @return \MvcCore\Ext\View\Helpers\Css
+	 * @return \MvcCore\Ext\Views\Helpers\Css
 	 */
 	public function PrependRendered($path = '', $media = 'all', $doNotMinify = FALSE) {
 		return $this->Prepend($path, $media, TRUE, $doNotMinify);
@@ -95,7 +95,7 @@ class Css extends Assets
 	 * @param  string  $media
 	 * @param  boolean $renderPhpTags
 	 * @param  boolean $doNotMinify
-	 * @return \MvcCore\Ext\View\Helpers\Css
+	 * @return \MvcCore\Ext\Views\Helpers\Css
 	 */
 	public function OffsetSetRendered($index = 0, $path = '', $media = 'all', $doNotMinify = FALSE) {
 		return $this->OffsetSet($index, $path, $media, TRUE, $doNotMinify);
@@ -107,7 +107,7 @@ class Css extends Assets
 	 * @param  string  $media
 	 * @param  boolean $renderPhpTags
 	 * @param  boolean $doNotMinify
-	 * @return \MvcCore\Ext\View\Helpers\Css
+	 * @return \MvcCore\Ext\Views\Helpers\Css
 	 */
 	public function Append($path = '', $media = 'all', $renderPhpTags = FALSE, $doNotMinify = FALSE) {
 		$item = $this->_completeItem($path, $media, $renderPhpTags, $doNotMinify);
@@ -122,7 +122,7 @@ class Css extends Assets
 	 * @param  string  $media
 	 * @param  boolean $renderPhpTags
 	 * @param  boolean $doNotMinify
-	 * @return \MvcCore\Ext\View\Helpers\Css
+	 * @return \MvcCore\Ext\Views\Helpers\Css
 	 */
 	public function Prepend($path = '', $media = 'all', $renderPhpTags = FALSE, $doNotMinify = FALSE) {
 		$item = $this->_completeItem($path, $media, $renderPhpTags, $doNotMinify);
@@ -138,7 +138,7 @@ class Css extends Assets
 	 * @param  string  $media
 	 * @param  boolean $renderPhpTags
 	 * @param  boolean $doNotMinify
-	 * @return \MvcCore\Ext\View\Helpers\Css
+	 * @return \MvcCore\Ext\Views\Helpers\Css
 	 */
 	public function OffsetSet ($index = 0, $path = '', $media = 'all', $renderPhpTags = FALSE, $doNotMinify = FALSE) {
 		$item = $this->_completeItem($path, $media, $renderPhpTags, $doNotMinify);

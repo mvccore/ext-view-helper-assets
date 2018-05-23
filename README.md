@@ -34,7 +34,7 @@ namespace App\Controllers;
 class Base {
 	public function PreDispatch () {
 		parent::PreDispatch();
-		\MvcCore\Ext\View\Helpers\Assets::SetGlobalOptions(array(
+		\MvcCore\Ext\Views\Helpers\Assets::SetGlobalOptions(array(
 			cssMinify	=> TRUE,
 			cssJoin		=> TRUE,
 		));
