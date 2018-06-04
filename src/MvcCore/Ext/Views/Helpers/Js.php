@@ -28,13 +28,13 @@ class Js extends Assets
 	 * Array with full class name and public method accepted as first param javascript code and returning minified code
 	 * @var callable
 	 */
-	public static $MinifyCallable = array('\JSMin', 'minify');
+	public static $MinifyCallable = ['\JSMin', 'minify'];
 
 	/**
 	 * Array with all defined files to create specific script tags
 	 * @var array
 	 */
-	protected static $scriptsGroupContainer = array();
+	protected static $scriptsGroupContainer = [];
 
 	/**
 	 * View Helper Method, returns current object instance.
@@ -151,7 +151,7 @@ class Js extends Assets
 	public function Offset ($index = 0, $path = '', $async = FALSE, $defer = FALSE, $doNotMinify = FALSE, $external = FALSE) {
 		$item = $this->_completeItem($path, $async, $defer, $doNotMinify, $external);
 		$actialGroupItems = & $this->_getScriptsGroupContainer($this->actualGroupName);
-		$newItems = array();
+		$newItems = [];
 		$added = FALSE;
 		foreach ($actialGroupItems as $key => & $groupItem) {
 			if ($key == $index) {
@@ -173,10 +173,10 @@ class Js extends Assets
 	private function & _getScriptsGroupContainer ($name = '') {
 		$ctrlActionKey = $this->getCtrlActionKey();
 		if (!isset(self::$scriptsGroupContainer[$ctrlActionKey])) {
-			self::$scriptsGroupContainer[$ctrlActionKey] = array();
+			self::$scriptsGroupContainer[$ctrlActionKey] = [];
 		}
 		if (!isset(self::$scriptsGroupContainer[$ctrlActionKey][$name])) {
-			self::$scriptsGroupContainer[$ctrlActionKey][$name] = array();
+			self::$scriptsGroupContainer[$ctrlActionKey][$name] = [];
 		}
 		return self::$scriptsGroupContainer[$ctrlActionKey][$name];
 	}
@@ -196,13 +196,13 @@ class Js extends Assets
 			$duplication = $this->_isDuplicateScript($path);
 			if ($duplication) $this->warning("Script '$path' is already added in js group: '$duplication'.");
 		}
-		return (object) array(
+		return (object) [
 			'path'			=> $path,
 			'async'			=> $async,
 			'defer'			=> $defer,
 			'doNotMinify'	=> $doNotMinify,
 			'external'		=> $external,
-		);
+		];
 	}
 
 	/**
@@ -256,13 +256,13 @@ class Js extends Assets
 	 * Render data items as separated <script> html tags
 	 * @param string  $actualGroupName
 	 * @param array   $items
-	 * @param int     $indent
+	 * @param int	 $indent
 	 * @param boolean $minify
 	 * @return string
 	 */
-	private function _renderItemsSeparated ($actualGroupName = '', $items = array(), $indent = 0, $minify = FALSE) {
+	private function _renderItemsSeparated ($actualGroupName = '', $items = [], $indent = 0, $minify = FALSE) {
 		$indentStr = $this->getIndentString($indent);
-		$resultItems = array();
+		$resultItems = [];
 		if (self::$fileRendering) $resultItems[] = '<!-- js group begin: ' . $actualGroupName . ' -->';
 		$appCompilation = \MvcCore\Application::GetInstance()->GetCompiled();
 		foreach ($items as $item) {
@@ -430,17 +430,17 @@ class Js extends Assets
 	 * Render data items as one <script> html tag or all another <script> html tags after with files which is not possible to minify.
 	 * @param string  $actualGroupName
 	 * @param array   $items
-	 * @param int     $indent
+	 * @param int	 $indent
 	 * @param boolean $minify
 	 * @return string
 	 */
-	private function _renderItemsTogether ($actualGroupName = '', $items = array(), $indent, $minify = FALSE) {
+	private function _renderItemsTogether ($actualGroupName = '', $items = [], $indent, $minify = FALSE) {
 
 		// some configurations is not possible to render together and minimized
 		list($itemsToRenderMinimized, $itemsToRenderSeparately) = $this->filterItemsForNotPossibleMinifiedAndPossibleMinifiedItems($items);
 
 		$indentStr = $this->getIndentString($indent);
-		$resultItems = array();
+		$resultItems = [];
 		if (self::$fileRendering) $resultItems[] = '<!-- js group begin: ' . $actualGroupName . ' -->';
 
 		// process array with groups, which are not possible to minimize
@@ -464,10 +464,10 @@ class Js extends Assets
 	 * @param boolean $minify
 	 * @return string
 	 */
-	private function _renderItemsTogetherAsGroup ($itemsToRender = array(), $minify = FALSE) {
+	private function _renderItemsTogetherAsGroup ($itemsToRender = [], $minify = FALSE) {
 
 		// complete tmp filename by source filenames and source files modification times
-		$filesGroupInfo = array();
+		$filesGroupInfo = [];
 		foreach ($itemsToRender as $item) {
 			if ($item->external) {
 				$srcFileFullPath = $this->_downloadFileToTmpAndGetNewHref($item, $minify);
@@ -511,7 +511,7 @@ class Js extends Assets
 		}
 
 		// complete <link> tag with tmp file path in $tmpFileFullPath variable
-		$firstItem = array_merge((array) $itemsToRender[0], array());
+		$firstItem = array_merge((array) $itemsToRender[0], []);
 		$pathToTmp = substr($tmpFileFullPath, strlen($this->getAppRoot()));
 		$firstItem['src'] = $this->CssJsFileUrl($pathToTmp);
 

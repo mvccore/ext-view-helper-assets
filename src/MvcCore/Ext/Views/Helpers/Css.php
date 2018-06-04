@@ -20,19 +20,19 @@ class Css extends Assets
 	 * Array with full class name and public method accepted as first param css code and returning minified code
 	 * @var callable
 	 */
-	public static $MinifyCallable = array('\Minify_CSS', 'minify');
+	public static $MinifyCallable = ['\Minify_CSS', 'minify'];
 
 	/**
 	 * Allowed media types for <link> tag
 	 * @var array
 	 */
-	private static $_allowedMediaTypes = array('all','aural','braille','handheld','projection','print','screen','tty','tv',);
+	private static $_allowedMediaTypes = ['all','aural','braille','handheld','projection','print','screen','tty','tv',];
 
 	/**
 	 * Array with all defined files to create specific link tags
 	 * @var $scriptsGroupContainer array
 	 */
-	protected static $linksGroupContainer = array();
+	protected static $linksGroupContainer = [];
 
 	/**
 	 * View Helper Method, returns current object instance.
@@ -90,7 +90,7 @@ class Css extends Assets
 
 	/**
 	 * Add stylesheet into given index of stylesheets group array for later render process with php tags executing in given file
-	 * @param  int     $index
+	 * @param  int	 $index
 	 * @param  string  $path
 	 * @param  string  $media
 	 * @param  boolean $renderPhpTags
@@ -133,7 +133,7 @@ class Css extends Assets
 
 	/**
 	 * Add stylesheet into given index of group stylesheets array for later render process
-	 * @param  int     $index
+	 * @param  int	 $index
 	 * @param  string  $path
 	 * @param  string  $media
 	 * @param  boolean $renderPhpTags
@@ -143,7 +143,7 @@ class Css extends Assets
 	public function OffsetSet ($index = 0, $path = '', $media = 'all', $renderPhpTags = FALSE, $doNotMinify = FALSE) {
 		$item = $this->_completeItem($path, $media, $renderPhpTags, $doNotMinify);
 		$currentGroupRecords = & $this->_getLinksGroupContainer($this->actualGroupName);
-		$newItems = array();
+		$newItems = [];
 		$added = FALSE;
 		foreach ($currentGroupRecords as $key => $groupItem) {
 			if ($key == $index) {
@@ -172,12 +172,12 @@ class Css extends Assets
 			$duplication = $this->_isDuplicateStylesheet($path);
 			if ($duplication) $this->warning("Stylesheet '$path' is already added in css group: '$duplication'.");
 		}
-		return (object) array(
+		return (object) [
 			'path'			=> $path,
 			'media'			=> $media,
 			'render'		=> $render,
 			'doNotMinify'	=> $doNotMinify,
-		);
+		];
 	}
 
 	/**
@@ -235,10 +235,10 @@ class Css extends Assets
 	private function & _getLinksGroupContainer ($name = '') {
 		$ctrlActionKey = $this->getCtrlActionKey();
 		if (!isset(self::$linksGroupContainer[$ctrlActionKey])) {
-			self::$linksGroupContainer[$ctrlActionKey] = array();
+			self::$linksGroupContainer[$ctrlActionKey] = [];
 		}
 		if (!isset(self::$linksGroupContainer[$ctrlActionKey][$name])) {
-			self::$linksGroupContainer[$ctrlActionKey][$name] = array();
+			self::$linksGroupContainer[$ctrlActionKey][$name] = [];
 		}
 		return self::$linksGroupContainer[$ctrlActionKey][$name];
 	}
@@ -269,16 +269,16 @@ class Css extends Assets
 	 * Render data items as one <link> html tag or all another <link> html tags after with files which is not possible to minify.
 	 * @param string  $actualGroupName
 	 * @param array   $items
-	 * @param int     $indent
+	 * @param int	 $indent
 	 * @param boolean $minify
 	 * @return string
 	 */
-	private function _renderItemsTogether ($actualGroupName = '', $items = array(), $indent = 0, $minify = FALSE) {
+	private function _renderItemsTogether ($actualGroupName = '', $items = [], $indent = 0, $minify = FALSE) {
 		// some configurations is not possible to render together and minimized
 		list($itemsToRenderMinimized, $itemsToRenderSeparately) = $this->filterItemsForNotPossibleMinifiedAndPossibleMinifiedItems($items);
 
 		$indentStr = $this->getIndentString($indent);
-		$resultItems = array();
+		$resultItems = [];
 		if (self::$fileRendering) $resultItems[] = '<!-- css group begin: ' . $actualGroupName . ' -->';
 
 		// process array with groups, which are not possible to minimize
@@ -302,10 +302,10 @@ class Css extends Assets
 	 * @param boolean $minify
 	 * @return string
 	 */
-	private function _renderItemsTogetherAsGroup ($itemsToRender = array(), $minify = FALSE) {
+	private function _renderItemsTogetherAsGroup ($itemsToRender = [], $minify = FALSE) {
 
 		// complete tmp filename by source filenames and source files modification times
-		$filesGroupInfo = array();
+		$filesGroupInfo = [];
 		foreach ($itemsToRender as $item) {
 			if (self::$fileChecking) {
 				$fullPath = $this->getAppRoot() . $item->path;
@@ -344,7 +344,7 @@ class Css extends Assets
 		}
 
 		// complete <link> tag with tmp file path in $tmpFileFullPath variable
-		$firstItem = array_merge((array) $itemsToRender[0], array());
+		$firstItem = array_merge((array) $itemsToRender[0], []);
 		$pathToTmp = substr($tmpFileFullPath, strlen($this->getAppRoot()));
 		$firstItem['href'] = $this->CssJsFileUrl($pathToTmp);
 		return $this->_renderItemSeparated((object) $firstItem);
@@ -521,13 +521,13 @@ class Css extends Assets
 	 * Render data items as separated <link> html tags
 	 * @param string  $actualGroupName
 	 * @param array   $items
-	 * @param int     $indent
+	 * @param int	 $indent
 	 * @param boolean $minify
 	 * @return string
 	 */
-	private function _renderItemsSeparated ($actualGroupName = '', $items = array(), $indent = 0, $minify = FALSE) {
+	private function _renderItemsSeparated ($actualGroupName = '', $items = [], $indent = 0, $minify = FALSE) {
 		$indentStr = $this->getIndentString($indent);
-		$resultItems = array();
+		$resultItems = [];
 		if (self::$fileRendering) $resultItems[] = '<!-- css group begin: ' . $actualGroupName . ' -->';
 		$appCompilation = \MvcCore\Application::GetInstance()->GetCompiled();
 		foreach ($items as $item) {

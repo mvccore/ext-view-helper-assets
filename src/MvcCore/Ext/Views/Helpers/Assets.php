@@ -70,7 +70,7 @@ class Assets extends \MvcCore\Ext\Views\Helpers\AbstractHelper
 	 *								  development mode and strict hdd mode is this switch configured internaly to true.
 	 * @var array
 	 */
-	protected static $globalOptions = array(
+	protected static $globalOptions = [
 		'jsJoin'		=> 0,
 		'jsMinify'		=> 0,
 		'cssJoin'		=> 0,
@@ -78,7 +78,7 @@ class Assets extends \MvcCore\Ext\Views\Helpers\AbstractHelper
 		'tmpDir'		=> '/Var/Tmp',
 		'fileChecking'	=> 'filemtime',
 		'assetsUrl'		=> NULL,
-	);
+	];
 
 	/**
 	 * Application root directory from request object
@@ -184,7 +184,7 @@ class Assets extends \MvcCore\Ext\Views\Helpers\AbstractHelper
 	 * @param array $options whether or not to auto escape output
 	 * @return void
 	 */
-	public static function SetGlobalOptions ($options = array()) {
+	public static function SetGlobalOptions ($options = []) {
 		self::$globalOptions = array_merge(self::$globalOptions, (array) $options);
 		if (isset($options['assetsUrl']) && !is_null($options['assetsUrl'])) {
 			self::$assetsUrlCompletion = (bool) $options['assetsUrl'];
@@ -317,11 +317,11 @@ class Assets extends \MvcCore\Ext\Views\Helpers\AbstractHelper
 	 * @return array[] $itemsToRenderMinimized $itemsToRenderSeparately
 	 */
 	protected function filterItemsForNotPossibleMinifiedAndPossibleMinifiedItems ($items) {
-		$itemsToRenderMinimized = array();
-		$itemsToRenderSeparately = array(); // some configurations is not possible to render together and minimized
+		$itemsToRenderMinimized = [];
+		$itemsToRenderSeparately = []; // some configurations is not possible to render together and minimized
 		// go for every item to complete existing combinations in attributes
 		foreach ($items as & $item) {
-			$itemArr = array_merge((array) $item, array());
+			$itemArr = array_merge((array) $item, []);
 			unset($itemArr['path']);
 			if (isset($itemArr['render'])) unset($itemArr['render']);
 			if (isset($itemArr['external'])) unset($itemArr['external']);
@@ -330,20 +330,20 @@ class Assets extends \MvcCore\Ext\Views\Helpers\AbstractHelper
 				if (isset($itemsToRenderSeparately[$renderArrayKey])) {
 					$itemsToRenderSeparately[$renderArrayKey][] = $item;
 				} else {
-					$itemsToRenderSeparately[$renderArrayKey] = array($item);
+					$itemsToRenderSeparately[$renderArrayKey] = [$item];
 				}
 			} else {
 				if (isset($itemsToRenderMinimized[$renderArrayKey])) {
 					$itemsToRenderMinimized[$renderArrayKey][] = $item;
 				} else {
-					$itemsToRenderMinimized[$renderArrayKey] = array($item);
+					$itemsToRenderMinimized[$renderArrayKey] = [$item];
 				}
 			}
 		}
-		return array(
+		return [
 			$itemsToRenderMinimized,
 			$itemsToRenderSeparately,
-		);
+		];
 	}
 
 	/**
@@ -508,13 +508,13 @@ class Assets extends \MvcCore\Ext\Views\Helpers\AbstractHelper
 	 * @param boolean $minify
 	 * @return string
 	 */
-	protected function getTmpFileFullPathByPartFilesInfo ($filesGroupInfo = array(), $minify = FALSE, $extension = '') {
-		return implode('', array(
+	protected function getTmpFileFullPathByPartFilesInfo ($filesGroupInfo = [], $minify = FALSE, $extension = '') {
+		return implode('', [
 			$this->getTmpDir(),
 			'/' . ($minify ? 'minified' : 'rendered') . '_' . $extension . '_',
 			md5(implode(',', $filesGroupInfo) . '_' . $minify),
 			'.' . $extension
-		));
+		]);
 	}
 
 }
