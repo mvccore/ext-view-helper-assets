@@ -137,6 +137,8 @@ class Assets extends \MvcCore\Ext\Views\Helpers\AbstractHelper
 	 */
 	protected static $systemConfigHash = '';
 
+	protected static $ctrlActionKey = '';
+
 	/**
 	 * Insert a \MvcCore\View in each helper constructing
 	 * @param \MvcCore\View|\MvcCore\Interfaces\IView $view
@@ -148,9 +150,12 @@ class Assets extends \MvcCore\Ext\Views\Helpers\AbstractHelper
 		if (self::$appRoot === NULL) self::$appRoot = $this->request->GetAppRoot();
 		if (self::$basePath === NULL) self::$basePath = $this->request->GetBasePath();
 		if (self::$scriptName === NULL) self::$scriptName = ltrim($this->request->GetScriptName(), '/.');
-		$configClass = $view->GetController()->GetApplication()->GetConfigClass();
+		$app = $view->GetController()->GetApplication();
+		$configClass =$app->GetConfigClass();
 		self::$logingAndExceptions = $configClass::IsDevelopment(TRUE);
-		$mvcCoreCompiledMode = $this->controller->GetApplication()->GetCompiled();
+		$mvcCoreCompiledMode = $app->GetCompiled();
+
+		self::$ctrlActionKey = $this->request->GetControllerName() . '/' . $this->request->GetActionName();
 
 		// file checking is true only for classic development mode, not for single file mode
 		if (!$mvcCoreCompiledMode) self::$fileChecking = TRUE;
@@ -307,8 +312,7 @@ class Assets extends \MvcCore\Ext\Views\Helpers\AbstractHelper
 	 * @return string
 	 */
 	protected function getCtrlActionKey () {
-		$requestParams = \MvcCore\Application::GetInstance()->GetRequest()->GetParams();
-		return $requestParams['controller'] . '/' . $requestParams['action'];
+		return self::$ctrlActionKey;
 	}
 
 	/**
