@@ -1,7 +1,7 @@
 {
 	"name": "mvccore/ext-view-helper-assets",
 	"type": "library",
-	"description": "MvcCore Extension - View Helper - Assets - to group, render, minify and cache javascript and css files, to prepare all application assets for final application packing.",
+	"description": "MvcCore - Extension - View - Helper - Assets - to group, render, minify and cache javascript and css files, to prepare all application assets for final application packing.",
 	"keywords": [
 		"mvc", 
 		"mvccore", 
