@@ -168,7 +168,7 @@ class Css extends Assets
 	private function _completeItem ($path, $media, $render, $doNotMinify) {
 		if (self::$fileChecking) {
 			if (!$path) $this->exception('Path to *.css can\'t be an empty string.');
-			if (!in_array($media, self::$_allowedMediaTypes)) $this->exception('Media could be only values: ' . implode(', ', self::$_allowedMediaTypes) . '.');
+			if (!in_array($media, self::$_allowedMediaTypes, TRUE)) $this->exception('Media could be only values: ' . implode(', ', self::$_allowedMediaTypes) . '.');
 			$duplication = $this->_isDuplicateStylesheet($path);
 			if ($duplication) $this->warning("Stylesheet '$path' is already added in css group: '$duplication'.");
 		}
