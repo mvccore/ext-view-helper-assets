@@ -141,10 +141,10 @@ class Assets extends \MvcCore\Ext\Views\Helpers\AbstractHelper
 
 	/**
 	 * Insert a \MvcCore\View in each helper constructing
-	 * @param \MvcCore\View|\MvcCore\Interfaces\IView $view
+	 * @param \MvcCore\View|\MvcCore\IView $view
 	 * @return \MvcCore\Ext\Views\Helpers\AbstractHelper
 	 */
-	public function & SetView (\MvcCore\Interfaces\IView & $view) {
+	public function & SetView (\MvcCore\IView & $view) {
 		parent::SetView($view);
 
 		if (self::$appRoot === NULL) self::$appRoot = $this->request->GetAppRoot();
