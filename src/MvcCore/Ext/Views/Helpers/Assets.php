@@ -491,7 +491,7 @@ class Assets extends \MvcCore\Ext\Views\Helpers\AbstractHelper
 	 */
 	protected function warning ($msg) {
 		if (self::$logingAndExceptions) {
-			\MvcCore\Debug::BarDump('[' . get_class($this) . '] ' . $msg, \MvcCore\Debug::DEBUG);
+			\MvcCore\Debug::BarDump('[' . get_class($this) . '] ' . $msg, \MvcCore\IDebug::DEBUG);
 		}
 	}
 

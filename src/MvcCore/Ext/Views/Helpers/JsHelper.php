@@ -13,7 +13,7 @@
 
 namespace MvcCore\Ext\Views\Helpers;
 
-class Js extends Assets
+class JsHelper extends Assets
 {
 	protected static $instance = null;
 	/**
@@ -39,7 +39,7 @@ class Js extends Assets
 	/**
 	 * View Helper Method, returns current object instance.
 	 * @param  string $groupName string identifier
-	 * @return \MvcCore\Ext\Views\Helpers\Js
+	 * @return \MvcCore\Ext\Views\Helpers\JsHelper
 	 */
 	public function Js ($groupName = self::GROUP_NAME_DEFAULT) {
 		$this->actualGroupName = $groupName;
@@ -75,7 +75,7 @@ class Js extends Assets
 	 * @param  boolean $async
 	 * @param  boolean $defer
 	 * @param  boolean $doNotMinify
-	 * @return \MvcCore\Ext\Views\Helpers\Js
+	 * @return \MvcCore\Ext\Views\Helpers\JsHelper
 	 */
 	public function AppendExternal ($path = '', $async = FALSE, $defer = FALSE, $doNotMinify = FALSE) {
 		return $this->Append($path, $async, $defer, $doNotMinify, TRUE);
@@ -87,7 +87,7 @@ class Js extends Assets
 	 * @param  boolean $async
 	 * @param  boolean $defer
 	 * @param  boolean $doNotMinify
-	 * @return \MvcCore\Ext\Views\Helpers\Js
+	 * @return \MvcCore\Ext\Views\Helpers\JsHelper
 	 */
 	public function PrependExternal ($path = '', $async = FALSE, $defer = FALSE, $doNotMinify = FALSE) {
 		return $this->Prepend($path, $async, $defer, $doNotMinify, TRUE);
@@ -100,7 +100,7 @@ class Js extends Assets
 	 * @param  boolean $async
 	 * @param  boolean $defer
 	 * @param  boolean $doNotMinify
-	 * @return \MvcCore\Ext\Views\Helpers\Js
+	 * @return \MvcCore\Ext\Views\Helpers\JsHelper
 	 */
 	public function OffsetExternal ($index = 0, $path = '', $async = FALSE, $defer = FALSE, $doNotMinify = FALSE) {
 		return $this->Offset($index, $path, $async, $defer, $doNotMinify, TRUE);
@@ -113,7 +113,7 @@ class Js extends Assets
 	 * @param  boolean $defer
 	 * @param  boolean $doNotMinify
 	 * @param  boolean $external
-	 * @return \MvcCore\Ext\Views\Helpers\Js
+	 * @return \MvcCore\Ext\Views\Helpers\JsHelper
 	 */
 	public function Append ($path = '', $async = FALSE, $defer = FALSE, $doNotMinify = FALSE, $external = FALSE) {
 		$item = $this->_completeItem($path, $async, $defer, $doNotMinify, $external);
@@ -129,7 +129,7 @@ class Js extends Assets
 	 * @param  boolean $defer
 	 * @param  boolean $doNotMinify
 	 * @param  boolean $external
-	 * @return \MvcCore\Ext\Views\Helpers\Js
+	 * @return \MvcCore\Ext\Views\Helpers\JsHelper
 	 */
 	public function Prepend ($path = '', $async = FALSE, $defer = FALSE, $doNotMinify = FALSE, $external = FALSE) {
 		$item = $this->_completeItem($path, $async, $defer, $doNotMinify, $external);
@@ -146,7 +146,7 @@ class Js extends Assets
 	 * @param  boolean $defer
 	 * @param  boolean $doNotMinify
 	 * @param  boolean $external
-	 * @return \MvcCore\Ext\Views\Helpers\Js
+	 * @return \MvcCore\Ext\Views\Helpers\JsHelper
 	 */
 	public function Offset ($index = 0, $path = '', $async = FALSE, $defer = FALSE, $doNotMinify = FALSE, $external = FALSE) {
 		$item = $this->_completeItem($path, $async, $defer, $doNotMinify, $external);
