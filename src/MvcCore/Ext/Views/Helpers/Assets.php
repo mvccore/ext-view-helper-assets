@@ -64,10 +64,10 @@ class Assets extends \MvcCore\Ext\Views\Helpers\AbstractHelper
 	 * - tmpDir			- string	- relative path to temporary dir from application document root, by default: '/Var/Tmp'
 	 * - fileChecking	- string	- php function names: md5_file | filemtime (filemtime is not working for PHAR packages,
 	 *								  for PHAR packages use slower 'md5_file' value)
-	 * - assetsUrl		- boolean	- strictly enable or disable special packge assets url completion in form:
+	 * - assetsUrl		- boolean	- strictly enable or disable special packge assets URL completion in form:
 	 *								  '?controller=controller&action=asset&path=...', by default, this switch is
 	 *								  automatically detected by application comple mode. In every compile mode except
-	 *								  development mode and strict hdd mode is this switch configured internaly to true.
+	 *								  development mode and strict hdd mode is this switch configured internally to true.
 	 * @var array
 	 */
 	protected static $globalOptions = [
@@ -94,7 +94,7 @@ class Assets extends \MvcCore\Ext\Views\Helpers\AbstractHelper
 	protected static $tmpDir = NULL;
 
 	/**
-	 * Base not compiled url path from localhost if necessary
+	 * Base not compiled URL path from localhost if necessary
 	 * @var string
 	 */
 	protected static $basePath = NULL;
@@ -166,7 +166,7 @@ class Assets extends \MvcCore\Ext\Views\Helpers\AbstractHelper
 		}
 
 		if (is_null(self::$assetsUrlCompletion)) {
-			// set url adresses complatition to true by default for:
+			// set URL adresses complatition to true by default for:
 			// - vsechny package mody mimo PHP_STRICT_HDD a mimo development
 			if ($mvcCoreCompiledMode && $mvcCoreCompiledMode != 'PHP_STRICT_HDD') {
 				self::$assetsUrlCompletion = TRUE;
@@ -197,10 +197,10 @@ class Assets extends \MvcCore\Ext\Views\Helpers\AbstractHelper
 	}
 
 	/**
-	 * Strictly enable/disable assets url completing in form
+	 * Strictly enable/disable assets URL completing in form
 	 * '?controller=controller&action=asset&path=...'. Use this
 	 * method only for cases, when you want to pack your application
-	 * and you want to have all url adresses to css/js/fonts and
+	 * and you want to have all URL adresses to css/js/fonts and
 	 * images directly to hard drive.
 	 * @param bool $enable
 	 * @return void
@@ -243,20 +243,20 @@ class Assets extends \MvcCore\Ext\Views\Helpers\AbstractHelper
 	}
 
 	/**
-	 * Completes font or image file url inside CSS/JS file content.
+	 * Completes font or image file URL inside CSS/JS file content.
 	 *
 	 * If application compile mode is in development state or packed in strict hdd mode,
-	 * there is generated standard url with \MvcCore\Request::$BasePath (current app location)
+	 * there is generated standard URL with \MvcCore\Request::$BasePath (current app location)
 	 * plus called $path param. Because those application compile modes presume by default,
 	 * that those files are placed beside php code on hard drive.
 	 *
 	 * If application compile mode is in php preserve package, php preserve hdd,
-	 * php strict package or in single file url mode, there is generated url by \MvcCore
+	 * php strict package or in single file URL mode, there is generated URL by \MvcCore
 	 * in form: '?controller=controller&action=asset&path=...'.
 	 *
-	 * Feel free to change this css/js file url completion to any custom way.
+	 * Feel free to change this css/js file URL completion to any custom way.
 	 * There could be typically only: "$result = self::$basePath . $path;",
-	 * but if you want to complete url for assets on hard drive or
+	 * but if you want to complete URL for assets on hard drive or
 	 * to any other cdn place, use \MvcCore\Ext\Views\Helpers\Assets::SetBasePath($cdnBasePath);
 	 *
 	 * @param  string $path relative path from application document root with slash in begin
@@ -279,17 +279,17 @@ class Assets extends \MvcCore\Ext\Views\Helpers\AbstractHelper
 	 * Completes CSS or JS file url.
 	 *
 	 * If application compile mode is in development state or packed in strict hdd mode,
-	 * there is generated standard url with \MvcCore\Request->GetBasePath() (current app location)
+	 * there is generated standard URL with \MvcCore\Request->GetBasePath() (current app location)
 	 * plus called $path param. Because those application compile modes presume by default,
 	 * that those files are placed beside php code on hard drive.
 	 *
 	 * If application compile mode is in php preserve package, php preserve hdd,
-	 * php strict package or in single file url mode, there is generated url by \MvcCore
+	 * php strict package or in single file URL mode, there is generated URL by \MvcCore
 	 * in form: 'index.php?controller=controller&action=asset&path=...'.
 	 *
-	 * Feel free to change this css/js file url completion to any custom way.
+	 * Feel free to change this css/js file URL completion to any custom way.
 	 * There could be typically only: "$result = self::$basePath . $path;",
-	 * but if you want to complete url for assets on hard drive or
+	 * but if you want to complete URL for assets on hard drive or
 	 * to any other cdn place, use \MvcCore\Ext\Views\Helpers\Assets::SetBasePath($cdnBasePath);
 	 *
 	 * @param  string $path relative path from application document root with slash in begin
@@ -351,7 +351,7 @@ class Assets extends \MvcCore\Ext\Views\Helpers\AbstractHelper
 	}
 
 	/**
-	 * Add to href url file modification param by original file
+	 * Add to href URL file modification param by original file
 	 * @param  string $url
 	 * @param  string $path
 	 * @return string

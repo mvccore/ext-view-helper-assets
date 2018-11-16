@@ -383,9 +383,9 @@ class CssHelper extends Assets
 			$doubleDotsPos = mb_strpos($fullPathContent, '../', $position);
 			if ($doubleDotsPos === FALSE) break;
 
-			// make sure that double dot string is in url('') or url("") block
+			// make sure that double dot string is in `url('')` or `url("")` block
 
-			// try to find first occurance of url(" backwards
+			// try to find first occurrence of `url("` backwards
 			$lastUrlBeginStrPos = mb_strrpos(mb_substr($fullPathContent, 0, $doubleDotsPos), 'url(');
 			if ($lastUrlBeginStrPos === FALSE) {
 				$position = $doubleDotsPos + 3;
@@ -400,7 +400,7 @@ class CssHelper extends Assets
 				continue;
 			}
 
-			// try to find first occurance of ")
+			// try to find first occurrence of `")`
 			$firstUrlEndStrPos = mb_strpos($fullPathContent, ')', $doubleDotsPos);
 			if ($firstUrlEndStrPos === FALSE) {
 				$position = $doubleDotsPos + 3;
@@ -447,7 +447,7 @@ class CssHelper extends Assets
 			$webPath = mb_substr($urlFullPath, mb_strlen($this->getAppRoot()));
 			$webPath = $this->CssJsFileUrl($webPath);
 
-			// replace the url part
+			// replace the URL part
 			$fullPathContent = mb_substr($fullPathContent, 0, $lastUrlBeginStrPos)
 				. $quote . $webPath . $quote
 				. mb_substr($fullPathContent, $firstUrlEndStrPos);
