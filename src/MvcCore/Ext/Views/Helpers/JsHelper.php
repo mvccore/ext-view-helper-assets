@@ -191,7 +191,7 @@ class JsHelper extends Assets
 	 * @return \stdClass
 	 */
 	private function _completeItem ($path, $async, $defer, $doNotMinify, $external) {
-		if (self::$logingAndExceptions) {
+		if (self::$loggingAndExceptions) {
 			if (!$path) $this->exception('Path to *.js can\'t be an empty string.');
 			$duplication = $this->_isDuplicateScript($path);
 			if ($duplication) $this->warning("Script '$path' is already added in js group: '$duplication'.");

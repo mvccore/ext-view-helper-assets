@@ -17,7 +17,7 @@ class Assets extends \MvcCore\Ext\Views\Helpers\AbstractHelper
 {
 	/**
 	 * MvcCore Extension - View Helper - Assets - version:
-	 * Comparation by PHP function version_compare();
+	 * Comparison by PHP function version_compare();
 	 * @see http://php.net/manual/en/function.version-compare.php
 	 */
 	const VERSION = '5.0.0-alpha';
@@ -66,7 +66,7 @@ class Assets extends \MvcCore\Ext\Views\Helpers\AbstractHelper
 	 *								  for PHAR packages use slower 'md5_file' value)
 	 * - assetsUrl		- boolean	- strictly enable or disable special packge assets url completion in form:
 	 *								  '?controller=controller&action=asset&path=...', by default, this switch is
-	 *								  automaticly detected by application comple mode. In every compile mode except
+	 *								  automatically detected by application comple mode. In every compile mode except
 	 *								  development mode and strict hdd mode is this switch configured internaly to true.
 	 * @var array
 	 */
@@ -110,7 +110,7 @@ class Assets extends \MvcCore\Ext\Views\Helpers\AbstractHelper
 	 * all exceptions are thrown.
 	 * @var boolean
 	 */
-	protected static $logingAndExceptions = TRUE;
+	protected static $loggingAndExceptions = TRUE;
 
 	/**
 	 * If true, all assets sources existences are checked
@@ -152,7 +152,7 @@ class Assets extends \MvcCore\Ext\Views\Helpers\AbstractHelper
 		if (self::$scriptName === NULL) self::$scriptName = ltrim($this->request->GetScriptName(), '/.');
 		$app = $view->GetController()->GetApplication();
 		$configClass =$app->GetConfigClass();
-		self::$logingAndExceptions = $configClass::IsDevelopment(TRUE);
+		self::$loggingAndExceptions = $configClass::IsDevelopment(TRUE);
 		$mvcCoreCompiledMode = $app->GetCompiled();
 
 		self::$ctrlActionKey = $this->request->GetControllerName() . '/' . $this->request->GetActionName();
@@ -467,7 +467,7 @@ class Assets extends \MvcCore\Ext\Views\Helpers\AbstractHelper
 	 * @return void
 	 */
 	protected function log ($msg = '', $logType = 'debug') {
-		if (self::$logingAndExceptions) {
+		if (self::$loggingAndExceptions) {
 			\MvcCore\Debug::Log($msg, $logType);
 		}
 	}
@@ -479,7 +479,7 @@ class Assets extends \MvcCore\Ext\Views\Helpers\AbstractHelper
 	 * @return void
 	 */
 	protected function exception ($msg) {
-		if (self::$logingAndExceptions) {
+		if (self::$loggingAndExceptions) {
 			throw new \Exception('[' . get_class($this) . '] ' . $msg);
 		}
 	}
@@ -490,7 +490,7 @@ class Assets extends \MvcCore\Ext\Views\Helpers\AbstractHelper
 	 * @return void
 	 */
 	protected function warning ($msg) {
-		if (self::$logingAndExceptions) {
+		if (self::$loggingAndExceptions) {
 			\MvcCore\Debug::BarDump('[' . get_class($this) . '] ' . $msg, \MvcCore\IDebug::DEBUG);
 		}
 	}
@@ -501,7 +501,7 @@ class Assets extends \MvcCore\Ext\Views\Helpers\AbstractHelper
 	 * @return void
 	 */
 	protected function exceptionHandler (\Exception $e) {
-		if (self::$logingAndExceptions) {
+		if (self::$loggingAndExceptions) {
 			\MvcCore\Debug::Exception($e);
 		}
 	}
