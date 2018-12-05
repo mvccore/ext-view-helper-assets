@@ -15,7 +15,8 @@ namespace MvcCore\Ext\Views\Helpers;
 
 class JsHelper extends Assets
 {
-	protected static $instance = null;
+	protected static $instance = NULL;
+
 	/**
 	 * Whatever Expires header is send over http protocol,
 	 * minimal cache time for external files will be one
@@ -166,7 +167,7 @@ class JsHelper extends Assets
 	}
 
 	/**
-	 * Get actualy dispatched controller/action group name
+	 * Get actually dispatched controller/action group name
 	 * @param string $name
 	 * @return array
 	 */
@@ -256,7 +257,7 @@ class JsHelper extends Assets
 	 * Render data items as separated <script> html tags
 	 * @param string  $actualGroupName
 	 * @param array   $items
-	 * @param int	 $indent
+	 * @param int	  $indent
 	 * @param boolean $minify
 	 * @return string
 	 */
@@ -290,7 +291,7 @@ class JsHelper extends Assets
 	/**
 	 * Render js file by path and store result in tmp directory and return new href value
 	 * @param \stdClass $item
-	 * @param boolean  $minify
+	 * @param boolean   $minify
 	 * @return string
 	 */
 	private function _renderFileToTmpAndGetNewHref ($item, $minify = FALSE) {
@@ -327,7 +328,7 @@ class JsHelper extends Assets
 	/**
 	 * Download js file by path and store result in tmp directory and return new href value
 	 * @param \stdClass $item
-	 * @param boolean  $minify
+	 * @param boolean   $minify
 	 * @return string
 	 */
 	private function _downloadFileToTmpAndGetNewHref ($item, $minify = FALSE) {
@@ -430,7 +431,7 @@ class JsHelper extends Assets
 	 * Render data items as one <script> html tag or all another <script> html tags after with files which is not possible to minify.
 	 * @param string  $actualGroupName
 	 * @param array   $items
-	 * @param int	 $indent
+	 * @param int	  $indent
 	 * @param boolean $minify
 	 * @return string
 	 */

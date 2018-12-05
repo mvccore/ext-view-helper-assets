@@ -15,7 +15,7 @@ namespace MvcCore\Ext\Views\Helpers;
 
 class CssHelper extends Assets
 {
-	protected static $instance = null;
+	protected static $instance = NULL;
 	/**
 	 * Array with full class name and public method accepted as first param css code and returning minified code
 	 * @var callable
@@ -45,7 +45,7 @@ class CssHelper extends Assets
 	}
 
 	/**
-	 * Check if stylesheet is already presented in stylesheets group
+	 * Check if style sheet is already presented in stylesheets group
 	 * @param  string  $path
 	 * @param  string  $media
 	 * @param  boolean $doNotMinify
@@ -66,7 +66,7 @@ class CssHelper extends Assets
 	}
 
 	/**
-	 * Append stylesheet after all group stylesheets for later render process with php tags executing in given file
+	 * Append style sheet after all group stylesheets for later render process with php tags executing in given file
 	 * @param  string  $path
 	 * @param  string  $media
 	 * @param  boolean $doNotMinify
@@ -77,7 +77,7 @@ class CssHelper extends Assets
 	}
 
 	/**
-	 * Prepend stylesheet before all group stylesheets for later render process with php tags executing in given file
+	 * Prepend style sheet before all group stylesheets for later render process with php tags executing in given file
 	 * @param  string  $path
 	 * @param  string  $media
 	 * @param  boolean $renderPhpTags
@@ -89,7 +89,7 @@ class CssHelper extends Assets
 	}
 
 	/**
-	 * Add stylesheet into given index of stylesheets group array for later render process with php tags executing in given file
+	 * Add style sheet into given index of stylesheets group array for later render process with php tags executing in given file
 	 * @param  int	 $index
 	 * @param  string  $path
 	 * @param  string  $media
@@ -102,7 +102,7 @@ class CssHelper extends Assets
 	}
 
 	/**
-	 * Append stylesheet after all group stylesheets for later render process
+	 * Append style sheet after all group stylesheets for later render process
 	 * @param  string  $path
 	 * @param  string  $media
 	 * @param  boolean $renderPhpTags
@@ -117,7 +117,7 @@ class CssHelper extends Assets
 	}
 
 	/**
-	 * Prepend stylesheet before all group stylesheets for later render process
+	 * Prepend style sheet before all group stylesheets for later render process
 	 * @param  string  $path
 	 * @param  string  $media
 	 * @param  boolean $renderPhpTags
@@ -132,7 +132,7 @@ class CssHelper extends Assets
 	}
 
 	/**
-	 * Add stylesheet into given index of group stylesheets array for later render process
+	 * Add style sheet into given index of group stylesheets array for later render process
 	 * @param  int	 $index
 	 * @param  string  $path
 	 * @param  string  $media
@@ -170,7 +170,7 @@ class CssHelper extends Assets
 			if (!$path) $this->exception('Path to *.css can\'t be an empty string.');
 			if (!in_array($media, self::$_allowedMediaTypes, TRUE)) $this->exception('Media could be only values: ' . implode(', ', self::$_allowedMediaTypes) . '.');
 			$duplication = $this->_isDuplicateStylesheet($path);
-			if ($duplication) $this->warning("Stylesheet '$path' is already added in css group: '$duplication'.");
+			if ($duplication) $this->warning("Style sheet '$path' is already added in css group: '$duplication'.");
 		}
 		return (object) [
 			'path'			=> $path,
@@ -181,7 +181,7 @@ class CssHelper extends Assets
 	}
 
 	/**
-	 * Is the linked stylesheet duplicate?
+	 * Is the linked style sheet duplicate?
 	 * @param  string $path
 	 * @return string
 	 */
@@ -228,7 +228,7 @@ class CssHelper extends Assets
 	}
 
 	/**
-	 * Get actualy dispatched controller/action group name.
+	 * Get actually dispatched controller/action group name.
 	 * @param string $name
 	 * @return array
 	 */
@@ -244,7 +244,7 @@ class CssHelper extends Assets
 	}
 
 	/**
-	 * Minify stylesheet string and return minified result.
+	 * Minify style sheet string and return minified result.
 	 * @param string $css
 	 * @param string $path
 	 * @return string
@@ -260,7 +260,7 @@ class CssHelper extends Assets
 		try {
 			$result = call_user_func(static::$MinifyCallable, $css);
 		} catch (\Exception $e) {
-			$this->exception("Unable to minify stylesheet ('$path').");
+			$this->exception("Unable to minify style sheet ('$path').");
 		}
 		return $result;
 	}
@@ -303,7 +303,6 @@ class CssHelper extends Assets
 	 * @return string
 	 */
 	private function _renderItemsTogetherAsGroup ($itemsToRender = [], $minify = FALSE) {
-
 		// complete tmp filename by source filenames and source files modification times
 		$filesGroupInfo = [];
 		foreach ($itemsToRender as $item) {
@@ -443,7 +442,7 @@ class CssHelper extends Assets
 			$urlFullBasePath = str_replace('\\', '/', realpath($this->getAppRoot() . $stylesheetDirectoryRelative . $trimmedPart));
 			$urlFullPath = $urlFullBasePath . '/' . $subjectRestPath;
 
-			// complete stylesheet new path
+			// complete style sheet new path
 			$webPath = mb_substr($urlFullPath, mb_strlen($this->getAppRoot()));
 			$webPath = $this->CssJsFileUrl($webPath);
 
@@ -521,7 +520,7 @@ class CssHelper extends Assets
 	 * Render data items as separated <link> html tags
 	 * @param string  $actualGroupName
 	 * @param array   $items
-	 * @param int	 $indent
+	 * @param int	  $indent
 	 * @param boolean $minify
 	 * @return string
 	 */

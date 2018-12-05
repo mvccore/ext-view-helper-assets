@@ -36,7 +36,7 @@ class Assets extends \MvcCore\Ext\Views\Helpers\AbstractHelper
 
 	/**
 	 * Simple app view object
-	 * @var \MvcCore\View
+	 * @var \MvcCore\View|\MvcCore\IView
 	 */
 	protected $view;
 
@@ -54,8 +54,8 @@ class Assets extends \MvcCore\Ext\Views\Helpers\AbstractHelper
 
 	/**
 	 * Global options about joining and minifying which
-	 * can bee overwrited by single settings throw calling
-	 * for eeample: append() method as another param.
+	 * can bee overwritten by single settings throw calling
+	 * for example: append() method as another param.
 	 * All possible options and meanings:
 	 * - jsJoin			- boolean	- join JS files in JS group together into single file in tmp dir
 	 * - jsMinify		- boolean	- minify JS file in any group by default (it's possible to override for each file)
@@ -66,8 +66,8 @@ class Assets extends \MvcCore\Ext\Views\Helpers\AbstractHelper
 	 *								  for PHAR packages use slower 'md5_file' value)
 	 * - assetsUrl		- boolean	- strictly enable or disable special packge assets URL completion in form:
 	 *								  '?controller=controller&action=asset&path=...', by default, this switch is
-	 *								  automatically detected by application comple mode. In every compile mode except
-	 *								  development mode and strict hdd mode is this switch configured internally to true.
+	 *								  automatically detected by application compile mode. In every compile mode except
+	 *								  development mode and strict HDD mode is this switch configured internally to true.
 	 * @var array
 	 */
 	protected static $globalOptions = [
@@ -166,8 +166,8 @@ class Assets extends \MvcCore\Ext\Views\Helpers\AbstractHelper
 		}
 
 		if (is_null(self::$assetsUrlCompletion)) {
-			// set URL adresses complatition to true by default for:
-			// - vsechny package mody mimo PHP_STRICT_HDD a mimo development
+			// set URL addresses completion to true by default for:
+			// - all package modes outside PHP_STRICT_HDD and outside development
 			if ($mvcCoreCompiledMode && $mvcCoreCompiledMode != 'PHP_STRICT_HDD') {
 				self::$assetsUrlCompletion = TRUE;
 			} else {
@@ -182,7 +182,7 @@ class Assets extends \MvcCore\Ext\Views\Helpers\AbstractHelper
 
 	/**
 	 * Set global static options about minifying and joining together
-	 * which can bee overwrited by single settings throw calling for
+	 * which can bee overwritten by single settings throw calling for
 	 * example: append() method as another param.
 	 *
 	 * @see \MvcCore\Ext\Views\Helpers\Assets::$globalOptions
@@ -200,7 +200,7 @@ class Assets extends \MvcCore\Ext\Views\Helpers\AbstractHelper
 	 * Strictly enable/disable assets URL completing in form
 	 * '?controller=controller&action=asset&path=...'. Use this
 	 * method only for cases, when you want to pack your application
-	 * and you want to have all URL adresses to css/js/fonts and
+	 * and you want to have all URL addresses to css/js/fonts and
 	 * images directly to hard drive.
 	 * @param bool $enable
 	 * @return void
@@ -211,7 +211,7 @@ class Assets extends \MvcCore\Ext\Views\Helpers\AbstractHelper
 
 	/**
 	 * Set global static $basePath to load assets from
-	 * any static cdn domain or any other place.
+	 * any static CDN domain or any other place.
 	 * @param string $basePath
 	 * @return void
 	 */
@@ -221,7 +221,7 @@ class Assets extends \MvcCore\Ext\Views\Helpers\AbstractHelper
 
 	/**
 	 * Returns file modification imprint by global settings -
-	 * by md5_file() or by filemtime() - always as a string
+	 * by `md5_file()` or by `filemtime()` - always as a string
 	 * @param string $fullPath
 	 * @return string
 	 */
@@ -245,19 +245,19 @@ class Assets extends \MvcCore\Ext\Views\Helpers\AbstractHelper
 	/**
 	 * Completes font or image file URL inside CSS/JS file content.
 	 *
-	 * If application compile mode is in development state or packed in strict hdd mode,
+	 * If application compile mode is in development state or packed in strict HDD mode,
 	 * there is generated standard URL with \MvcCore\Request::$BasePath (current app location)
 	 * plus called $path param. Because those application compile modes presume by default,
 	 * that those files are placed beside php code on hard drive.
 	 *
-	 * If application compile mode is in php preserve package, php preserve hdd,
+	 * If application compile mode is in php preserve package, php preserve HDD,
 	 * php strict package or in single file URL mode, there is generated URL by \MvcCore
 	 * in form: '?controller=controller&action=asset&path=...'.
 	 *
 	 * Feel free to change this css/js file URL completion to any custom way.
 	 * There could be typically only: "$result = self::$basePath . $path;",
 	 * but if you want to complete URL for assets on hard drive or
-	 * to any other cdn place, use \MvcCore\Ext\Views\Helpers\Assets::SetBasePath($cdnBasePath);
+	 * to any other CDN place, use \MvcCore\Ext\Views\Helpers\Assets::SetBasePath($cdnBasePath);
 	 *
 	 * @param  string $path relative path from application document root with slash in begin
 	 * @return string
@@ -278,19 +278,19 @@ class Assets extends \MvcCore\Ext\Views\Helpers\AbstractHelper
 	/**
 	 * Completes CSS or JS file url.
 	 *
-	 * If application compile mode is in development state or packed in strict hdd mode,
+	 * If application compile mode is in development state or packed in strict HDD mode,
 	 * there is generated standard URL with \MvcCore\Request->GetBasePath() (current app location)
 	 * plus called $path param. Because those application compile modes presume by default,
 	 * that those files are placed beside php code on hard drive.
 	 *
-	 * If application compile mode is in php preserve package, php preserve hdd,
+	 * If application compile mode is in php preserve package, php preserve HDD,
 	 * php strict package or in single file URL mode, there is generated URL by \MvcCore
 	 * in form: 'index.php?controller=controller&action=asset&path=...'.
 	 *
 	 * Feel free to change this css/js file URL completion to any custom way.
 	 * There could be typically only: "$result = self::$basePath . $path;",
 	 * but if you want to complete URL for assets on hard drive or
-	 * to any other cdn place, use \MvcCore\Ext\Views\Helpers\Assets::SetBasePath($cdnBasePath);
+	 * to any other CDN place, use \MvcCore\Ext\Views\Helpers\Assets::SetBasePath($cdnBasePath);
 	 *
 	 * @param  string $path relative path from application document root with slash in begin
 	 * @return string
@@ -427,37 +427,15 @@ class Assets extends \MvcCore\Ext\Views\Helpers\AbstractHelper
 	}
 
 	/**
-	 * Save atomicly file content in full path by 1 MB to not overflow any memory limits
+	 * Save atomically file content in full path by 1 MB to not overflow any memory limits
 	 * @param string $fullPath
 	 * @param string $fileContent
 	 * @return void
 	 */
 	protected function saveFileContent ($fullPath = '', & $fileContent = '') {
-		$streamWrapper = '';
-		// https://github.com/nette/safe-stream/blob/master/src/SafeStream/SafeStream.php
-		$netteSafeStreamClass = '\Nette\Utils\SafeStream';
-		$netteSafeStreamProtocol = '';
-		$netteSafeStreamExists = class_exists($netteSafeStreamClass);
-		if (self::$fileRendering) {
-			if ($netteSafeStreamExists) {
-				$netteSafeStreamProtocol = constant($netteSafeStreamClass.'::PROTOCOL');
-				(new \ReflectionMethod($netteSafeStreamClass, 'register'))->invoke(NULL);
-				$streamWrapper = $netteSafeStreamProtocol . '://';
-			}
-		}
-		$fw = fopen($streamWrapper . $fullPath, 'w');
-		$index = 0;
-		$bufferLength = 1048576; // 1 MB
-		$buffer = '';
-		while ($buffer = mb_substr($fileContent, $index, $bufferLength)) {
-			fwrite($fw, $buffer);
-			$index += $bufferLength;
-		}
-		fclose($fw);
+		$toolClass = \MvcCore\Application::GetInstance()->GetToolClass();
+		$toolClass::SingleProcessWrite($fullPath, $fileContent);
 		@chmod($fullPath, 0766);
-		if (self::$fileRendering) {
-			if ($netteSafeStreamExists) stream_wrapper_unregister($netteSafeStreamProtocol);
-		}
 	}
 
 	/**

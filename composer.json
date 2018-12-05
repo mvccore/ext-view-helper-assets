@@ -32,7 +32,6 @@
 	"require": {
 		"php": ">=5.3.0",
 		"mvccore/mvccore": "^4.3.1",
-		"nette/safe-stream": "2.3.*",
 		"mrclay/minify": "2.3.*"
 	},
 	"autoload": {
