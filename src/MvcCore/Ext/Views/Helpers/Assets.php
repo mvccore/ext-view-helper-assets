@@ -417,7 +417,8 @@ class Assets extends \MvcCore\Ext\Views\Helpers\AbstractHelper
 					try {
 						@chmod($tmpDir, 0777);
 					} catch (\Exception $e) {
-						throw new \Exception('['.__CLASS__.'] ' . $e->getMessage());
+						$selfClass = version_compare(PHP_VERSION, '5.5', '>') ? self::class : __CLASS__;
+						throw new \Exception('['.$selfClass.'] ' . $e->getMessage());
 					}
 				}
 			}
