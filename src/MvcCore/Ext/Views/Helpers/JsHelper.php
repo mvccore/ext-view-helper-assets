@@ -13,6 +13,9 @@
 
 namespace MvcCore\Ext\Views\Helpers;
 
+/**
+ * @method \MvcCore\Ext\Views\Helpers\JsHelper GetInstance()
+ */
 class JsHelper extends Assets
 {
 	protected static $instance = NULL;

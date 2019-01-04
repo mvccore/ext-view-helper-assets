@@ -13,6 +13,9 @@
 
 namespace MvcCore\Ext\Views\Helpers;
 
+/**
+ * @method \MvcCore\Ext\Views\Helpers\Assets GetInstance()
+ */
 class Assets extends \MvcCore\Ext\Views\Helpers\AbstractHelper
 {
 	/**
