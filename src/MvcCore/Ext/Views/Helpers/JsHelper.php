@@ -21,7 +21,7 @@ class JsHelper extends Assets
 	protected static $instance = NULL;
 
 	/**
-	 * Whatever Expires header is send over http protocol,
+	 * Whatever Expires header is send over http scheme,
 	 * minimal cache time for external files will be one
 	 * day from last download
 	 * @const integer
