@@ -32,6 +32,7 @@
 	"require": {
 		"php": ">=5.4.0",
 		"mvccore/mvccore": "dev-master",
+		"mvccore/ext-view-helper": "dev-master",
 		"mrclay/minify": "2.3.*"
 	},
 	"autoload": {
