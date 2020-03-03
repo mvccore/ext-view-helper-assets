@@ -147,7 +147,7 @@ class Assets extends \MvcCore\Ext\Views\Helpers\AbstractHelper
 	 * @param \MvcCore\View|\MvcCore\IView $view
 	 * @return \MvcCore\Ext\Views\Helpers\AbstractHelper
 	 */
-	public function & SetView (\MvcCore\IView & $view) {
+	public function SetView (\MvcCore\IView $view) {
 		parent::SetView($view);
 
 		if (self::$appRoot === NULL) self::$appRoot = $this->request->GetAppRoot();
@@ -420,7 +420,7 @@ class Assets extends \MvcCore\Ext\Views\Helpers\AbstractHelper
 					try {
 						@chmod($tmpDir, 0777);
 					} catch (\Exception $e) {
-						$selfClass = version_compare(PHP_VERSION, '5.5', '>') ? self::class : __CLASS__;
+						$selfClass = \PHP_VERSION_ID >= 50500 ? self::class : __CLASS__;
 						throw new \Exception('['.$selfClass.'] ' . $e->getMessage());
 					}
 				}
