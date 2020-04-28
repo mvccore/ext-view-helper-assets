@@ -155,7 +155,7 @@ class Assets extends \MvcCore\Ext\Views\Helpers\AbstractHelper
 		if (self::$scriptName === NULL) self::$scriptName = ltrim($this->request->GetScriptName(), '/.');
 		$app = $view->GetController()->GetApplication();
 		$environment =$app->GetEnvironment();
-		self::$loggingAndExceptions = $environment->IsDevelopment(TRUE);
+		self::$loggingAndExceptions = $environment->IsDevelopment();
 		$mvcCoreCompiledMode = $app->GetCompiled();
 
 		self::$ctrlActionKey = $this->request->GetControllerName() . '/' . $this->request->GetActionName();
@@ -437,7 +437,7 @@ class Assets extends \MvcCore\Ext\Views\Helpers\AbstractHelper
 	 */
 	protected function saveFileContent ($fullPath = '', & $fileContent = '') {
 		$toolClass = \MvcCore\Application::GetInstance()->GetToolClass();
-		$toolClass::SingleProcessWrite($fullPath, $fileContent);
+		$toolClass::AtomicWrite($fullPath, $fileContent);
 		@chmod($fullPath, 0766);
 	}
 
