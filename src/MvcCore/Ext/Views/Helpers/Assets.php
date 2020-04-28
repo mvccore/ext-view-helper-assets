@@ -154,8 +154,8 @@ class Assets extends \MvcCore\Ext\Views\Helpers\AbstractHelper
 		if (self::$basePath === NULL) self::$basePath = $this->request->GetBasePath();
 		if (self::$scriptName === NULL) self::$scriptName = ltrim($this->request->GetScriptName(), '/.');
 		$app = $view->GetController()->GetApplication();
-		$configClass =$app->GetConfigClass();
-		self::$loggingAndExceptions = $configClass::IsDevelopment(TRUE);
+		$environment =$app->GetEnvironment();
+		self::$loggingAndExceptions = $environment->IsDevelopment(TRUE);
 		$mvcCoreCompiledMode = $app->GetCompiled();
 
 		self::$ctrlActionKey = $this->request->GetControllerName() . '/' . $this->request->GetActionName();
