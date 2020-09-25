@@ -69,6 +69,29 @@ class CssHelper extends Assets
 	}
 
 	/**
+	 * Remove style sheet if it is already presented in stylesheets group
+	 * @param  string  $path
+	 * @param  string  $media
+	 * @param  boolean $doNotMinify
+	 * @return bool
+	 */
+	public function Remove ($path = '', $media = 'all', $doNotMinify = FALSE) {
+		$result = FALSE;
+		$linksGroup = & $this->_getLinksGroupContainer($this->actualGroupName);
+		foreach ($linksGroup as $index => & $item) {
+			if ($item->path == $path) {
+				if ($item->media == $media && $item->doNotMinify == $doNotMinify) {
+					$result = TRUE;
+					$ctrlActionKey = $this->getCtrlActionKey();
+					unset(self::$linksGroupContainer[$ctrlActionKey][$this->actualGroupName][$index]);
+					break;
+				}
+			}
+		}
+		return $result;
+	}
+
+	/**
 	 * Append style sheet after all group stylesheets for later render process with php tags executing in given file
 	 * @param  string  $path
 	 * @param  string  $media

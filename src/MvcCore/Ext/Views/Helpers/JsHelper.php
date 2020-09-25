@@ -74,6 +74,32 @@ class JsHelper extends Assets
 	}
 
 	/**
+	 * Remove script if it is already presented in scripts group
+	 * @param  string  $path
+	 * @param  boolean $async
+	 * @param  boolean $defer
+	 * @param  boolean $doNotMinify
+	 * @return bool
+	 */
+	public function Remove ($path = '', $async = FALSE, $defer = FALSE, $doNotMinify = FALSE) {
+		$result = FALSE;
+		$scriptsGroup = & $this->_getScriptsGroupContainer($this->actualGroupName);
+		foreach ($scriptsGroup as $index => & $item) {
+			if ($item->path == $path) {
+				if ($item->async == $async && $item->defer == $defer && $item->doNotMinify == $doNotMinify) {
+					$result = TRUE;
+					$ctrlActionKey = $this->getCtrlActionKey();
+					unset(self::$scriptsGroupContainer[$ctrlActionKey][$this->actualGroupName][$index]);
+					break;
+				}
+			}
+		}
+		return $result;
+	}
+
+
+
+	/**
 	 * Append script after all group scripts for later render process with downloading external content
 	 * @param  string  $path
 	 * @param  boolean $async
