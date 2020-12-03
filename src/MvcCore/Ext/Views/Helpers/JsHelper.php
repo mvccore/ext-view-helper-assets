@@ -466,7 +466,7 @@ class JsHelper extends Assets
 	 * @param boolean $minify
 	 * @return string
 	 */
-	private function _renderItemsTogether ($actualGroupName = '', $items = [], $indent, $minify = FALSE) {
+	private function _renderItemsTogether ($actualGroupName = '', $items = [], $indent = 0, $minify = FALSE) {
 
 		// some configurations is not possible to render together and minimized
 		list($itemsToRenderMinimized, $itemsToRenderSeparately) = $this->filterItemsForNotPossibleMinifiedAndPossibleMinifiedItems($items);
