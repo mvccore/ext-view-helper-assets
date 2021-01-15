@@ -7,8 +7,8 @@
  * For the full copyright and license information, please view
  * the LICENSE.md file that are distributed with this source code.
  *
- * @copyright	Copyright (c) 2016 Tom Flídr (https://github.com/mvccore/mvccore)
- * @license		https://mvccore.github.io/docs/mvccore/4.0.0/LICENCE.md
+ * @copyright	Copyright (c) 2016 Tom Flidr (https://github.com/mvccore)
+ * @license		https://mvccore.github.io/docs/mvccore/5.0.0/LICENCE.md
  */
 
 namespace MvcCore\Ext\Views\Helpers;
@@ -16,14 +16,14 @@ namespace MvcCore\Ext\Views\Helpers;
 /**
  * @method \MvcCore\Ext\Views\Helpers\Assets GetInstance()
  */
-class Assets extends \MvcCore\Ext\Views\Helpers\AbstractHelper
-{
+class Assets extends \MvcCore\Ext\Views\Helpers\AbstractHelper {
+
 	/**
 	 * MvcCore Extension - View Helper - Assets - version:
 	 * Comparison by PHP function version_compare();
 	 * @see http://php.net/manual/en/function.version-compare.php
 	 */
-	const VERSION = '5.0.0-alpha';
+	const VERSION = '5.0.0';
 
 	/**
 	 * Default link group name
@@ -39,7 +39,7 @@ class Assets extends \MvcCore\Ext\Views\Helpers\AbstractHelper
 
 	/**
 	 * Simple app view object
-	 * @var \MvcCore\View|\MvcCore\IView
+	 * @var \MvcCore\View
 	 */
 	protected $view;
 
@@ -144,7 +144,7 @@ class Assets extends \MvcCore\Ext\Views\Helpers\AbstractHelper
 
 	/**
 	 * Insert a \MvcCore\View in each helper constructing
-	 * @param \MvcCore\View|\MvcCore\IView $view
+	 * @param \MvcCore\View $view
 	 * @return \MvcCore\Ext\Views\Helpers\AbstractHelper
 	 */
 	public function SetView (\MvcCore\IView $view) {

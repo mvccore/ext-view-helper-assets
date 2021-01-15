@@ -7,8 +7,8 @@
  * For the full copyright and license information, please view
  * the LICENSE.md file that are distributed with this source code.
  *
- * @copyright	Copyright (c) 2016 Tom Flídr (https://github.com/mvccore/mvccore)
- * @license		https://mvccore.github.io/docs/mvccore/4.0.0/LICENCE.md
+ * @copyright	Copyright (c) 2016 Tom Flidr (https://github.com/mvccore)
+ * @license		https://mvccore.github.io/docs/mvccore/5.0.0/LICENCE.md
  */
 
 namespace MvcCore\Ext\Views\Helpers;
@@ -16,8 +16,8 @@ namespace MvcCore\Ext\Views\Helpers;
 /**
  * @method \MvcCore\Ext\Views\Helpers\CssHelper GetInstance()
  */
-class CssHelper extends Assets
-{
+class CssHelper extends Assets {
+
 	protected static $instance = NULL;
 	/**
 	 * Array with full class name and public method accepted as first param css code and returning minified code
