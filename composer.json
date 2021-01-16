@@ -3,25 +3,25 @@
 	"type": "library",
 	"description": "MvcCore - Extension - View - Helper - Assets - to group, render, minify and cache javascript and css files, to prepare all application assets for final application packing.",
 	"keywords": [
-		"mvc", 
-		"mvccore", 
-		"framework", 
-		"extension", 
-		"plugin", 
-		"plug-in", 
-		"ext", 
-		"view", 
-		"helper", 
-		"viewhelper", 
-		"assets", 
-		"js", 
-		"javascript", 
-		"css", 
-		"styles", 
-		"sheets", 
-		"prepare", 
-		"packing", 
-		"assets completion", 
+		"mvc",
+		"mvccore",
+		"framework",
+		"extension",
+		"plugin",
+		"plug-in",
+		"ext",
+		"view",
+		"helper",
+		"viewhelper",
+		"assets",
+		"js",
+		"javascript",
+		"css",
+		"styles",
+		"sheets",
+		"prepare",
+		"packing",
+		"assets completion",
 		"assets caching"
 	],
 	"license": ["BSD-3-Clause"],
@@ -31,12 +31,14 @@
 	}],
 	"require": {
 		"php": ">=5.4.0",
-		"mvccore/mvccore": "dev-master",
-		"mvccore/ext-view-helper": "dev-master",
+		"mvccore/mvccore": "^5.0",
+		"mvccore/ext-view-helper": "^5.0",
 		"mrclay/minify": "2.3.*"
 	},
 	"autoload": {
-		"classmap": ["src/"]
+		"classmap": [
+			"src/"
+		]
 	},
 	"minimum-stability": "dev"
 }
