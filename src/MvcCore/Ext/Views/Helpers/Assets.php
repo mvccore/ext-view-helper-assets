@@ -415,14 +415,10 @@ class Assets extends \MvcCore\Ext\Views\Helpers\AbstractHelper {
 		if (!self::$tmpDir) {
 			$tmpDir = $this->getAppRoot() . self::$globalOptions['tmpDir'];
 			if (!\MvcCore\Application::GetInstance()->GetCompiled()) {
-				if (!is_dir($tmpDir)) mkdir($tmpDir, 0777, TRUE);
-				if (!is_writable($tmpDir)) {
-					try {
-						@chmod($tmpDir, 0777);
-					} catch (\Exception $e) {
-						throw new \Exception('['.get_class().'] ' . $e->getMessage());
-					}
-				}
+				if (!is_dir($tmpDir)) 
+					@mkdir($tmpDir, 0777, TRUE);
+				if (is_dir($tmpDir) && !is_writable($tmpDir)) 
+					@chmod($tmpDir, 0777);
 			}
 			self::$tmpDir = $tmpDir;
 		}
@@ -478,10 +474,10 @@ class Assets extends \MvcCore\Ext\Views\Helpers\AbstractHelper {
 
 	/**
 	 * Render given exception
-	 * @param \Exception $e
+	 * @param \Throwable $e
 	 * @return void
 	 */
-	protected function exceptionHandler (\Exception $e) {
+	protected function exceptionHandler ($e) {
 		if (self::$loggingAndExceptions) {
 			\MvcCore\Debug::Exception($e);
 		}

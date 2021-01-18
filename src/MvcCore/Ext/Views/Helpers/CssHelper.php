@@ -277,6 +277,7 @@ class CssHelper extends Assets {
 	 */
 	private function _minify (& $css, $path) {
 		$result = '';
+		$errorMsg = "Unable to minify style sheet ('{$path}').";
 		if (!is_callable(static::$MinifyCallable)) {
 			$this->exception(
 				"Configured callable object for CSS minification doesn't exist. "
@@ -285,8 +286,10 @@ class CssHelper extends Assets {
 		}
 		try {
 			$result = call_user_func(static::$MinifyCallable, $css);
-		} catch (\Exception $e) {
-			$this->exception("Unable to minify style sheet ('$path').");
+		} catch (\Exception $e) { // backward compatibility
+			$this->exception($errorMsg);
+		} catch (\Throwable $e) {
+			$this->exception($errorMsg);
 		}
 		return $result;
 	}
@@ -384,7 +387,9 @@ class CssHelper extends Assets {
 		ob_start();
 		try {
 			include($absolutePath);
-		} catch (\Exception $e) {
+		} catch (\Exception $e) { // backward compatibility
+			$this->exceptionHandler($e);
+		} catch (\Throwable $e) {
 			$this->exceptionHandler($e);
 		}
 		return ob_get_clean();

@@ -444,6 +444,7 @@ class JsHelper extends Assets {
 	 */
 	private function _minify (& $js, $path) {
 		$result = '';
+		$errorMsg = "Unable to minify javascript ('{$path}').";
 		if (!is_callable(static::$MinifyCallable)) {
 			$this->exception(
 				"Configured callable object for JS minification doesn't exist. "
@@ -452,8 +453,10 @@ class JsHelper extends Assets {
 		}
 		try {
 			$result = call_user_func(static::$MinifyCallable, $js);
-		} catch (\Exception $e) {
-			$this->exception("Unable to minify javascript ('$path').");
+		} catch (\Exception $e) { // backward compatibility
+			$this->exception($errorMsg);
+		} catch (\Throwable $e) {
+			$this->exception($errorMsg);
 		}
 		return $result;
 	}
