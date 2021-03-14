@@ -23,7 +23,7 @@ class Assets extends \MvcCore\Ext\Views\Helpers\AbstractHelper {
 	 * Comparison by PHP function version_compare();
 	 * @see http://php.net/manual/en/function.version-compare.php
 	 */
-	const VERSION = '5.0.0';
+	const VERSION = '5.0.1';
 
 	/**
 	 * Default link group name
@@ -87,7 +87,7 @@ class Assets extends \MvcCore\Ext\Views\Helpers\AbstractHelper {
 	 * Application root directory from request object
 	 * @var string
 	 */
-	protected static $appRoot = NULL;
+	protected static $documentRoot = NULL;
 
 	/**
 	 * Relative path to store joined and minified files
@@ -150,7 +150,7 @@ class Assets extends \MvcCore\Ext\Views\Helpers\AbstractHelper {
 	public function SetView (\MvcCore\IView $view) {
 		parent::SetView($view);
 
-		if (self::$appRoot === NULL) self::$appRoot = $this->request->GetAppRoot();
+		if (self::$documentRoot === NULL) self::$documentRoot = $this->request->GetDocumentRoot();
 		if (self::$basePath === NULL) self::$basePath = $this->request->GetBasePath();
 		if (self::$scriptName === NULL) self::$scriptName = ltrim($this->request->GetScriptName(), '/.');
 		$app = $view->GetController()->GetApplication();
@@ -403,7 +403,7 @@ class Assets extends \MvcCore\Ext\Views\Helpers\AbstractHelper {
 	 * @return string
 	 */
 	protected function getAppRoot() {
-		return self::$appRoot;
+		return self::$documentRoot;
 	}
 
 	/**
