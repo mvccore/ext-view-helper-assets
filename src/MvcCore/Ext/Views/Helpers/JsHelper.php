@@ -225,7 +225,7 @@ class JsHelper extends Assets {
 			if (!$path) $this->exception('Path to *.js can\'t be an empty string.');
 			if ($this->controller->GetEnvironment()->IsDevelopment()) {
 				$duplication = $this->_isDuplicateScript($path);
-				if ($duplication) $this->warning("Script '$path' is already added in js group: '$duplication'.");
+				if ($duplication) $this->warning("Script '{$path}' is already added in js group: '{$duplication}'.");
 			}
 		}
 		return (object) [
@@ -348,7 +348,7 @@ class JsHelper extends Assets {
 						$fileContent = $this->_minify($fileContent, $path);
 					}
 					$this->saveFileContent($tmpFileFullPath, $fileContent);
-					$this->log("Js file rendered ('$tmpFileFullPath').", 'debug');
+					$this->log("Js file rendered ('{$tmpFileFullPath}').", 'debug');
 				}
 			}
 		}
@@ -392,7 +392,7 @@ class JsHelper extends Assets {
 					$fileContent = $this->_minify($fileContent, $path);
 				}
 				$this->saveFileContent($tmpFileFullPath, $fileContent);
-				$this->log("External js file downloaded ('$tmpFileFullPath').", 'debug');
+				$this->log("External js file downloaded ('{$tmpFileFullPath}').", 'debug');
 			}
 		}
 		$tmpPath = substr($tmpFileFullPath, strlen($this->getAppRoot()));
@@ -424,12 +424,12 @@ class JsHelper extends Assets {
 	 */
 	private function _renderItemSeparated (\stdClass $item) {
 		$result = '<script type="text/javascript"';
-		if ($item->async) $result .= ' async="async"';
-		if ($item->async) $result .= ' defer="defer"';
+		if ($nonceAttr = static::getNonce(TRUE)) $result .= $nonceAttr;
+		if ($item->async) $result .= ' async="async" defer="defer"';
 		if (!$item->external && self::$fileChecking) {
 			$fullPath = $this->getAppRoot() . $item->path;
 			if (!file_exists($fullPath)) {
-				$this->log("File not found in CSS view rendering process ('$fullPath').", 'error');
+				$this->log("File not found in CSS view rendering process ('{$fullPath}').", 'error');
 			}
 		}
 		$result .= ' src="' . $item->src . '"></script>';
@@ -511,7 +511,7 @@ class JsHelper extends Assets {
 				if (self::$fileChecking) {
 					$fullPath = $this->getAppRoot() . $item->path;
 					if (!file_exists($fullPath)) {
-						$this->exception("File not found in JS view rendering process ('$fullPath').");
+						$this->exception("File not found in JS view rendering process ('{$fullPath}').");
 					}
 					$filesGroupInfo[] = $item->path . '?_' . self::getFileImprint($fullPath);
 				} else {
@@ -541,7 +541,7 @@ class JsHelper extends Assets {
 				}
 				// save completed tmp file
 				$this->saveFileContent($tmpFileFullPath, $resultContent);
-				$this->log("Js files group rendered ('$tmpFileFullPath').", 'debug');
+				$this->log("Js files group rendered ('{$tmpFileFullPath}').", 'debug');
 			}
 		}
 

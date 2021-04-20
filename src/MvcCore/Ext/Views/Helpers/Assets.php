@@ -23,7 +23,7 @@ class Assets extends \MvcCore\Ext\Views\Helpers\AbstractHelper {
 	 * Comparison by PHP function version_compare();
 	 * @see http://php.net/manual/en/function.version-compare.php
 	 */
-	const VERSION = '5.0.1';
+	const VERSION = '5.0.2';
 
 	/**
 	 * Default link group name
@@ -36,6 +36,7 @@ class Assets extends \MvcCore\Ext\Views\Helpers\AbstractHelper {
 	 * @const string
 	 */
 	const FILE_MODIFICATION_DATE_FORMAT = 'Y-m-d_H-i-s';
+
 
 	/**
 	 * Simple app view object
@@ -140,7 +141,18 @@ class Assets extends \MvcCore\Ext\Views\Helpers\AbstractHelper {
 	 */
 	protected static $systemConfigHash = '';
 
+	/**
+	 * Controller name in pascal case, slash and action name in pascal case.
+	 * @var string
+	 */
 	protected static $ctrlActionKey = '';
+	
+	/**
+	 * Supporting assets nonce attribute for CSP policy, completed only if necessary.
+	 * @var \bool[]|\string[]|\NULL[]
+	 */
+	protected static $nonces = [NULL, NULL];
+
 
 	/**
 	 * Insert a \MvcCore\View in each helper constructing
@@ -498,4 +510,46 @@ class Assets extends \MvcCore\Ext\Views\Helpers\AbstractHelper {
 		]);
 	}
 
+	/**
+	 * Get inline `<script>` or `<style>` nonce attribute from CSP header if any.
+	 * If no CSP header exists or if CSP header exist with no nonce or `strict-dynamic`, 
+	 * return an empty string.
+	 * @param  bool $js 
+	 * @return string
+	 */
+	protected static function getNonce ($js = TRUE) {
+		$nonceIndex = $js ? 1 : 0;
+		if (self::$nonces[$nonceIndex] !== NULL) 
+			return self::$nonces[$nonceIndex] === FALSE
+				? ''
+				: ' nonce="' . self::$nonces[$nonceIndex] . '"';
+		$cspClassFullName = '\\MvcCore\\Ext\\Tools\\Csp';
+		if (class_exists($cspClassFullName)) {
+			/** @var \MvcCore\Ext\Tools\Csp $csp */
+			$assetsNonce = FALSE;
+			$csp = $cspClassFullName::GetInstance();
+			$defaultScrNonce = $csp->IsAllowedNonce($cspClassFullName::FETCH_DEFAULT_SRC);
+			if ((
+				$js && ($csp->IsAllowedNonce($cspClassFullName::FETCH_SCRIPT_SRC) || $defaultScrNonce)
+			) || (
+				!$js && ($csp->IsAllowedNonce($cspClassFullName::FETCH_STYLE_SRC) || $defaultScrNonce)
+			)) $assetsNonce = $csp->GetNonce();
+			self::$nonces[$nonceIndex] = $assetsNonce;
+		} else {
+			foreach (headers_list() as $rawHeader) {
+				if (!preg_match_all('#^Content\-Security\-Policy\s*:\s*(.*)$#i', trim($rawHeader), $matches)) continue;
+				$rawHeaderValue = $matches[1][0];
+				$sections = ['script'	=> FALSE, 'style' => FALSE, 'default' => FALSE];
+				foreach ($sections as $sectionKey => $sectionValue) 
+					if (preg_match_all("#{$sectionKey}\-src\s+(?:[^;]+\s)?\'nonce\-([^']+)\'#i", $rawHeaderValue, $sectionMatches)) 
+						$sections[$sectionKey] = $sectionMatches[1][0];
+				self::$nonces = [
+					$sections['style']  ? $sections['style']  : $sections['default'],
+					$sections['script'] ? $sections['script'] : $sections['default']
+				];
+				break;
+			}
+		}
+		return static::getNonce($js);
+	}
 }

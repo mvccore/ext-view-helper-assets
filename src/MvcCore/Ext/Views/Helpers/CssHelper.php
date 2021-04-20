@@ -536,6 +536,7 @@ class CssHelper extends Assets {
 	 */
 	private function _renderItemSeparated (\stdClass $item) {
 		$result = '<link rel="stylesheet"';
+		if ($nonceAttr = static::getNonce(FALSE)) $result .= $nonceAttr;
 		if ($item->media !== 'all') $result .= ' media="' . $item->media . '"';
 		if (!$item->render && self::$fileChecking) {
 			$fullPath = $this->getAppRoot() . $item->path;
