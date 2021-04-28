@@ -23,7 +23,7 @@ class Assets extends \MvcCore\Ext\Views\Helpers\AbstractHelper {
 	 * Comparison by PHP function version_compare();
 	 * @see http://php.net/manual/en/function.version-compare.php
 	 */
-	const VERSION = '5.0.2';
+	const VERSION = '5.0.3';
 
 	/**
 	 * Default link group name
@@ -536,6 +536,7 @@ class Assets extends \MvcCore\Ext\Views\Helpers\AbstractHelper {
 			)) $assetsNonce = $csp->GetNonce();
 			self::$nonces[$nonceIndex] = $assetsNonce;
 		} else {
+			$headerFound = false;
 			foreach (headers_list() as $rawHeader) {
 				if (!preg_match_all('#^Content\-Security\-Policy\s*:\s*(.*)$#i', trim($rawHeader), $matches)) continue;
 				$rawHeaderValue = $matches[1][0];
@@ -547,8 +548,11 @@ class Assets extends \MvcCore\Ext\Views\Helpers\AbstractHelper {
 					$sections['style']  ? $sections['style']  : $sections['default'],
 					$sections['script'] ? $sections['script'] : $sections['default']
 				];
+				$headerFound = TRUE;
 				break;
 			}
+			if (!$headerFound) 
+				self::$nonces = [FALSE, FALSE];
 		}
 		return static::getNonce($js);
 	}
