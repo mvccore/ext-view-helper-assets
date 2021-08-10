@@ -281,6 +281,7 @@ class JsHelper extends Assets {
 				$minify
 			);
 		}
+		$actualGroupItems = [];
 		return $result;
 	}
 

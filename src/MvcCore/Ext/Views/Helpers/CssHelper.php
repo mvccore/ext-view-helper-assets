@@ -250,6 +250,7 @@ class CssHelper extends Assets {
 				$minify
 			);
 		}
+		$currentGroupRecords = [];
 		return $result;
 	}
 
