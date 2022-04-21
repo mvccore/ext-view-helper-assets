@@ -31,7 +31,7 @@
 	}],
 	"require": {
 		"php": ">=5.4.0",
-		"mvccore/mvccore": "^5.0.15",
+		"mvccore/mvccore": "^5.1.20",
 		"mvccore/ext-view-helper": "^5.0",
 		"mrclay/minify": "2.3.*"
 	},
