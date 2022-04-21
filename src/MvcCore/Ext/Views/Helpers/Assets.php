@@ -491,7 +491,7 @@ class Assets extends \MvcCore\Ext\Views\Helpers\AbstractHelper {
 	 */
 	protected function exceptionHandler ($e) {
 		if (self::$loggingAndExceptions) {
-			\MvcCore\Debug::Exception($e);
+			throw $e;
 		}
 	}
 
