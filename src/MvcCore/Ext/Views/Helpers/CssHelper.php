@@ -287,8 +287,6 @@ class CssHelper extends Assets {
 		}
 		try {
 			$result = call_user_func(static::$MinifyCallable, $css);
-		} catch (\Exception $e) { // backward compatibility
-			$this->exception($errorMsg);
 		} catch (\Throwable $e) {
 			$this->exception($errorMsg);
 		}
@@ -388,8 +386,6 @@ class CssHelper extends Assets {
 		ob_start();
 		try {
 			include($absolutePath);
-		} catch (\Exception $e) { // backward compatibility
-			$this->exceptionHandler($e);
 		} catch (\Throwable $e) {
 			$this->exceptionHandler($e);
 		}

@@ -454,8 +454,6 @@ class JsHelper extends Assets {
 		}
 		try {
 			$result = call_user_func(static::$MinifyCallable, $js);
-		} catch (\Exception $e) { // backward compatibility
-			$this->exception($errorMsg);
 		} catch (\Throwable $e) {
 			$this->exception($errorMsg);
 		}
