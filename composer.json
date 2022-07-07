@@ -33,7 +33,8 @@
 		"php": ">=5.4.0",
 		"mvccore/mvccore": "^5.1.20",
 		"mvccore/ext-view-helper": "^5.0",
-		"mrclay/minify": "2.3.*"
+		"tedivm/jshrink": "^1.4",
+		"tubalmartin/cssmin": "^4.1"
 	},
 	"autoload": {
 		"classmap": [

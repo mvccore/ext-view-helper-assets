@@ -29,225 +29,437 @@ class JsHelper extends Assets {
 	const EXTERNAL_MIN_CACHE_TIME = 86400;
 
 	/**
-	 * Array with full class name and public method accepted as first param javascript code and returning minified code
-	 * @var callable
-	 */
-	public static $MinifyCallable = ['\JSMin', 'minify'];
-
-	/**
-	 * Array with all defined files to create specific script tags
-	 * @var array
-	 */
-	protected static $scriptsGroupContainer = [];
-
-	/**
 	 * View Helper Method, returns current object instance.
-	 * @param  string $groupName string identifier
+	 * @param  string $groupName
 	 * @return \MvcCore\Ext\Views\Helpers\JsHelper
 	 */
 	public function Js ($groupName = self::GROUP_NAME_DEFAULT) {
-		$this->actualGroupName = $groupName;
-		$this->_getScriptsGroupContainer($groupName);
+		$this->currentGroupName = $groupName;
+		$this->getGroupStore(); // prepare structure
 		return $this;
+	}
+	
+	/**
+	 * Render script elements as html code with links
+	 * to original files or temporary downloaded files.
+	 * @param  int    $indent
+	 * @return string
+	 */
+	public function Render ($indent = 0) {
+		$currentGroupRecords = & $this->getGroupStore();
+		if (count($currentGroupRecords) === 0) return '';
+		$minify = (bool) self::$globalOptions['jsMinify'];
+		$joinTogether = (bool) self::$globalOptions['jsJoin'];
+		if ($joinTogether) {
+			$result = $this->renderItemsTogether(
+				$currentGroupRecords,
+				$indent,
+				$minify
+			);
+		} else {
+			$result = $this->renderItemsSeparated(
+				$currentGroupRecords,
+				$indent,
+				$minify
+			);
+		}
+		$this->setGroupStore([]);
+		return $result;
+	}
+
+
+	/**
+	 * Check if script is already 
+	 * presented in scripts group.
+	 * @param  string $path
+	 * @param  bool   $async
+	 * @param  bool   $defer
+	 * @param  bool   $notMin
+	 * @return bool
+	 */
+	public function Contains ($path, $async = FALSE, $defer = FALSE, $notMin = FALSE) {
+		return $this->execContains($path, $async, $defer, $notMin, FALSE);
 	}
 
 	/**
-	 * Check if script is already presented in scripts group
+	 * Remove script if it is already 
+	 * presented in scripts group.
 	 * @param  string  $path
-	 * @param  boolean $async
-	 * @param  boolean $defer
-	 * @param  boolean $doNotMinify
+	 * @param  bool    $async
+	 * @param  bool    $defer
+	 * @param  bool    $notMin
 	 * @return bool
 	 */
-	public function Contains ($path = '', $async = FALSE, $defer = FALSE, $doNotMinify = FALSE) {
+	public function Remove ($path, $async = FALSE, $defer = FALSE, $notMin = FALSE) {
+		return $this->execRemove($path, $async, $defer, $notMin, FALSE);
+	}
+	
+	/**
+	 * Add script into given index of scripts 
+	 * group array for later render process.
+	 * @param  int    $index
+	 * @param  string $path
+	 * @param  bool   $async
+	 * @param  bool   $defer
+	 * @param  bool   $notMin
+	 * @return \MvcCore\Ext\Views\Helpers\JsHelper
+	 */
+	public function Offset ($index, $path, $async = FALSE, $defer = FALSE, $notMin = FALSE) {
+		return $this->execOffset($index, $path, $async, $defer, $notMin, FALSE, FALSE);
+	}
+
+	/**
+	 * Append script after all group scripts 
+	 * for later render process.
+	 * @param  string $path
+	 * @param  bool   $async
+	 * @param  bool   $defer
+	 * @param  bool   $notMin
+	 * @return \MvcCore\Ext\Views\Helpers\JsHelper
+	 */
+	public function Append ($path, $async = FALSE, $defer = FALSE, $notMin = FALSE) {
+		return $this->execAppend($path, $async, $defer, $notMin, FALSE, FALSE);
+	}
+
+	/**
+	 * Prepend script before all group 
+	 * scripts for later render process.
+	 * @param  string $path
+	 * @param  bool   $async
+	 * @param  bool   $defer
+	 * @param  bool   $notMin
+	 * @return \MvcCore\Ext\Views\Helpers\JsHelper
+	 */
+	public function Prepend ($path, $async = FALSE, $defer = FALSE, $notMin = FALSE) {
+		return $this->execPrepend($path, $async, $defer, $notMin, FALSE, FALSE);
+	}
+
+	/**
+	 * Add script into given index of scripts 
+	 * group array for later render process
+	 * with downloading external content.
+	 * @param  int    $index
+	 * @param  string $path
+	 * @param  bool   $async
+	 * @param  bool   $defer
+	 * @param  bool   $notMin
+	 * @return \MvcCore\Ext\Views\Helpers\JsHelper
+	 */
+	public function OffsetExternal ($index, $path, $async = FALSE, $defer = FALSE, $notMin = FALSE) {
+		return $this->execOffset($index, $path, $async, $defer, $notMin, FALSE, TRUE);
+	}
+
+	/**
+	 * Append script after all group scripts 
+	 * for later render process with downloading 
+	 * external content.
+	 * @param  string $path
+	 * @param  bool   $async
+	 * @param  bool   $defer
+	 * @param  bool   $notMin
+	 * @return \MvcCore\Ext\Views\Helpers\JsHelper
+	 */
+	public function AppendExternal ($path, $async = FALSE, $defer = FALSE, $notMin = FALSE) {
+		return $this->execAppend($path, $async, $defer, $notMin, FALSE, TRUE);
+	}
+
+	/**
+	 * Prepend script before all group 
+	 * scripts for later render process 
+	 * with downloading external content.
+	 * @param  string $path
+	 * @param  bool   $async
+	 * @param  bool   $defer
+	 * @param  bool   $notMin
+	 * @return \MvcCore\Ext\Views\Helpers\JsHelper
+	 */
+	public function PrependExternal ($path, $async = FALSE, $defer = FALSE, $notMin = FALSE) {
+		return $this->execPrepend($path, $async, $defer, $notMin, FALSE, TRUE);
+	}
+
+
+	/**
+	 * Check if script is already 
+	 * presented in scripts group.
+	 * This method is necessary to use 
+	 * in vendor application packages.
+	 * @param  string $path
+	 * @param  bool   $async
+	 * @param  bool   $defer
+	 * @param  bool   $notMin
+	 * @return bool
+	 */
+	public function VendorContains ($path, $async = FALSE, $defer = FALSE, $notMin = FALSE) {
+		return $this->execContains($path, $async, $defer, $notMin, TRUE);
+	}
+
+	/**
+	 * Remove script if it is already 
+	 * presented in scripts group.
+	 * This method is necessary to use 
+	 * in vendor application packages.
+	 * @param  string  $path
+	 * @param  bool    $async
+	 * @param  bool    $defer
+	 * @param  bool    $notMin
+	 * @return bool
+	 */
+	public function VendorRemove ($path, $async = FALSE, $defer = FALSE, $notMin = FALSE) {
+		return $this->execRemove($path, $async, $defer, $notMin, TRUE);
+	}
+	
+	/**
+	 * Add script into given index of scripts 
+	 * group array for later render process.
+	 * This method is necessary to use 
+	 * in vendor application packages.
+	 * @param  int    $index
+	 * @param  string $path
+	 * @param  bool   $async
+	 * @param  bool   $defer
+	 * @param  bool   $notMin
+	 * @return \MvcCore\Ext\Views\Helpers\JsHelper
+	 */
+	public function VendorOffset ($index, $path, $async = FALSE, $defer = FALSE, $notMin = FALSE) {
+		return $this->execOffset($index, $path, $async, $defer, $notMin, TRUE, FALSE);
+	}
+
+	/**
+	 * Append script after all group scripts 
+	 * for later render process.
+	 * This method is necessary to use 
+	 * in vendor application packages.
+	 * @param  string $path
+	 * @param  bool   $async
+	 * @param  bool   $defer
+	 * @param  bool   $notMin
+	 * @return \MvcCore\Ext\Views\Helpers\JsHelper
+	 */
+	public function VendorAppend ($path, $async = FALSE, $defer = FALSE, $notMin = FALSE) {
+		return $this->execAppend($path, $async, $defer, $notMin, TRUE, FALSE);
+	}
+
+	/**
+	 * Prepend script before all group 
+	 * scripts for later render process.
+	 * This method is necessary to use 
+	 * in vendor application packages.
+	 * @param  string $path
+	 * @param  bool   $async
+	 * @param  bool   $defer
+	 * @param  bool   $notMin
+	 * @return \MvcCore\Ext\Views\Helpers\JsHelper
+	 */
+	public function VendorPrepend ($path, $async = FALSE, $defer = FALSE, $notMin = FALSE) {
+		return $this->execPrepend($path, $async, $defer, $notMin, TRUE, FALSE);
+	}
+
+	/**
+	 * Add script into given index of scripts 
+	 * group array for later render process
+	 * with downloading external content.
+	 * This method is necessary to use 
+	 * in vendor application packages.
+	 * @param  int    $index
+	 * @param  string $path
+	 * @param  bool   $async
+	 * @param  bool   $defer
+	 * @param  bool   $notMin
+	 * @return \MvcCore\Ext\Views\Helpers\JsHelper
+	 */
+	public function VendorOffsetExternal ($index, $path, $async = FALSE, $defer = FALSE, $notMin = FALSE) {
+		return $this->execOffset($index, $path, $async, $defer, $notMin, TRUE, TRUE);
+	}
+
+	/**
+	 * Append script after all group scripts 
+	 * for later render process with downloading 
+	 * external content.
+	 * This method is necessary to use 
+	 * in vendor application packages.
+	 * @param  string $path
+	 * @param  bool   $async
+	 * @param  bool   $defer
+	 * @param  bool   $notMin
+	 * @return \MvcCore\Ext\Views\Helpers\JsHelper
+	 */
+	public function VendorAppendExternal ($path, $async = FALSE, $defer = FALSE, $notMin = FALSE) {
+		return $this->execAppend($path, $async, $defer, $notMin, TRUE, TRUE);
+	}
+
+	/**
+	 * Prepend script before all group 
+	 * scripts for later render process 
+	 * with downloading external content.
+	 * This method is necessary to use 
+	 * in vendor application packages.
+	 * @param  string $path
+	 * @param  bool   $async
+	 * @param  bool   $defer
+	 * @param  bool   $notMin
+	 * @return \MvcCore\Ext\Views\Helpers\JsHelper
+	 */
+	public function VendorPrependExternal ($path, $async = FALSE, $defer = FALSE, $notMin = FALSE) {
+		return $this->execPrepend($path, $async, $defer, $notMin, TRUE, TRUE);
+	}
+
+
+	/**
+	 * Check if script is already 
+	 * presented in scripts group.
+	 * @param  string $path
+	 * @param  bool   $async
+	 * @param  bool   $defer
+	 * @param  bool   $notMin
+	 * @param  bool   $vendor
+	 * @return bool
+	 */
+	protected function execContains ($path, $async, $defer, $notMin, $vendor) {
+		$reverseKey = $this->getGroupStoreReverseKey([$path, $async, $defer, $notMin, $vendor]);
+		return isset($this->groupStoreReverseKeys[$reverseKey]);
+	}
+
+	/**
+	 * Remove script if it is already 
+	 * presented in scripts group.
+	 * @param  string  $path
+	 * @param  bool    $async
+	 * @param  bool    $defer
+	 * @param  bool    $notMin
+	 * @param  bool    $vendor
+	 * @param  bool    $external
+	 * @return bool
+	 */
+	protected function execRemove ($path, $async, $defer, $notMin, $vendor, $external) {
 		$result = FALSE;
-		$scriptsGroup = & $this->_getScriptsGroupContainer($this->actualGroupName);
-		foreach ($scriptsGroup as & $item) {
-			if ($item->path == $path) {
-				if ($item->async == $async && $item->defer == $defer && $item->doNotMinify == $doNotMinify) {
-					$result = TRUE;
-					break;
-				}
+		$scriptsGroup = & $this->getGroupStore();
+		foreach ($scriptsGroup as $index => $item) {
+			if (
+				$item->path === $path &&
+				$item->async === $async && 
+				$item->defer === $defer && 
+				$item->notMin === $notMin && 
+				$item->vendor === $vendor
+			) {
+				$result = $this->unsetGroupStore($index);
+				$reverseKey = $this->getGroupStoreReverseKey([$path, $async, $defer, $notMin, $vendor]);
+				unset($this->groupStoreReverseKeys[$reverseKey]);
+				break;
 			}
 		}
 		return $result;
 	}
 
 	/**
-	 * Remove script if it is already presented in scripts group
-	 * @param  string  $path
-	 * @param  boolean $async
-	 * @param  boolean $defer
-	 * @param  boolean $doNotMinify
-	 * @return bool
-	 */
-	public function Remove ($path = '', $async = FALSE, $defer = FALSE, $doNotMinify = FALSE) {
-		$result = FALSE;
-		$scriptsGroup = & $this->_getScriptsGroupContainer($this->actualGroupName);
-		foreach ($scriptsGroup as $index => & $item) {
-			if ($item->path == $path) {
-				if ($item->async == $async && $item->defer == $defer && $item->doNotMinify == $doNotMinify) {
-					$result = TRUE;
-					$ctrlActionKey = $this->getCtrlActionKey();
-					unset(self::$scriptsGroupContainer[$ctrlActionKey][$this->actualGroupName][$index]);
-					break;
-				}
-			}
-		}
-		return $result;
-	}
-
-
-
-	/**
-	 * Append script after all group scripts for later render process with downloading external content
-	 * @param  string  $path
-	 * @param  boolean $async
-	 * @param  boolean $defer
-	 * @param  boolean $doNotMinify
+	 * Add script into given index of scripts 
+	 * group array for later render process.
+	 * @param  int    $index
+	 * @param  string $path
+	 * @param  bool   $async
+	 * @param  bool   $defer
+	 * @param  bool   $notMin
+	 * @param  bool   $external
 	 * @return \MvcCore\Ext\Views\Helpers\JsHelper
 	 */
-	public function AppendExternal ($path = '', $async = FALSE, $defer = FALSE, $doNotMinify = FALSE) {
-		return $this->Append($path, $async, $defer, $doNotMinify, TRUE);
+	protected function execOffset ($index, $path, $async, $defer, $notMin, $vendor, $external) {
+		$item = $this->completeItem($path, $async, $defer, $notMin, $vendor, $external);
+		$currentItems = & $this->getGroupStore();
+		$newItems = $index > 0
+			? array_slice($currentItems, 0, $index, FALSE)
+			: [];
+		$newItems[] = $item;
+		$this->setUpGroupStoreReverseKey([$path, $async, $defer, $notMin, $vendor]);
+		$currentItemsCount = count($currentItems);
+		if ($index < count($currentItems)) 
+			$newItems = array_merge($newItems, array_slice(
+				$currentItems, $index, 
+				$currentItemsCount - $index, FALSE
+			));
+		return $this->setGroupStore($newItems);
 	}
 
 	/**
-	 * Prepend script before all group scripts for later render process with downloading external content
-	 * @param  string  $path
-	 * @param  boolean $async
-	 * @param  boolean $defer
-	 * @param  boolean $doNotMinify
+	 * Append script after all group scripts 
+	 * for later render process.
+	 * @param  string $path
+	 * @param  bool   $async
+	 * @param  bool   $defer
+	 * @param  bool   $notMin
+	 * @param  bool   $vendor
+	 * @param  bool   $external
 	 * @return \MvcCore\Ext\Views\Helpers\JsHelper
 	 */
-	public function PrependExternal ($path = '', $async = FALSE, $defer = FALSE, $doNotMinify = FALSE) {
-		return $this->Prepend($path, $async, $defer, $doNotMinify, TRUE);
-	}
-
-	/**
-	 * Add script into given index of scripts group array for later render process with downloading external content
-	 * @param  integer $index
-	 * @param  string  $path
-	 * @param  boolean $async
-	 * @param  boolean $defer
-	 * @param  boolean $doNotMinify
-	 * @return \MvcCore\Ext\Views\Helpers\JsHelper
-	 */
-	public function OffsetExternal ($index = 0, $path = '', $async = FALSE, $defer = FALSE, $doNotMinify = FALSE) {
-		return $this->Offset($index, $path, $async, $defer, $doNotMinify, TRUE);
-	}
-
-	/**
-	 * Append script after all group scripts for later render process
-	 * @param  string  $path
-	 * @param  boolean $async
-	 * @param  boolean $defer
-	 * @param  boolean $doNotMinify
-	 * @param  boolean $external
-	 * @return \MvcCore\Ext\Views\Helpers\JsHelper
-	 */
-	public function Append ($path = '', $async = FALSE, $defer = FALSE, $doNotMinify = FALSE, $external = FALSE) {
-		$item = $this->_completeItem($path, $async, $defer, $doNotMinify, $external);
-		$actialGroupItems = & $this->_getScriptsGroupContainer($this->actualGroupName);
-		array_push($actialGroupItems, $item);
+	protected function execAppend ($path, $async, $defer, $notMin, $vendor, $external) {
+		$item = $this->completeItem($path, $async, $defer, $notMin, $vendor, $external);
+		$currentGroupRecords = & $this->getGroupStore();
+		array_push($currentGroupRecords, $item);
+		$this->setUpGroupStoreReverseKey([$path, $async, $defer, $notMin, $vendor]);
 		return $this;
 	}
 
 	/**
-	 * Prepend script before all group scripts for later render process
-	 * @param  string  $path
-	 * @param  boolean $async
-	 * @param  boolean $defer
-	 * @param  boolean $doNotMinify
-	 * @param  boolean $external
+	 * Prepend script before all group 
+	 * scripts for later render process.
+	 * @param  string $path
+	 * @param  bool   $async
+	 * @param  bool   $defer
+	 * @param  bool   $notMin
+	 * @param  bool   $vendor
+	 * @param  bool   $external
 	 * @return \MvcCore\Ext\Views\Helpers\JsHelper
 	 */
-	public function Prepend ($path = '', $async = FALSE, $defer = FALSE, $doNotMinify = FALSE, $external = FALSE) {
-		$item = $this->_completeItem($path, $async, $defer, $doNotMinify, $external);
-		$actualGroupItems = & $this->_getScriptsGroupContainer($this->actualGroupName);
-		array_unshift($actualGroupItems, $item);
+	protected function execPrepend ($path, $async, $defer, $notMin, $vendor, $external) {
+		$item = $this->completeItem($path, $async, $defer, $notMin, $vendor, $external);
+		$currentGroupRecords = & $this->getGroupStore();
+		array_unshift($currentGroupRecords, $item);
+		$this->setUpGroupStoreReverseKey([$path, $async, $defer, $notMin, $vendor]);
 		return $this;
 	}
 
-	/**
-	 * Add script into given index of scripts group array for later render process
-	 * @param  integer $index
-	 * @param  string  $path
-	 * @param  boolean $async
-	 * @param  boolean $defer
-	 * @param  boolean $doNotMinify
-	 * @param  boolean $external
-	 * @return \MvcCore\Ext\Views\Helpers\JsHelper
-	 */
-	public function Offset ($index = 0, $path = '', $async = FALSE, $defer = FALSE, $doNotMinify = FALSE, $external = FALSE) {
-		$item = $this->_completeItem($path, $async, $defer, $doNotMinify, $external);
-		$actialGroupItems = & $this->_getScriptsGroupContainer($this->actualGroupName);
-		$newItems = [];
-		$added = FALSE;
-		foreach ($actialGroupItems as $key => & $groupItem) {
-			if ($key == $index) {
-				$newItems[] = $item;
-				$added = TRUE;
-			}
-			$newItems[] = $groupItem;
-		}
-		if (!$added) $newItems[] = $item;
-		self::$scriptsGroupContainer[$this->getCtrlActionKey()][$this->actualGroupName] = $newItems;
-		return $this;
-	}
 
 	/**
-	 * Get actually dispatched controller/action group name
-	 * @param string $name
-	 * @return array
-	 */
-	private function & _getScriptsGroupContainer ($name = '') {
-		$ctrlActionKey = $this->getCtrlActionKey();
-		if (!isset(self::$scriptsGroupContainer[$ctrlActionKey])) {
-			self::$scriptsGroupContainer[$ctrlActionKey] = [];
-		}
-		if (!isset(self::$scriptsGroupContainer[$ctrlActionKey][$name])) {
-			self::$scriptsGroupContainer[$ctrlActionKey][$name] = [];
-		}
-		return self::$scriptsGroupContainer[$ctrlActionKey][$name];
-	}
-
-	/**
-	 * Create data item to store for render process
-	 * @param  string  $path
-	 * @param  string  $async
-	 * @param  boolean $defer
-	 * @param  boolean $doNotMinify
-	 * @param  boolean $external
+	 * Create data item to store for render process.
+	 * @param  string    $path
+	 * @param  string    $async
+	 * @param  bool      $defer
+	 * @param  bool      $notMin
+	 * @param  bool      $vendor
+	 * @param  bool      $external
 	 * @return \stdClass
 	 */
-	private function _completeItem ($path, $async, $defer, $doNotMinify, $external) {
-		if (self::$loggingAndExceptions) {
-			if (!$path) $this->exception('Path to *.js can\'t be an empty string.');
-			if ($this->controller->GetEnvironment()->IsDevelopment()) {
-				$duplication = $this->_isDuplicateScript($path);
-				if ($duplication) $this->warning("Script '{$path}' is already added in js group: '{$duplication}'.");
-			}
-		}
+	protected function completeItem ($path, $async, $defer, $notMin, $vendor, $external) {
+		if (self::$fileChecking) {
+			$duplication = $this->isDuplicateScript($path, $vendor);
+			if ($duplication !== NULL) 
+				$this->warning("Script `{$path}` is already added in js group: `{$duplication}`.");
+	}
+		if ($vendor) 
+			$path = $this->move2TmpGetPath(
+				$path, self::$vendorDocRoot . $path, 'js'
+			);
 		return (object) [
-			'path'			=> $path,
-			'async'			=> $async,
-			'defer'			=> $defer,
-			'doNotMinify'	=> $doNotMinify,
-			'external'		=> $external,
+			'fullPath'	=> static::$docRoot . $path,
+			'path'		=> $path,
+			'async'		=> $async,
+			'defer'		=> $defer,
+			'notMin'	=> $notMin,
+			'vendor'	=> $vendor,
+			'external'	=> $external,
 		];
 	}
-
+	
 	/**
 	 * Is the linked script duplicate?
 	 * @param  string $path
-	 * @return string
+	 * @param  bool   $vendor
+	 * @return string|NULL
 	 */
-	private function _isDuplicateScript ($path) {
-		$result = '';
-		$allGroupItems = & self::$scriptsGroupContainer[$this->getCtrlActionKey()];
+	protected function isDuplicateScript ($path, $vendor) {
+		$result = NULL;
+		$allGroupItems = & $this->groupStore[$this->getCtrlActionKey()];
 		foreach ($allGroupItems as $groupName => $groupItems) {
 			foreach ($groupItems as $item) {
-				if ($item->path == $path) {
+				if ($item->path === $path && $item->vendor === $vendor) {
 					$result = $groupName;
 					break;
 				}
@@ -256,116 +468,196 @@ class JsHelper extends Assets {
 		return $result;
 	}
 
+
 	/**
-	 * Render script elements as html code with links to original files or temporary downloaded files
-	 * @param  int $indent
+	 * Minify javascript string and return minified result.
+	 * @param  string $js
+	 * @param  string $path
 	 * @return string
 	 */
-	public function Render ($indent = 0) {
-		$actualGroupItems = & $this->_getScriptsGroupContainer($this->actualGroupName);
-		if (count($actualGroupItems) === 0) return '';
-		$minify = (bool)self::$globalOptions['jsMinify'];
-		$joinTogether = (bool)self::$globalOptions['jsJoin'];
-		if ($joinTogether) {
-			$result = $this->_renderItemsTogether(
-				$this->actualGroupName,
-				$actualGroupItems,
-				$indent,
-				$minify
-			);
-		} else {
-			$result = $this->_renderItemsSeparated(
-				$this->actualGroupName,
-				$actualGroupItems,
-				$indent,
-				$minify
-			);
+	protected function minify (& $js, $path) {
+		$result = '';
+		$errorMsg = "Unable to minify js: `{$path}`.";
+		try {
+			$result = \JShrink\Minifier::minify($js);
+		} catch (\Throwable $e) {
+			$this->exception($errorMsg);
 		}
-		$actualGroupItems = [];
 		return $result;
 	}
 
-	/**
-	 * Render data items as separated <script> html tags
-	 * @param string  $actualGroupName
-	 * @param array   $items
-	 * @param int	  $indent
-	 * @param boolean $minify
-	 * @return string
-	 */
-	private function _renderItemsSeparated ($actualGroupName = '', $items = [], $indent = 0, $minify = FALSE) {
-		$indentStr = $this->getIndentString($indent);
-		$resultItems = [];
-		if (self::$fileRendering) $resultItems[] = '<!-- js group begin: ' . $actualGroupName . ' -->';
-		$appCompilation = \MvcCore\Application::GetInstance()->GetCompiled();
-		foreach ($items as $item) {
-			if ($item->external) {
-				$item->src = $this->CssJsFileUrl($this->_downloadFileToTmpAndGetNewHref($item, $minify));
-			} else if ($minify && !$item->doNotMinify) {
-				$item->src = $this->CssJsFileUrl($this->_renderFileToTmpAndGetNewHref($item, $minify));
-			} else {
-				$item->src = $this->CssJsFileUrl($item->path);
-			}
-			if (!$appCompilation) {
-				/*if ($item->external) {
-					$tmpOrSrcPath = substr($item->src, strlen(self::$basePath));
-				} else {
-					$tmpOrSrcPath = $item->src;
-				}*/
-				$item->src = $this->addFileModificationImprintToHrefUrl($item->src, $item->path);
-			}
-			$resultItems[] = $this->_renderItemSeparated($item);
-		}
-		if (self::$fileRendering) $resultItems[] = '<!-- js group end: ' . $actualGroupName . ' -->';
-		return $indentStr . implode(PHP_EOL . $indentStr, $resultItems);
-	}
 
 	/**
-	 * Render js file by path and store result in tmp directory and return new href value
-	 * @param \stdClass $item
-	 * @param boolean   $minify
+	 * Render data items as one <script> html tag 
+	 * or all another <script> html tags after 
+	 * with files which is not possible to minify.
+	 * @param  \stdClass[] $items
+	 * @param  int	       $indent
+	 * @param  bool        $minify
 	 * @return string
 	 */
-	private function _renderFileToTmpAndGetNewHref ($item, $minify = FALSE) {
-		$path = $item->path;
-		$tmpFileName = '/rendered_js_' . self::$systemConfigHash . '_' . trim(str_replace('/', '_', $path), "_");
-		$srcFileFullPath = $this->getAppRoot() . $path;
-		$tmpFileFullPath = $this->getTmpDir() . $tmpFileName;
-		if (self::$fileRendering) {
-			if (file_exists($srcFileFullPath)) {
-				$srcFileModDate = filemtime($srcFileFullPath);
+	protected function renderItemsTogether (array & $items, $indent, $minify) {
+		// some configurations is not possible to render together and minimized
+		list(
+			$itemsToRenderMinimized, 
+			$itemsToRenderSeparately
+		) = $this->separateItemsToMinifiedGroups($items);
+
+		$indentStr = $this->getIndentString($indent);
+		$resultItems = [];
+		if (self::$fileRendering) 
+			$resultItems[] = '<!-- js group begin: ' . $this->currentGroupName . ' -->';
+
+		// process array with groups, which are not possible to minimize
+		foreach ($itemsToRenderSeparately as $itemsToRender) {
+			$resultItems[] = $this->renderItemsTogetherAsGroup($itemsToRender, FALSE);
+		}
+
+		// process array with groups to minimize
+		foreach ($itemsToRenderMinimized as $itemsToRender) {
+			$resultItems[] = $this->renderItemsTogetherAsGroup($itemsToRender, $minify);
+		}
+
+		if (self::$fileRendering) 
+			$resultItems[] = $indentStr . '<!-- js group end: ' . $this->currentGroupName . ' -->';
+		
+		return "\n" . $indentStr . implode("\n" . $indentStr, $resultItems);
+	}
+	
+	/**
+	 * Render all items in group together, when application 
+	 * is compiled, do not check source files and changes.
+	 * @param  \stdClass[] $itemsToRender
+	 * @param  bool        $minify
+	 * @return string
+	 */
+	protected function renderItemsTogetherAsGroup (array & $itemsToRender, $minify) {
+		// complete tmp filename by source filenames and source files modification times
+		$filesGroupInfo = [];
+		foreach ($itemsToRender as $item) {
+			if ($item->external) {
+				$item->path = $this->download2TmpGetPath($item, $minify);
+				$item->fullPath = static::$docRoot . $item->path;
+				$filesGroupInfo[] = $item->path . '?_' . self::getFileImprint($item->fullPath);
 			} else {
-				$srcFileModDate = 1;
-			}
-			if (file_exists($tmpFileFullPath)) {
-				$tmpFileModDate = filemtime($tmpFileFullPath);
-			} else {
-				$tmpFileModDate = 0;
-			}
-			if ($srcFileModDate !== FALSE && $tmpFileModDate !== FALSE) {
-				if ($srcFileModDate > $tmpFileModDate) {
-					$fileContent = file_get_contents($srcFileFullPath);
-					if ($minify) {
-						$fileContent = $this->_minify($fileContent, $path);
+				if (self::$fileChecking) {
+					if (!file_exists($item->fullPath)) {
+						$this->exception("File not found in JS view rendering process ('{$item->fullPath}').");
 					}
-					$this->saveFileContent($tmpFileFullPath, $fileContent);
-					$this->log("Js file rendered ('{$tmpFileFullPath}').", 'debug');
+					$filesGroupInfo[] = $item->path . '?_' . self::getFileImprint($item->fullPath);
+				} else {
+					$filesGroupInfo[] = $item->path;
 				}
 			}
 		}
-		$tmpPath = substr($tmpFileFullPath, strlen($this->getAppRoot()));
-		return $tmpPath;
+		$tmpFileFullPath = $this->getTmpFileFullPathByPartFilesInfo(
+			$filesGroupInfo, $minify, 'js'
+		);
+
+		// check, if the rendered, together completed and minimized file is in tmp cache already
+		if (self::$fileRendering) {
+			if (!file_exists($tmpFileFullPath)) {
+				// load all items and join them together
+				$resultContents = [];
+				foreach ($itemsToRender as & $item) {
+					if ($item->external) {
+						$item->path = $this->download2TmpGetPath($item, $minify);
+						$item->fullPath = static::$docRoot . $item->path;
+						$fileContent = file_get_contents($item->fullPath);
+					} else if ($minify) {
+						$fileContent = file_get_contents($item->fullPath);
+						if ($minify) $fileContent = $this->minify($fileContent, $item->path);
+					} else {
+						$fileContent = file_get_contents($item->fullPath);
+					}
+					$resultContents[] = "/* " . $item->path . " */\n" . $fileContent;
+				}
+				// save completed tmp file
+				$this->saveFileContent($tmpFileFullPath, implode("\n\n", $resultContents));
+				$this->log("Js files group rendered: `{$tmpFileFullPath}`.", 'debug');
+			}
+		}
+
+		// complete <script> tag with tmp file path in $tmpFileFullPath variable
+		$firstItem = array_merge((array) $itemsToRender[0], []);
+		$pathToTmp = mb_substr($tmpFileFullPath, mb_strlen(static::$docRoot));
+		$firstItem['src'] = $this->CssJsFileUrl($pathToTmp);
+		return $this->renderItemSeparated((object) $firstItem);
 	}
 
 	/**
-	 * Download js file by path and store result in tmp directory and return new href value
-	 * @param \stdClass $item
-	 * @param boolean   $minify
+	 * Render data items as separated <script> html tags.
+	 * @param  \stdClass[] $items
+	 * @param  int	       $indent
+	 * @param  bool        $minify
 	 * @return string
 	 */
-	private function _downloadFileToTmpAndGetNewHref ($item, $minify = FALSE) {
+	protected function renderItemsSeparated (array & $items, $indent, $minify) {
+		$indentStr = $this->getIndentString($indent);
+		$resultItems = [];
+		if (self::$fileRendering) 
+			$resultItems[] = '<!-- js group begin: ' . $this->currentGroupName . ' -->';
+		foreach ($items as $item) {
+			if ($item->external) {
+				$item->src = $this->CssJsFileUrl($this->download2TmpGetPath($item, $minify));
+			} else if ($minify && !$item->notMin) {
+				$item->src = $this->CssJsFileUrl($this->render2TmpGetPath($item, $minify , 'js'));
+			} else {
+				$item->src = $this->CssJsFileUrl($item->path);
+			}
+			if (self::$fileChecking)
+				$item->src = $this->addFileModImprint2HrefUrl($item->src, $item->fullPath);
+			$resultItems[] = $this->renderItemSeparated($item);
+		}
+		if (self::$fileRendering) 
+			$resultItems[] = '<!-- js group end: ' . $this->currentGroupName . ' -->';
+		return "\n" . $indentStr . implode("\n" . $indentStr, $resultItems);
+	}
+	
+	/**
+	 * Create HTML script element from data item
+	 * @param  \stdClass $item
+	 * @return string
+	 */
+	protected function renderItemSeparated (\stdClass $item) {
+		$result = ['<script type="text/javascript"'];
+		if ($nonceAttr = static::getNonce(TRUE)) $result[] = $nonceAttr;
+		if ($item->async) $result[] = ' async="async"';
+		if ($item->defer) $result[] = ' defer="defer"';
+		if (!$item->external && self::$fileChecking && !file_exists($item->fullPath)) {
+			$this->log("File not found in JS view rendering process: `{$item->fullPath}`.", 'error');
+		}
+		$result[] = ' src="' . $item->src . '"></script>';
+		return implode('', $result);
+	}
+
+
+	/**
+	 * @inheritDocs
+	 * @throws \Exception
+	 * @param  \stdClass  $item 
+	 * @param  string     $srcFileFullPath 
+	 * @param  string     $minify 
+	 * @return string
+	 */
+	protected function render2TmpGetPathExec (\stdClass $item, $srcFileFullPath, $minify) {
+		$fileContent = file_get_contents($srcFileFullPath);
+		if ($minify)
+			$fileContent = $this->minify($fileContent, $item->path);
+		return $fileContent;
+	}
+
+	/**
+	 * Download js file by path and store result 
+	 * in tmp directory and return new href value.
+	 * @param \stdClass $item
+	 * @param bool      $minify
+	 * @return string
+	 */
+	protected function download2TmpGetPath ($item, $minify) {
 		$path = $item->path;
-		$tmpFileFullPath = $this->getTmpDir() . '/external_js_' . md5($path) . '.js';
+		$tmpFileName = $this->getTmpFileName($item->path, 'external');
+		$tmpFileFullPath = $this->getTmpDir() . $tmpFileName;
 		if (self::$fileRendering) {
 			if (file_exists($tmpFileFullPath)) {
 				$cacheFileTime = filemtime($tmpFileFullPath);
@@ -374,7 +666,7 @@ class JsHelper extends Assets {
 			}
 			if (time() > $cacheFileTime + self::EXTERNAL_MIN_CACHE_TIME) {
 				while (TRUE) {
-					$newPath = $this->_getPossiblyRedirectedPath($path);
+					$newPath = $this->getPossiblyRedirectedPath($path);
 					if ($newPath === $path) {
 						break;
 					} else {
@@ -382,173 +674,40 @@ class JsHelper extends Assets {
 					}
 				}
 				$fr = fopen($path, 'r');
-				$fileContent = '';
+				$fileContents = [];
 				$bufferLength = 102400; // 100 KB
 				$buffer = '';
 				while ($buffer = fread($fr, $bufferLength)) {
-					$fileContent .= $buffer;
+					$fileContents[] = $buffer;
 				}
 				fclose($fr);
-				if ($minify) {
-					$fileContent = $this->_minify($fileContent, $path);
-				}
+				$fileContent = implode('', $fileContents);
+				if ($minify) 
+					$fileContent = $this->minify($fileContent, $path);
 				$this->saveFileContent($tmpFileFullPath, $fileContent);
-				$this->log("External js file downloaded ('{$tmpFileFullPath}').", 'debug');
+				$this->log("External js file downloaded: `{$tmpFileFullPath}`.", 'debug');
 			}
 		}
-		$tmpPath = substr($tmpFileFullPath, strlen($this->getAppRoot()));
+		$tmpPath = substr($tmpFileFullPath, strlen(static::$docRoot));
 		return $tmpPath;
 	}
 
 	/**
-	 * If there is any redirection in external content path - get redirect path
-	 * @param string $path
+	 * If there is any redirection in external 
+	 * content path - get redirect path.
+	 * @param  string $path
 	 * @return string
 	 */
-	private function _getPossiblyRedirectedPath ($path = '') {
+	protected function getPossiblyRedirectedPath ($path) {
 		$fp = fopen($path, 'r');
 		$metaData = stream_get_meta_data($fp);
 		foreach ($metaData['wrapper_data'] as $response) {
 			// Were we redirected? */
-			if (strtolower(substr($response, 0, 10)) == 'location: ') {
+			if (mb_strtolower(mb_substr($response, 0, 9)) === 'location:') {
 				// update $src with where we were redirected to
-				$path = substr($response, 10);
+				$path = trim(mb_substr($response, 9));
 			}
 		}
 		return $path;
-	}
-
-	/**
-	 * Create HTML script element from data item
-	 * @param  \stdClass $item
-	 * @return string
-	 */
-	private function _renderItemSeparated (\stdClass $item) {
-		$result = '<script type="text/javascript"';
-		if ($nonceAttr = static::getNonce(TRUE)) $result .= $nonceAttr;
-		if ($item->async) $result .= ' async="async" defer="defer"';
-		if (!$item->external && self::$fileChecking) {
-			$fullPath = $this->getAppRoot() . $item->path;
-			if (!file_exists($fullPath)) {
-				$this->log("File not found in CSS view rendering process ('{$fullPath}').", 'error');
-			}
-		}
-		$result .= ' src="' . $item->src . '"></script>';
-		return $result;
-	}
-
-	/**
-	 * Minify javascript string and return minified result
-	 * @param string $js
-	 * @param string $path
-	 * @return string
-	 */
-	private function _minify (& $js, $path) {
-		$result = '';
-		$errorMsg = "Unable to minify javascript ('{$path}').";
-		if (!is_callable(static::$MinifyCallable)) {
-			$this->exception(
-				"Configured callable object for JS minification doesn't exist. "
-				."Use: https://github.com/mrclay/minify -> /min/lib/JSMin.php"
-			);
-		}
-		try {
-			$result = call_user_func(static::$MinifyCallable, $js);
-		} catch (\Throwable $e) {
-			$this->exception($errorMsg);
-		}
-		return $result;
-	}
-
-	/**
-	 * Render data items as one <script> html tag or all another <script> html tags after with files which is not possible to minify.
-	 * @param string  $actualGroupName
-	 * @param array   $items
-	 * @param int	  $indent
-	 * @param boolean $minify
-	 * @return string
-	 */
-	private function _renderItemsTogether ($actualGroupName = '', $items = [], $indent = 0, $minify = FALSE) {
-
-		// some configurations is not possible to render together and minimized
-		list($itemsToRenderMinimized, $itemsToRenderSeparately) = $this->filterItemsForNotPossibleMinifiedAndPossibleMinifiedItems($items);
-
-		$indentStr = $this->getIndentString($indent);
-		$resultItems = [];
-		if (self::$fileRendering) $resultItems[] = '<!-- js group begin: ' . $actualGroupName . ' -->';
-
-		// process array with groups, which are not possible to minimize
-		foreach ($itemsToRenderSeparately as & $itemsToRender) {
-			$resultItems[] = $this->_renderItemsTogetherAsGroup($itemsToRender, FALSE);
-		}
-
-		// process array with groups to minimize
-		foreach ($itemsToRenderMinimized as & $itemsToRender) {
-			$resultItems[] = $this->_renderItemsTogetherAsGroup($itemsToRender, $minify);
-		}
-
-		if (self::$fileRendering) $resultItems[] = $indentStr . '<!-- js group end: ' . $actualGroupName . ' -->';
-
-		return $indentStr . implode(PHP_EOL, $resultItems);
-	}
-
-	/**
-	 * Render all items in group together, when application is compiled, do not check source files and changes.
-	 * @param array   $itemsToRender
-	 * @param boolean $minify
-	 * @return string
-	 */
-	private function _renderItemsTogetherAsGroup ($itemsToRender = [], $minify = FALSE) {
-
-		// complete tmp filename by source filenames and source files modification times
-		$filesGroupInfo = [];
-		foreach ($itemsToRender as $item) {
-			if ($item->external) {
-				$srcFileFullPath = $this->_downloadFileToTmpAndGetNewHref($item, $minify);
-				$filesGroupInfo[] = $item->path . '?_' . self::getFileImprint($this->getAppRoot() . $srcFileFullPath);
-			} else {
-				if (self::$fileChecking) {
-					$fullPath = $this->getAppRoot() . $item->path;
-					if (!file_exists($fullPath)) {
-						$this->exception("File not found in JS view rendering process ('{$fullPath}').");
-					}
-					$filesGroupInfo[] = $item->path . '?_' . self::getFileImprint($fullPath);
-				} else {
-					$filesGroupInfo[] = $item->path;
-				}
-			}
-		}
-		$tmpFileFullPath = $this->getTmpFileFullPathByPartFilesInfo($filesGroupInfo, $minify, 'js');
-
-		// check, if the rendered, together completed and minimized file is in tmp cache already
-		if (self::$fileRendering) {
-			if (!file_exists($tmpFileFullPath)) {
-				// load all items and join them together
-				$resultContent = '';
-				foreach ($itemsToRender as & $item) {
-					$srcFileFullPath = $this->getAppRoot() . $item->path;
-					if ($item->external) {
-						$srcFileFullPath = $this->_downloadFileToTmpAndGetNewHref($item, $minify);
-						$fileContent = file_get_contents($this->getAppRoot() . $srcFileFullPath);
-					} else if ($minify) {
-						$fileContent = file_get_contents($srcFileFullPath);
-						if ($minify) $fileContent = $this->_minify($fileContent, $item->path);
-					} else {
-						$fileContent = file_get_contents($srcFileFullPath);
-					}
-					$resultContent .= PHP_EOL . "/* " . $item->path . " */" . PHP_EOL . $fileContent . PHP_EOL;
-				}
-				// save completed tmp file
-				$this->saveFileContent($tmpFileFullPath, $resultContent);
-				$this->log("Js files group rendered ('{$tmpFileFullPath}').", 'debug');
-			}
-		}
-
-		// complete <link> tag with tmp file path in $tmpFileFullPath variable
-		$firstItem = array_merge((array) $itemsToRender[0], []);
-		$pathToTmp = substr($tmpFileFullPath, strlen($this->getAppRoot()));
-		$firstItem['src'] = $this->CssJsFileUrl($pathToTmp);
-
-		return $this->_renderItemSeparated((object) $firstItem);
 	}
 }

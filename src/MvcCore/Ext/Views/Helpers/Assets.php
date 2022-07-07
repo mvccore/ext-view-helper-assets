@@ -16,20 +16,26 @@ namespace MvcCore\Ext\Views\Helpers;
 /**
  * @method \MvcCore\Ext\Views\Helpers\Assets GetInstance()
  */
-class Assets extends \MvcCore\Ext\Views\Helpers\AbstractHelper {
+abstract class Assets extends \MvcCore\Ext\Views\Helpers\AbstractHelper {
 
 	/**
 	 * MvcCore Extension - View Helper - Assets - version:
 	 * Comparison by PHP function version_compare();
 	 * @see http://php.net/manual/en/function.version-compare.php
 	 */
-	const VERSION = '5.1.0';
+	const VERSION = '5.1.1';
 
 	/**
 	 * Default link group name
 	 * @const string
 	 */
 	const GROUP_NAME_DEFAULT   = 'default';
+
+	/**
+	 * Internal string replacement help.
+	 * @var string
+	 */
+	const REL_BASE_PATH_PLACEMENT = '__RELATIVE_BASE_PATH__';
 
 	/**
 	 * Date format for ?_fmd param timestamp in admin development mode
@@ -43,12 +49,24 @@ class Assets extends \MvcCore\Ext\Views\Helpers\AbstractHelper {
 	 * @var \MvcCore\View
 	 */
 	protected $view;
+	
+	/**
+	 * Array with all defined files to create specific link tags.
+	 * @var array<string, <string, \stdClass[]>>
+	 */
+	protected $groupStore = [];
+	
+	/**
+	 * Reverse map with unique keys into group store tree.
+	 * @var array<string, string[]>
+	 */
+	protected $groupStoreReverseKeys = [];
 
 	/**
-	 * Called $_linksGroupContainer index throw helper function Css() or Js()
+	 * Called `$this->groupStore[]` index through helper function Css() or Js()
 	 * @var string
 	 */
-	protected $actualGroupName = '';
+	protected $currentGroupName = '';
 
 	/**
 	 * Stream wrapper for actual file save operations (http://php.net/stream_wrapper_register)
@@ -83,55 +101,75 @@ class Assets extends \MvcCore\Ext\Views\Helpers\AbstractHelper {
 		'fileChecking'	=> 'filemtime',
 		'assetsUrl'		=> NULL,
 	];
+	
+	/**
+	 * Boolean about initialized static props.
+	 * @var bool
+	 */
+	protected static $initialized = FALSE;
 
 	/**
-	 * Application root directory from request object
-	 * @var string
+	 * Application reference.
+	 * @var \MvcCore\Application
 	 */
-	protected static $documentRoot = NULL;
+	protected static $app = NULL;
+
+	/**
+	 * Application document root directory from request object.
+	 * @var string|NULL
+	 */
+	protected static $docRoot = NULL;
+
+	/**
+	 * Application vendor package document root
+	 * (completed by difference between request object 
+	 * app root and request document root).
+	 * @var string|NULL
+	 */
+	protected static $vendorDocRoot = NULL;
 
 	/**
 	 * Relative path to store joined and minified files
 	 * from application root directory.
-	 * @var string
+	 * @var string|NULL
 	 */
 	protected static $tmpDir = NULL;
 
 	/**
 	 * Base not compiled URL path from localhost if necessary
-	 * @var string
+	 * @var string|NULL
 	 */
 	protected static $basePath = NULL;
 
 	/**
 	 * Request script name.
-	 * @var string
+	 * @var string|NULL
 	 */
 	protected static $scriptName = NULL;
 
 	/**
 	 * If true, all messages are logged on hard drive,
 	 * all exceptions are thrown.
-	 * @var boolean
+	 * @var bool|NULL
 	 */
-	protected static $loggingAndExceptions = TRUE;
+	protected static $loggingAndExceptions = NULL;
 
 	/**
 	 * If true, all assets sources existences are checked
-	 * @var boolean
+	 * @var bool|NULL
 	 */
-	protected static $fileChecking = FALSE;
+	protected static $fileChecking = NULL;
 
 	/**
 	 * If true, all temporary files are rendered
-	 * @var boolean
+	 * @var bool|NULL
 	 */
-	protected static $fileRendering = FALSE;
+	protected static $fileRendering = NULL;
 
 	/**
 	 * If true, method AssetUrl in all css files returns
 	 * to: 'index.php?controller=controller&action=asset&path=...'.
-	 * @var boolean
+	 * @var bool|NULL
 	 */
 	protected static $assetsUrlCompletion = NULL;
 
@@ -155,53 +193,12 @@ class Assets extends \MvcCore\Ext\Views\Helpers\AbstractHelper {
 
 
 	/**
-	 * Insert a \MvcCore\View in each helper constructing
-	 * @param \MvcCore\View $view
-	 * @return \MvcCore\Ext\Views\Helpers\AbstractHelper
-	 */
-	public function SetView (\MvcCore\IView $view) {
-		parent::SetView($view);
-
-		if (self::$documentRoot === NULL) self::$documentRoot = $this->request->GetDocumentRoot();
-		if (self::$basePath === NULL) self::$basePath = $this->request->GetBasePath();
-		if (self::$scriptName === NULL) self::$scriptName = ltrim($this->request->GetScriptName(), '/.');
-		$app = $view->GetController()->GetApplication();
-		$environment =$app->GetEnvironment();
-		self::$loggingAndExceptions = $environment->IsDevelopment();
-		$mvcCoreCompiledMode = $app->GetCompiled();
-
-		self::$ctrlActionKey = $this->request->GetControllerName() . '/' . $this->request->GetActionName();
-
-		// file checking is true only for classic development mode, not for single file mode
-		if (!$mvcCoreCompiledMode) self::$fileChecking = TRUE;
-
-		// file rendering is true for classic development state, SFU app mode
-		if (!$mvcCoreCompiledMode || $mvcCoreCompiledMode == 'SFU') {
-			self::$fileRendering = TRUE;
-		}
-
-		if (is_null(self::$assetsUrlCompletion)) {
-			// set URL addresses completion to true by default for:
-			// - all package modes outside PHP_STRICT_HDD and outside development
-			if ($mvcCoreCompiledMode && $mvcCoreCompiledMode != 'PHP_STRICT_HDD') {
-				self::$assetsUrlCompletion = TRUE;
-			} else {
-				self::$assetsUrlCompletion = FALSE;
-			}
-		}
-
-		self::$systemConfigHash = md5(json_encode(self::$globalOptions));
-
-		return $this;
-	}
-
-	/**
 	 * Set global static options about minifying and joining together
 	 * which can bee overwritten by single settings throw calling for
 	 * example: append() method as another param.
 	 *
 	 * @see \MvcCore\Ext\Views\Helpers\Assets::$globalOptions
-	 * @param array $options whether or not to auto escape output
+	 * @param  array $options whether or not to auto escape output
 	 * @return void
 	 */
 	public static function SetGlobalOptions ($options = []) {
@@ -217,7 +214,7 @@ class Assets extends \MvcCore\Ext\Views\Helpers\AbstractHelper {
 	 * method only for cases, when you want to pack your application
 	 * and you want to have all URL addresses to css/js/fonts and
 	 * images directly to hard drive.
-	 * @param bool $enable
+	 * @param  bool $enable
 	 * @return void
 	 */
 	public static function SetAssetUrlCompletion ($enable = TRUE) {
@@ -227,26 +224,29 @@ class Assets extends \MvcCore\Ext\Views\Helpers\AbstractHelper {
 	/**
 	 * Set global static $basePath to load assets from
 	 * any static CDN domain or any other place.
-	 * @param string $basePath
+	 * @param  string $basePath
 	 * @return void
 	 */
 	public static function SetBasePath ($basePath) {
 		self::$basePath = $basePath;
 	}
 
+
 	/**
-	 * Returns file modification imprint by global settings -
-	 * by `md5_file()` or by `filemtime()` - always as a string
-	 * @param string $fullPath
-	 * @return string
+	 * Insert a \MvcCore\View in each helper constructing
+	 * @param  \MvcCore\View $view
+	 * @return \MvcCore\Ext\Views\Helpers\AbstractHelper
 	 */
-	protected static function getFileImprint ($fullPath) {
-		$fileChecking = self::$globalOptions['fileChecking'];
-		if ($fileChecking == 'filemtime') {
-			return filemtime($fullPath);
-		} else {
-			return (string) call_user_func($fileChecking, $fullPath);
-		}
+	public function SetView (\MvcCore\IView $view) {
+		parent::SetView($view);
+		$req = $this->request;
+		self::$ctrlActionKey = implode('/', [
+			$req->GetControllerName(),
+			$req->GetActionName()
+		]);
+		if (!self::$initialized) 
+			static::initCommonProps($view, $req);
+		return $this;
 	}
 
 	/**
@@ -280,12 +280,12 @@ class Assets extends \MvcCore\Ext\Views\Helpers\AbstractHelper {
 	public function AssetUrl ($path = '') {
 		$result = '';
 		if (self::$assetsUrlCompletion) {
-			// for \MvcCore\Application::GetInstance()->GetCompiled() equal to: 'PHAR', 'SFU', 'PHP_STRICT_PACKAGE', 'PHP_PRESERVE_PACKAGE', 'PHP_PRESERVE_HDD'
+			// for self::$app->GetCompiled() equal to: 'PHAR', 'SFU', 'PHP_STRICT_PACKAGE', 'PHP_PRESERVE_PACKAGE', 'PHP_PRESERVE_HDD'
 			$result = self::$scriptName . '?controller=controller&action=asset&path=' . $path;
 		} else {
-			// for \MvcCore\Application::GetInstance()->GetCompiled(), by default equal to: '' (development), 'PHP_STRICT_HDD'
+			// for self::$app->GetCompiled(), by default equal to: '' (development), 'PHP_STRICT_HDD'
 			//$result = self::$basePath . $path;
-			$result = '__RELATIVE_BASE_PATH__' . $path;
+			$result = static::REL_BASE_PATH_PLACEMENT . $path;
 		}
 		return $result;
 	}
@@ -313,208 +313,34 @@ class Assets extends \MvcCore\Ext\Views\Helpers\AbstractHelper {
 	public function CssJsFileUrl ($path = '') {
 		$result = '';
 		if (self::$assetsUrlCompletion) {
-			// for \MvcCore\Application::GetInstance()->GetCompiled() equal to: 'PHAR', 'SFU', 'PHP_STRICT_PACKAGE', 'PHP_PRESERVE_PACKAGE', 'PHP_PRESERVE_HDD'
+			// for self::$app->GetCompiled() equal to: 'PHAR', 'SFU', 'PHP_STRICT_PACKAGE', 'PHP_PRESERVE_PACKAGE', 'PHP_PRESERVE_HDD'
 			$result = $this->view->AssetUrl($path);
 		} else {
-			// for \MvcCore\Application::GetInstance()->GetCompiled() equal to: '' (development), 'PHP_STRICT_HDD'
+			// for self::$app->GetCompiled() equal to: '' (development), 'PHP_STRICT_HDD'
 			$result = self::$basePath . $path;
 		}
 		return $result;
 	}
+	
 
 	/**
-	 * Get request params controller/action combination string
-	 * @return string
-	 */
-	protected function getCtrlActionKey () {
-		return self::$ctrlActionKey;
-	}
-
-	/**
-	 * Look for every item to render if there is any 'doNotMinify' record to render item separately
-	 * @param array $items
-	 * @return array[] $itemsToRenderMinimized $itemsToRenderSeparately
-	 */
-	protected function filterItemsForNotPossibleMinifiedAndPossibleMinifiedItems ($items) {
-		$itemsToRenderMinimized = [];
-		$itemsToRenderSeparately = []; // some configurations is not possible to render together and minimized
-		// go for every item to complete existing combinations in attributes
-		foreach ($items as & $item) {
-			$itemArr = array_merge((array) $item, []);
-			unset($itemArr['path']);
-			if (isset($itemArr['render'])) unset($itemArr['render']);
-			if (isset($itemArr['external'])) unset($itemArr['external']);
-			$renderArrayKey = md5(json_encode($itemArr));
-			if ($itemArr['doNotMinify']) {
-				if (isset($itemsToRenderSeparately[$renderArrayKey])) {
-					$itemsToRenderSeparately[$renderArrayKey][] = $item;
-				} else {
-					$itemsToRenderSeparately[$renderArrayKey] = [$item];
-				}
-			} else {
-				if (isset($itemsToRenderMinimized[$renderArrayKey])) {
-					$itemsToRenderMinimized[$renderArrayKey][] = $item;
-				} else {
-					$itemsToRenderMinimized[$renderArrayKey] = [$item];
-				}
-			}
-		}
-		return [
-			$itemsToRenderMinimized,
-			$itemsToRenderSeparately,
-		];
-	}
-
-	/**
-	 * Add to href URL file modification param by original file
-	 * @param  string $url
-	 * @param  string $path
-	 * @return string
-	 */
-	protected function addFileModificationImprintToHrefUrl ($url, $path) {
-		$questionMarkPos = strpos($url, '?');
-		$separator = ($questionMarkPos === FALSE) ? '?' : '&';
-		$strippedUrl = $questionMarkPos !== FALSE ? substr($url, $questionMarkPos) : $url ;
-		$srcPath = $this->getAppRoot() . substr($strippedUrl, strlen(self::$basePath));
-		if (self::$globalOptions['fileChecking'] == 'filemtime') {
-			$fileMTime = self::getFileImprint($srcPath);
-			$url .= $separator . '_fmt=' . date(
-				self::FILE_MODIFICATION_DATE_FORMAT,
-				(int)$fileMTime
-			);
-		} else {
-			$url .= $separator . '_md5=' . self::getFileImprint($srcPath);
-		}
-		return $url;
-	}
-
-	/**
-	 * Get indent string
-	 * @param string|int $indent
-	 * @return string
-	 */
-	protected function getIndentString($indent = 0) {
-		$indentStr = '';
-		if (is_numeric($indent)) {
-			$indInt = intval($indent);
-			if ($indInt > 0) {
-				$i = 0;
-				while ($i < $indInt) {
-					$indentStr .= "\t";
-					$i += 1;
-				}
-			}
-		} else if (is_string($indent)) {
-			$indentStr = $indent;
-		}
-		return $indentStr;
-	}
-
-	/**
-	 * Return and store application document root from controller view request object
-	 * @return string
-	 */
-	protected function getAppRoot() {
-		return self::$documentRoot;
-	}
-
-	/**
-	 * Return and store application document root from controller view request object
+	 * Load (or render) asset file, process any 
+	 * custom replacements, call `$this->minify()` 
+	 * if necessary and return result content.
 	 * @throws \Exception
+	 * @param  \stdClass  $item 
+	 * @param  string     $srcFileFullPath 
+	 * @param  string     $minify 
 	 * @return string
 	 */
-	protected function getTmpDir() {
-		if (!self::$tmpDir) {
-			$tmpDir = $this->getAppRoot() . self::$globalOptions['tmpDir'];
-			if (!\MvcCore\Application::GetInstance()->GetCompiled()) {
-				if (!is_dir($tmpDir)) 
-					@mkdir($tmpDir, 0777, TRUE);
-				if (is_dir($tmpDir) && !is_writable($tmpDir)) 
-					@chmod($tmpDir, 0777);
-			}
-			self::$tmpDir = $tmpDir;
-		}
-		return self::$tmpDir;
-	}
-
+	protected abstract function render2TmpGetPathExec (\stdClass $item, $srcFileFullPath, $minify);
+	
 	/**
-	 * Save atomically file content in full path by 1 MB to not overflow any memory limits
-	 * @param string $fullPath
-	 * @param string $fileContent
-	 * @return void
-	 */
-	protected function saveFileContent ($fullPath = '', & $fileContent = '') {
-		$toolClass = \MvcCore\Application::GetInstance()->GetToolClass();
-		$toolClass::AtomicWrite($fullPath, $fileContent);
-		@chmod($fullPath, 0766);
-	}
-
-	/**
-	 * Log any render messages with optional log file name
-	 * @param string $msg
-	 * @param string $logType
-	 * @return void
-	 */
-	protected function log ($msg = '', $logType = 'debug') {
-		if (self::$loggingAndExceptions) {
-			\MvcCore\Debug::Log($msg, $logType);
-		}
-	}
-
-	/**
-	 * Throw exception with given message with actual helper class name before
-	 * @param string $msg
-	 * @throws \Exception text by given message
-	 * @return void
-	 */
-	protected function exception ($msg) {
-		if (self::$loggingAndExceptions) {
-			throw new \Exception('[' . get_class($this) . '] ' . $msg);
-		}
-	}
-
-	/**
-	 * Throw exception with given message with actual helper class name before
-	 * @param string $msg
-	 * @return void
-	 */
-	protected function warning ($msg) {
-		if (self::$loggingAndExceptions) {
-			\MvcCore\Debug::BarDump('[' . get_class($this) . '] ' . $msg, \MvcCore\IDebug::DEBUG);
-		}
-	}
-
-	/**
-	 * Render given exception
-	 * @param \Throwable $e
-	 * @return void
-	 */
-	protected function exceptionHandler ($e) {
-		if (self::$loggingAndExceptions) {
-			throw $e;
-		}
-	}
-
-	/**
-	 * Complete items group tmp directory file name by group source files info
-	 * @param array   $filesGroupInfo
-	 * @param boolean $minify
-	 * @return string
-	 */
-	protected function getTmpFileFullPathByPartFilesInfo ($filesGroupInfo = [], $minify = FALSE, $extension = '') {
-		return implode('', [
-			$this->getTmpDir(),
-			'/' . ($minify ? 'minified' : 'rendered') . '_' . $extension . '_',
-			md5(implode(',', $filesGroupInfo) . '_' . $minify),
-			'.' . $extension
-		]);
-	}
-
-	/**
-	 * Get inline `<script>` or `<style>` nonce attribute from CSP header if any.
-	 * If no CSP header exists or if CSP header exist with no nonce or `strict-dynamic`, 
+	 * Get inline `<script>` or `<style>` nonce attribute 
+	 * from CSP header if any. If no CSP header exists 
+	 * or if CSP header exist with no nonce or `strict-dynamic`, 
 	 * return an empty string.
-	 * @param  bool $js 
+	 * @param  bool   $js 
 	 * @return string
 	 */
 	protected static function getNonce ($js = TRUE) {
@@ -555,5 +381,414 @@ class Assets extends \MvcCore\Ext\Views\Helpers\AbstractHelper {
 				self::$nonces = [FALSE, FALSE];
 		}
 		return static::getNonce($js);
+	}
+	
+	/**
+	 * Initialize all static common properties 
+	 * used in css and js helper.
+	 * @param  \MvcCore\IView    $view 
+	 * @param  \MvcCore\IRequest $req 
+	 * @return void
+	 */
+	protected static function initCommonProps (\MvcCore\IView $view, \MvcCore\IRequest $req) {
+		self::$initialized = TRUE;
+
+		self::$app = $view->GetController()->GetApplication();
+
+		self::$docRoot = $req->GetDocumentRoot();
+
+		if (!self::$app->GetVendorAppDispatch()) {
+			self::$vendorDocRoot = self::$docRoot;
+		} else {
+			$vendorAppRoot = self::$app->GetVendorAppRoot();
+			$reqAppRoot = $req->GetAppRoot();
+			if ($reqAppRoot === self::$docRoot) {
+				self::$vendorDocRoot = $vendorAppRoot;
+			} else {
+				$docRootAddition = mb_substr(
+					self::$docRoot, mb_strlen($reqAppRoot)
+				);
+				self::$vendorDocRoot = $vendorAppRoot . $docRootAddition;
+			}
+		}
+
+		self::$basePath = $req->GetBasePath();
+		self::$scriptName = ltrim($req->GetScriptName(), '/.');
+		
+		self::$loggingAndExceptions = self::$app->GetEnvironment()->IsDevelopment();
+
+		$mvcCoreCompiledMode = self::$app->GetCompiled();
+
+		// file checking is true only for classic development mode, not for single file mode
+		if (!$mvcCoreCompiledMode) 
+			self::$fileChecking = TRUE;
+
+		// file rendering is true for classic development state, SFU app mode
+		if (!$mvcCoreCompiledMode || $mvcCoreCompiledMode == 'SFU') {
+			self::$fileRendering = TRUE;
+		}
+
+		// set URL addresses completion to true by default for:
+		// - all package modes outside PHP_STRICT_HDD and outside development
+		if ($mvcCoreCompiledMode && $mvcCoreCompiledMode != 'PHP_STRICT_HDD') {
+			self::$assetsUrlCompletion = TRUE;
+		} else {
+			self::$assetsUrlCompletion = FALSE;
+		}
+			
+		self::$systemConfigHash = md5(json_encode(self::$globalOptions));
+	}
+
+	/**
+	 * Returns file modification imprint by global settings -
+	 * by `md5_file()` or by `filemtime()` - always as a string
+	 * @param  string $fullPath
+	 * @return string
+	 */
+	protected static function getFileImprint ($fullPath) {
+		$fileChecking = self::$globalOptions['fileChecking'];
+		if ($fileChecking == 'filemtime') {
+			return filemtime($fullPath);
+		} else {
+			return (string) call_user_func($fileChecking, $fullPath);
+		}
+	}
+
+
+	/**
+	 * Get actually dispatched controller/action group name.
+	 * @return \stdClass[]
+	 */
+	protected function & getGroupStore () {
+		$ctrlActionKey = $this->getCtrlActionKey();
+		$name = $this->currentGroupName;
+		if (!isset($this->groupStore[$ctrlActionKey]))
+			$this->groupStore[$ctrlActionKey] = [];
+		if (!isset($this->groupStore[$ctrlActionKey][$name]))
+			$this->groupStore[$ctrlActionKey][$name] = [];
+		return $this->groupStore[$ctrlActionKey][$name];
+	}
+
+	/**
+	 * Set actually dispatched controller/action group name.
+	 * @param  \stdClass[] $items
+	 * @return \MvcCore\Ext\Views\Helpers\CssHelper
+	 */
+	protected function setGroupStore ($items) {
+		$ctrlActionKey = $this->getCtrlActionKey();
+		$name = $this->currentGroupName;
+		if (!isset($this->groupStore[$ctrlActionKey]))
+			$this->groupStore[$ctrlActionKey] = [];
+		if (!isset($this->groupStore[$ctrlActionKey][$name]))
+			$this->groupStore[$ctrlActionKey][$name] = [];
+		$this->groupStore[$ctrlActionKey][$name] = $items;
+		return $this;
+	}
+
+	/**
+	 * Unset record under given numeric index in 
+	 * actually dispatched controller/action group name.
+	 * @param  int  $index
+	 * @return bool
+	 */
+	protected function unsetGroupStore ($index) {
+		$ctrlActionKey = $this->getCtrlActionKey();
+		$name = $this->currentGroupName;
+		if (!isset($this->groupStore[$ctrlActionKey]))
+			$this->groupStore[$ctrlActionKey] = [];
+		if (!isset($this->groupStore[$ctrlActionKey][$name]))
+			$this->groupStore[$ctrlActionKey][$name] = [];
+		if (array_key_exists($index, $this->groupStore[$ctrlActionKey][$name])) {
+			unset($this->groupStore[$ctrlActionKey][$name][$index]);
+			return TRUE;
+		}
+		return FALSE;
+	}
+	
+	/**
+	 * Set up reverse group store to detect 
+	 * if style/script is already contained.
+	 * @param  \mixed[] $args
+	 * @return \MvcCore\Ext\Views\Helpers\Assets
+	 */
+	protected function setUpGroupStoreReverseKey ($args) {
+		$reverseKey = md5(serialize($args));
+		$this->groupStoreReverseKeys[$reverseKey] = TRUE;
+		return $this;
+	}
+
+	/**
+	 * Get request params controller/action combination string.
+	 * @return string
+	 */
+	protected function getCtrlActionKey () {
+		return self::$ctrlActionKey;
+	}
+
+	/**
+	 * Look for every item to render if there is any 
+	 * 'notMin' record to render item separately.
+	 * @param  \stdClass[]   $items
+	 * @return \stdClass[][] $itemsToRenderMinimized $itemsToRenderSeparately
+	 */
+	protected function separateItemsToMinifiedGroups ($items) {
+		$itemsToRenderMinimized = [];
+		$itemsToRenderSeparately = []; // some configurations is not possible to render together and minimized
+		// go for every item to complete existing combinations in attributes
+		foreach ($items as & $item) {
+			$itemArr = array_merge([], (array) $item);
+			unset($itemArr['path'], $itemArr['fullPath'], $itemArr['vendor']);
+			if (isset($itemArr['render'])) 
+				unset($itemArr['render']);
+			if (isset($itemArr['external'])) 
+				unset($itemArr['external']);
+			$renderArrayKey = md5(json_encode($itemArr));
+			if ($itemArr['notMin']) {
+				if (isset($itemsToRenderSeparately[$renderArrayKey])) {
+					$itemsToRenderSeparately[$renderArrayKey][] = $item;
+				} else {
+					$itemsToRenderSeparately[$renderArrayKey] = [$item];
+				}
+			} else {
+				if (isset($itemsToRenderMinimized[$renderArrayKey])) {
+					$itemsToRenderMinimized[$renderArrayKey][] = $item;
+				} else {
+					$itemsToRenderMinimized[$renderArrayKey] = [$item];
+				}
+			}
+		}
+		return [
+			$itemsToRenderMinimized,
+			$itemsToRenderSeparately,
+		];
+	}
+
+	/**
+	 * Render js file by path and store result 
+	 * in tmp directory and return new src value.
+	 * @param  \stdClass $item
+	 * @param  bool      $minify
+	 * @param  string    $type
+	 * @return string
+	 */
+	protected function render2TmpGetPath ($item, $minify, $type) {
+		$tmpFileName = $this->getTmpFileName($item->path, 'rendered');
+		$srcFileFullPath = $item->fullPath;
+		$tmpFileFullPath = $this->getTmpDir() . $tmpFileName;
+		if (self::$fileRendering) {
+			if (file_exists($srcFileFullPath)) {
+				$srcFileModDate = filemtime($srcFileFullPath);
+			} else {
+				$srcFileModDate = 1;
+			}
+			if (file_exists($tmpFileFullPath)) {
+				$tmpFileModDate = filemtime($tmpFileFullPath);
+			} else {
+				$tmpFileModDate = 0;
+			}
+			if ($srcFileModDate !== FALSE && $tmpFileModDate !== FALSE) {
+				if ($srcFileModDate > $tmpFileModDate) {
+					$fileContent = $this->render2TmpGetPathExec(
+						$item, $srcFileFullPath, $minify	
+					);
+					$this->saveFileContent($tmpFileFullPath, $fileContent);
+					$this->log(ucfirst($type) . " file rendered ('{$tmpFileFullPath}').", 'debug');
+				}
+			}
+		}
+		$tmpPath = mb_substr($tmpFileFullPath, mb_strlen(static::$docRoot));
+		return $tmpPath;
+	}
+
+	/**
+	 * Add to href URL file modification param by original file.
+	 * @param  string $url
+	 * @param  string $fullPath
+	 * @return string
+	 */
+	protected function addFileModImprint2HrefUrl ($url, $fullPath) {
+		$questionMarkPos = strpos($url, '?');
+		$separator = ($questionMarkPos === FALSE) ? '?' : '&';
+		if (self::$globalOptions['fileChecking'] == 'filemtime') {
+			$fileMTime = self::getFileImprint($fullPath);
+			$url .= $separator . '_fmt=' . date(
+				self::FILE_MODIFICATION_DATE_FORMAT,
+				(int)$fileMTime
+			);
+		} else {
+			$url .= $separator . '_md5=' . self::getFileImprint($fullPath);
+		}
+		return $url;
+	}
+
+	/**
+	 * Get indent string.
+	 * @param  string|int $indent
+	 * @return string
+	 */
+	protected function getIndentString ($indent = 0) {
+		$indentStr = '';
+		if (is_numeric($indent)) {
+			$indInt = intval($indent);
+			if ($indInt > 0) {
+				$i = 0;
+				while ($i < $indInt) {
+					$indentStr .= "\t";
+					$i += 1;
+				}
+			}
+		} else if (is_string($indent)) {
+			$indentStr = $indent;
+		}
+		return $indentStr;
+	}
+
+	/**
+	 * Return filename in assets tmp dir.
+	 * @param  string $path   Originaly defined path.
+	 * @param  string $prefix Prefix in tmp dir.
+	 * @return string
+	 */
+	protected function getTmpFileName ($path, $prefix) {
+		return '/' . implode('_', [
+			$prefix,
+			self::$systemConfigHash,
+			trim(str_replace('/', '_', $path), "_"),
+		]);
+	}
+	
+	/**
+	 * Move file from any vendor assets directory into 
+	 * assets tmp dir. Return new asset path in tmp directory.
+	 * @param  string $path 
+	 * @param  string $fullPath 
+	 * @param  string $type
+	 * @return string
+	 */
+	protected function move2TmpGetPath ($path,$srcFileFullPath, $type) {
+		$tmpFileName = $this->getTmpFileName($path, 'moved');
+		$tmpFileFullPath = $this->getTmpDir() . $tmpFileName;
+		if (self::$fileRendering) {
+			if (file_exists($srcFileFullPath)) {
+				$srcFileModDate = filemtime($srcFileFullPath);
+			} else {
+				$srcFileModDate = 1;
+			}
+			$tmpFileExists = file_exists($tmpFileFullPath);
+			if ($tmpFileExists) {
+				$tmpFileModDate = filemtime($tmpFileFullPath);
+			} else {
+				$tmpFileModDate = 0;
+			}
+			if ($srcFileModDate !== FALSE && $tmpFileModDate !== FALSE) {
+				if ($srcFileModDate > $tmpFileModDate) {
+					if ($tmpFileExists) {
+						$removed = @unlink($tmpFileExists);
+						if (!$removed) $this->exception(
+							"Not possible to remove previous "
+							."tmp file to move {$type}: `{$path}`."
+						);
+					}
+					$copied = copy($srcFileFullPath, $tmpFileFullPath);
+					if (!$copied) $this->exception(
+						"Not possible to copy {$type}: `{$path}` into tmp file."
+					);
+					$this->log("File copied: `{$tmpFileFullPath}`.", 'debug');
+				}
+			}
+		}
+		return mb_substr($tmpFileFullPath, mb_strlen(static::$docRoot));
+	}
+
+	/**
+	 * Return and store application document root 
+	 * from controller view request object.
+	 * @throws \Exception
+	 * @return string
+	 */
+	protected function getTmpDir () {
+		if (!self::$tmpDir) {
+			$tmpDir = static::$docRoot . self::$globalOptions['tmpDir'];
+			if (self::$fileChecking) {
+				if (!is_dir($tmpDir)) 
+					@mkdir($tmpDir, 0777, TRUE);
+				if (is_dir($tmpDir) && !is_writable($tmpDir)) 
+					@chmod($tmpDir, 0777);
+			}
+			self::$tmpDir = $tmpDir;
+		}
+		return self::$tmpDir;
+	}
+
+	/**
+	 * Save atomically file content in full path 
+	 * by 1 MB to not overflow any memory limits.
+	 * @param  string $fullPath
+	 * @param  string $fileContent
+	 * @return void
+	 */
+	protected function saveFileContent ($fullPath = '', $fileContent = '') {
+		$toolClass = self::$app->GetToolClass();
+		$toolClass::AtomicWrite($fullPath, $fileContent);
+		@chmod($fullPath, 0766);
+	}
+
+	/**
+	 * Log any render messages with optional log file name.
+	 * @param  string $msg
+	 * @param  string $logType
+	 * @return void
+	 */
+	protected function log ($msg, $logType = 'debug') {
+		if (self::$loggingAndExceptions)
+			\MvcCore\Debug::Log($msg, $logType);
+	}
+
+	/**
+	 * Throw exception with given message with actual helper class name before
+	 * @throws \Exception text by given message
+	 * @param  string     $msg
+	 * @return void
+	 */
+	protected function exception ($msg) {
+		if (self::$loggingAndExceptions)
+			throw new \Exception('[' . get_class($this) . '] ' . $msg);
+	}
+
+	/**
+	 * Throw exception with given message 
+	 * with actual helper class name before.
+	 * @param  string $msg
+	 * @return void
+	 */
+	protected function warning ($msg) {
+		if (self::$loggingAndExceptions)
+			\MvcCore\Debug::BarDump('[' . get_class($this) . '] ' . $msg, \MvcCore\IDebug::DEBUG);
+	}
+
+	/**
+	 * Thrown given exception by configuration.
+	 * @param  \Throwable $e
+	 * @return void
+	 */
+	protected function exceptionHandler ($e) {
+		if (self::$loggingAndExceptions)
+			throw $e;
+	}
+
+	/**
+	 * Complete items group tmp directory file 
+	 * name by group source files info.
+	 * @param  array  $filesGroupInfo
+	 * @param  bool   $minify
+	 * @return string
+	 */
+	protected function getTmpFileFullPathByPartFilesInfo ($filesGroupInfo, $minify, $extension) {
+		return implode('', [
+			$this->getTmpDir(),
+			'/' . ($minify ? 'minified' : 'rendered') . '_' . $extension . '_',
+			md5(implode(',', $filesGroupInfo) . '_' . $minify),
+			'.' . $extension
+		]);
 	}
 }
