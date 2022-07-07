@@ -48,8 +48,8 @@ class JsHelper extends Assets {
 	public function Render ($indent = 0) {
 		$currentGroupRecords = & $this->getGroupStore();
 		if (count($currentGroupRecords) === 0) return '';
-		$minify = (bool) self::$globalOptions['jsMinify'];
-		$joinTogether = (bool) self::$globalOptions['jsJoin'];
+		$minify = (bool) static::$globalOptions['jsMinify'];
+		$joinTogether = (bool) static::$globalOptions['jsJoin'];
 		if ($joinTogether) {
 			$result = $this->renderItemsTogether(
 				$currentGroupRecords,
@@ -428,14 +428,14 @@ class JsHelper extends Assets {
 	 * @return \stdClass
 	 */
 	protected function completeItem ($path, $async, $defer, $notMin, $vendor, $external) {
-		if (self::$fileChecking) {
+		if (static::$fileChecking) {
 			$duplication = $this->isDuplicateScript($path, $vendor);
 			if ($duplication !== NULL) 
 				$this->warning("Script `{$path}` is already added in js group: `{$duplication}`.");
 	}
 		if ($vendor) 
 			$path = $this->move2TmpGetPath(
-				$path, self::$vendorDocRoot . $path, 'js'
+				$path, static::$vendorDocRoot . $path, 'js'
 			);
 		return (object) [
 			'fullPath'	=> static::$docRoot . $path,
@@ -505,7 +505,7 @@ class JsHelper extends Assets {
 
 		$indentStr = $this->getIndentString($indent);
 		$resultItems = [];
-		if (self::$fileRendering) 
+		if (static::$fileRendering) 
 			$resultItems[] = '<!-- js group begin: ' . $this->currentGroupName . ' -->';
 
 		// process array with groups, which are not possible to minimize
@@ -518,7 +518,7 @@ class JsHelper extends Assets {
 			$resultItems[] = $this->renderItemsTogetherAsGroup($itemsToRender, $minify);
 		}
 
-		if (self::$fileRendering) 
+		if (static::$fileRendering) 
 			$resultItems[] = $indentStr . '<!-- js group end: ' . $this->currentGroupName . ' -->';
 		
 		return "\n" . $indentStr . implode("\n" . $indentStr, $resultItems);
@@ -538,13 +538,13 @@ class JsHelper extends Assets {
 			if ($item->external) {
 				$item->path = $this->download2TmpGetPath($item, $minify);
 				$item->fullPath = static::$docRoot . $item->path;
-				$filesGroupInfo[] = $item->path . '?_' . self::getFileImprint($item->fullPath);
+				$filesGroupInfo[] = $item->path . '?_' . static::getFileImprint($item->fullPath);
 			} else {
-				if (self::$fileChecking) {
+				if (static::$fileChecking) {
 					if (!file_exists($item->fullPath)) {
 						$this->exception("File not found in JS view rendering process ('{$item->fullPath}').");
 					}
-					$filesGroupInfo[] = $item->path . '?_' . self::getFileImprint($item->fullPath);
+					$filesGroupInfo[] = $item->path . '?_' . static::getFileImprint($item->fullPath);
 				} else {
 					$filesGroupInfo[] = $item->path;
 				}
@@ -555,7 +555,7 @@ class JsHelper extends Assets {
 		);
 
 		// check, if the rendered, together completed and minimized file is in tmp cache already
-		if (self::$fileRendering) {
+		if (static::$fileRendering) {
 			if (!file_exists($tmpFileFullPath)) {
 				// load all items and join them together
 				$resultContents = [];
@@ -595,7 +595,7 @@ class JsHelper extends Assets {
 	protected function renderItemsSeparated (array & $items, $indent, $minify) {
 		$indentStr = $this->getIndentString($indent);
 		$resultItems = [];
-		if (self::$fileRendering) 
+		if (static::$fileRendering) 
 			$resultItems[] = '<!-- js group begin: ' . $this->currentGroupName . ' -->';
 		foreach ($items as $item) {
 			if ($item->external) {
@@ -605,11 +605,11 @@ class JsHelper extends Assets {
 			} else {
 				$item->src = $this->CssJsFileUrl($item->path);
 			}
-			if (self::$fileChecking)
+			if (static::$fileChecking)
 				$item->src = $this->addFileModImprint2HrefUrl($item->src, $item->fullPath);
 			$resultItems[] = $this->renderItemSeparated($item);
 		}
-		if (self::$fileRendering) 
+		if (static::$fileRendering) 
 			$resultItems[] = '<!-- js group end: ' . $this->currentGroupName . ' -->';
 		return "\n" . $indentStr . implode("\n" . $indentStr, $resultItems);
 	}
@@ -624,7 +624,7 @@ class JsHelper extends Assets {
 		if ($nonceAttr = static::getNonce(TRUE)) $result[] = $nonceAttr;
 		if ($item->async) $result[] = ' async="async"';
 		if ($item->defer) $result[] = ' defer="defer"';
-		if (!$item->external && self::$fileChecking && !file_exists($item->fullPath)) {
+		if (!$item->external && static::$fileChecking && !file_exists($item->fullPath)) {
 			$this->log("File not found in JS view rendering process: `{$item->fullPath}`.", 'error');
 		}
 		$result[] = ' src="' . $item->src . '"></script>';
@@ -658,13 +658,13 @@ class JsHelper extends Assets {
 		$path = $item->path;
 		$tmpFileName = $this->getTmpFileName($item->path, 'external');
 		$tmpFileFullPath = $this->getTmpDir() . $tmpFileName;
-		if (self::$fileRendering) {
+		if (static::$fileRendering) {
 			if (file_exists($tmpFileFullPath)) {
 				$cacheFileTime = filemtime($tmpFileFullPath);
 			} else {
 				$cacheFileTime = 0;
 			}
-			if (time() > $cacheFileTime + self::EXTERNAL_MIN_CACHE_TIME) {
+			if (time() > $cacheFileTime + static::EXTERNAL_MIN_CACHE_TIME) {
 				while (TRUE) {
 					$newPath = $this->getPossiblyRedirectedPath($path);
 					if ($newPath === $path) {

@@ -75,8 +75,8 @@ class CssHelper extends Assets {
 	public function Render ($indent = 0) {
 		$currentGroupRecords = & $this->getGroupStore();
 		if (count($currentGroupRecords) === 0) return '';
-		$minify = (bool) self::$globalOptions['cssMinify'];
-		$joinTogether = (bool) self::$globalOptions['cssJoin'];
+		$minify = (bool) static::$globalOptions['cssMinify'];
+		$joinTogether = (bool) static::$globalOptions['cssJoin'];
 		if ($joinTogether) {
 			$result = $this->renderItemsTogether(
 				$currentGroupRecords,
@@ -453,14 +453,14 @@ class CssHelper extends Assets {
 	 * @return \stdClass
 	 */
 	protected function completeItem ($path, $media, $notMin, $vendor, $render) {
-		if (self::$fileChecking) {
+		if (static::$fileChecking) {
 			$duplication = $this->isDuplicateStyle($path, $vendor);
 			if ($duplication !== NULL) 
 				$this->warning("Style sheet `{$path}` is already added in css group: `{$duplication}`.");
 		}
 		if ($vendor)
 			$path = $this->move2TmpGetPath(
-				$path, self::$vendorDocRoot . $path, 'css'
+				$path, static::$vendorDocRoot . $path, 'css'
 			);
 		return (object) [
 			'fullPath'		=> static::$docRoot . $path,
@@ -552,7 +552,7 @@ class CssHelper extends Assets {
 
 		$indentStr = $this->getIndentString($indent);
 		$resultItems = [];
-		if (self::$fileRendering) 
+		if (static::$fileRendering) 
 			$resultItems[] = '<!-- css group begin: ' . $this->currentGroupName . ' -->';
 
 		// process array with groups, which are not possible to minimize
@@ -565,7 +565,7 @@ class CssHelper extends Assets {
 			$resultItems[] = $this->renderItemsTogetherAsGroup($itemsToRender, $minify);
 		}
 
-		if (self::$fileRendering) 
+		if (static::$fileRendering) 
 			$resultItems[] = '<!-- css group end: ' . $this->currentGroupName . ' -->';
 
 		return "\n" . $indentStr . implode("\n" . $indentStr, $resultItems);
@@ -582,11 +582,11 @@ class CssHelper extends Assets {
 		// complete tmp filename by source filenames and source files modification times
 		$filesGroupInfo = [];
 		foreach ($itemsToRender as $item) {
-			if (self::$fileChecking) {
+			if (static::$fileChecking) {
 				if (!file_exists($item->fullPath)) {
 					$this->exception("File not found in CSS view rendering process ('{$item->fullPath}').");
 				}
-				$filesGroupInfo[] = $item->path . '?_' . self::getFileImprint($item->fullPath);
+				$filesGroupInfo[] = $item->path . '?_' . static::getFileImprint($item->fullPath);
 			} else {
 				$filesGroupInfo[] = $item->path;
 			}
@@ -597,7 +597,7 @@ class CssHelper extends Assets {
 
 		// check, if the rendered, together completed 
 		// and minimized file is in tmp cache already
-		if (self::$fileRendering) {
+		if (static::$fileRendering) {
 			if (!file_exists($tmpFileFullPath)) {
 				// load all items and join them together
 				$resultContents = [];
@@ -637,7 +637,7 @@ class CssHelper extends Assets {
 	protected function renderItemsSeparated (array & $items, $indent, $minify) {
 		$indentStr = $this->getIndentString($indent);
 		$resultItems = [];
-		if (self::$fileRendering) 
+		if (static::$fileRendering) 
 			$resultItems[] = '<!-- css group begin: ' . $this->currentGroupName . ' -->';
 		foreach ($items as $item) {
 			if ($item->render || ($minify && !$item->notMin)) {
@@ -645,11 +645,11 @@ class CssHelper extends Assets {
 			} else {
 				$item->href = $this->CssJsFileUrl($item->path);
 			}
-			if (self::$fileChecking)
+			if (static::$fileChecking)
 				$item->href = $this->addFileModImprint2HrefUrl($item->href, $item->fullPath);
 			$resultItems[] = $this->renderItemSeparated($item);
 		}
-		if (self::$fileRendering) 
+		if (static::$fileRendering) 
 			$resultItems[] = '<!-- css group end: ' . $this->currentGroupName . ' -->';
 		return "\n" . $indentStr . implode("\n" . $indentStr, $resultItems);
 	}
@@ -664,7 +664,7 @@ class CssHelper extends Assets {
 		if ($nonceAttr = static::getNonce(FALSE)) $result[] = $nonceAttr;
 		if ($item->media !== static::MEDIA_ALL) 
 			$result[] = ' media="' . static::$mediaTypes[$item->media] . '"';
-		if (!$item->render && self::$fileChecking && !file_exists($item->fullPath)) {
+		if (!$item->render && static::$fileChecking && !file_exists($item->fullPath)) {
 			$this->log("File not found in CSS view rendering process: `{$item->fullPath}`.", 'error');
 		}
 		$result[] = ' href="' . $item->href . '" />';

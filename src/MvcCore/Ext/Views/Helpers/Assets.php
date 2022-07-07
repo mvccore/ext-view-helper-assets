@@ -23,7 +23,7 @@ abstract class Assets extends \MvcCore\Ext\Views\Helpers\AbstractHelper {
 	 * Comparison by PHP function version_compare();
 	 * @see http://php.net/manual/en/function.version-compare.php
 	 */
-	const VERSION = '5.1.1';
+	const VERSION = '5.1.2';
 
 	/**
 	 * Default link group name
@@ -174,7 +174,7 @@ abstract class Assets extends \MvcCore\Ext\Views\Helpers\AbstractHelper {
 	protected static $assetsUrlCompletion = NULL;
 
 	/**
-	 * Hash completed as md5(json_encode()) from self::$globalOptions
+	 * Hash completed as md5(json_encode()) from static::$globalOptions
 	 * @var string
 	 */
 	protected static $systemConfigHash = '';
@@ -202,9 +202,9 @@ abstract class Assets extends \MvcCore\Ext\Views\Helpers\AbstractHelper {
 	 * @return void
 	 */
 	public static function SetGlobalOptions ($options = []) {
-		self::$globalOptions = array_merge(self::$globalOptions, (array) $options);
+		static::$globalOptions = array_merge(static::$globalOptions, (array) $options);
 		if (isset($options['assetsUrl']) && !is_null($options['assetsUrl'])) {
-			self::$assetsUrlCompletion = (bool) $options['assetsUrl'];
+			static::$assetsUrlCompletion = (bool) $options['assetsUrl'];
 		}
 	}
 
@@ -218,7 +218,7 @@ abstract class Assets extends \MvcCore\Ext\Views\Helpers\AbstractHelper {
 	 * @return void
 	 */
 	public static function SetAssetUrlCompletion ($enable = TRUE) {
-		self::$assetsUrlCompletion = $enable;
+		static::$assetsUrlCompletion = $enable;
 	}
 
 	/**
@@ -228,7 +228,7 @@ abstract class Assets extends \MvcCore\Ext\Views\Helpers\AbstractHelper {
 	 * @return void
 	 */
 	public static function SetBasePath ($basePath) {
-		self::$basePath = $basePath;
+		static::$basePath = $basePath;
 	}
 
 
@@ -240,11 +240,11 @@ abstract class Assets extends \MvcCore\Ext\Views\Helpers\AbstractHelper {
 	public function SetView (\MvcCore\IView $view) {
 		parent::SetView($view);
 		$req = $this->request;
-		self::$ctrlActionKey = implode('/', [
+		static::$ctrlActionKey = implode('/', [
 			$req->GetControllerName(),
 			$req->GetActionName()
 		]);
-		if (!self::$initialized) 
+		if (!static::$initialized) 
 			static::initCommonProps($view, $req);
 		return $this;
 	}
@@ -270,7 +270,7 @@ abstract class Assets extends \MvcCore\Ext\Views\Helpers\AbstractHelper {
 	 * in form: '?controller=controller&action=asset&path=...'.
 	 *
 	 * Feel free to change this css/js file URL completion to any custom way.
-	 * There could be typically only: "$result = self::$basePath . $path;",
+	 * There could be typically only: "$result = static::$basePath . $path;",
 	 * but if you want to complete URL for assets on hard drive or
 	 * to any other CDN place, use \MvcCore\Ext\Views\Helpers\Assets::SetBasePath($cdnBasePath);
 	 *
@@ -279,12 +279,12 @@ abstract class Assets extends \MvcCore\Ext\Views\Helpers\AbstractHelper {
 	 */
 	public function AssetUrl ($path = '') {
 		$result = '';
-		if (self::$assetsUrlCompletion) {
-			// for self::$app->GetCompiled() equal to: 'PHAR', 'SFU', 'PHP_STRICT_PACKAGE', 'PHP_PRESERVE_PACKAGE', 'PHP_PRESERVE_HDD'
-			$result = self::$scriptName . '?controller=controller&action=asset&path=' . $path;
+		if (static::$assetsUrlCompletion) {
+			// for static::$app->GetCompiled() equal to: 'PHAR', 'SFU', 'PHP_STRICT_PACKAGE', 'PHP_PRESERVE_PACKAGE', 'PHP_PRESERVE_HDD'
+			$result = static::$scriptName . '?controller=controller&action=asset&path=' . $path;
 		} else {
-			// for self::$app->GetCompiled(), by default equal to: '' (development), 'PHP_STRICT_HDD'
-			//$result = self::$basePath . $path;
+			// for static::$app->GetCompiled(), by default equal to: '' (development), 'PHP_STRICT_HDD'
+			//$result = static::$basePath . $path;
 			$result = static::REL_BASE_PATH_PLACEMENT . $path;
 		}
 		return $result;
@@ -303,7 +303,7 @@ abstract class Assets extends \MvcCore\Ext\Views\Helpers\AbstractHelper {
 	 * in form: 'index.php?controller=controller&action=asset&path=...'.
 	 *
 	 * Feel free to change this css/js file URL completion to any custom way.
-	 * There could be typically only: "$result = self::$basePath . $path;",
+	 * There could be typically only: "$result = static::$basePath . $path;",
 	 * but if you want to complete URL for assets on hard drive or
 	 * to any other CDN place, use \MvcCore\Ext\Views\Helpers\Assets::SetBasePath($cdnBasePath);
 	 *
@@ -312,12 +312,12 @@ abstract class Assets extends \MvcCore\Ext\Views\Helpers\AbstractHelper {
 	 */
 	public function CssJsFileUrl ($path = '') {
 		$result = '';
-		if (self::$assetsUrlCompletion) {
-			// for self::$app->GetCompiled() equal to: 'PHAR', 'SFU', 'PHP_STRICT_PACKAGE', 'PHP_PRESERVE_PACKAGE', 'PHP_PRESERVE_HDD'
+		if (static::$assetsUrlCompletion) {
+			// for static::$app->GetCompiled() equal to: 'PHAR', 'SFU', 'PHP_STRICT_PACKAGE', 'PHP_PRESERVE_PACKAGE', 'PHP_PRESERVE_HDD'
 			$result = $this->view->AssetUrl($path);
 		} else {
-			// for self::$app->GetCompiled() equal to: '' (development), 'PHP_STRICT_HDD'
-			$result = self::$basePath . $path;
+			// for static::$app->GetCompiled() equal to: '' (development), 'PHP_STRICT_HDD'
+			$result = static::$basePath . $path;
 		}
 		return $result;
 	}
@@ -345,10 +345,10 @@ abstract class Assets extends \MvcCore\Ext\Views\Helpers\AbstractHelper {
 	 */
 	protected static function getNonce ($js = TRUE) {
 		$nonceIndex = $js ? 1 : 0;
-		if (self::$nonces[$nonceIndex] !== NULL) 
-			return self::$nonces[$nonceIndex] === FALSE
+		if (static::$nonces[$nonceIndex] !== NULL) 
+			return static::$nonces[$nonceIndex] === FALSE
 				? ''
-				: ' nonce="' . self::$nonces[$nonceIndex] . '"';
+				: ' nonce="' . static::$nonces[$nonceIndex] . '"';
 		$cspClassFullName = '\\MvcCore\\Ext\\Tools\\Csp';
 		if (class_exists($cspClassFullName)) {
 			/** @var \MvcCore\Ext\Tools\Csp $csp */
@@ -360,7 +360,7 @@ abstract class Assets extends \MvcCore\Ext\Views\Helpers\AbstractHelper {
 			) || (
 				!$js && ($csp->IsAllowedNonce($cspClassFullName::FETCH_STYLE_SRC) || $defaultScrNonce)
 			)) $assetsNonce = $csp->GetNonce();
-			self::$nonces[$nonceIndex] = $assetsNonce;
+			static::$nonces[$nonceIndex] = $assetsNonce;
 		} else {
 			$headerFound = false;
 			foreach (headers_list() as $rawHeader) {
@@ -370,7 +370,7 @@ abstract class Assets extends \MvcCore\Ext\Views\Helpers\AbstractHelper {
 				foreach ($sections as $sectionKey => $sectionValue) 
 					if (preg_match_all("#{$sectionKey}\-src\s+(?:[^;]+\s)?\'nonce\-([^']+)\'#i", $rawHeaderValue, $sectionMatches)) 
 						$sections[$sectionKey] = $sectionMatches[1][0];
-				self::$nonces = [
+				static::$nonces = [
 					$sections['style']  ? $sections['style']  : $sections['default'],
 					$sections['script'] ? $sections['script'] : $sections['default']
 				];
@@ -378,7 +378,7 @@ abstract class Assets extends \MvcCore\Ext\Views\Helpers\AbstractHelper {
 				break;
 			}
 			if (!$headerFound) 
-				self::$nonces = [FALSE, FALSE];
+				static::$nonces = [FALSE, FALSE];
 		}
 		return static::getNonce($js);
 	}
@@ -391,52 +391,52 @@ abstract class Assets extends \MvcCore\Ext\Views\Helpers\AbstractHelper {
 	 * @return void
 	 */
 	protected static function initCommonProps (\MvcCore\IView $view, \MvcCore\IRequest $req) {
-		self::$initialized = TRUE;
+		static::$initialized = TRUE;
 
-		self::$app = $view->GetController()->GetApplication();
+		static::$app = $view->GetController()->GetApplication();
 
-		self::$docRoot = $req->GetDocumentRoot();
+		static::$docRoot = $req->GetDocumentRoot();
 
-		if (!self::$app->GetVendorAppDispatch()) {
-			self::$vendorDocRoot = self::$docRoot;
+		if (!static::$app->GetVendorAppDispatch()) {
+			static::$vendorDocRoot = static::$docRoot;
 		} else {
-			$vendorAppRoot = self::$app->GetVendorAppRoot();
+			$vendorAppRoot = static::$app->GetVendorAppRoot();
 			$reqAppRoot = $req->GetAppRoot();
-			if ($reqAppRoot === self::$docRoot) {
-				self::$vendorDocRoot = $vendorAppRoot;
+			if ($reqAppRoot === static::$docRoot) {
+				static::$vendorDocRoot = $vendorAppRoot;
 			} else {
 				$docRootAddition = mb_substr(
-					self::$docRoot, mb_strlen($reqAppRoot)
+					static::$docRoot, mb_strlen($reqAppRoot)
 				);
-				self::$vendorDocRoot = $vendorAppRoot . $docRootAddition;
+				static::$vendorDocRoot = $vendorAppRoot . $docRootAddition;
 			}
 		}
 
-		self::$basePath = $req->GetBasePath();
-		self::$scriptName = ltrim($req->GetScriptName(), '/.');
+		static::$basePath = $req->GetBasePath();
+		static::$scriptName = ltrim($req->GetScriptName(), '/.');
 		
-		self::$loggingAndExceptions = self::$app->GetEnvironment()->IsDevelopment();
+		static::$loggingAndExceptions = static::$app->GetEnvironment()->IsDevelopment();
 
-		$mvcCoreCompiledMode = self::$app->GetCompiled();
+		$mvcCoreCompiledMode = static::$app->GetCompiled();
 
 		// file checking is true only for classic development mode, not for single file mode
 		if (!$mvcCoreCompiledMode) 
-			self::$fileChecking = TRUE;
+			static::$fileChecking = TRUE;
 
 		// file rendering is true for classic development state, SFU app mode
 		if (!$mvcCoreCompiledMode || $mvcCoreCompiledMode == 'SFU') {
-			self::$fileRendering = TRUE;
+			static::$fileRendering = TRUE;
 		}
 
 		// set URL addresses completion to true by default for:
 		// - all package modes outside PHP_STRICT_HDD and outside development
 		if ($mvcCoreCompiledMode && $mvcCoreCompiledMode != 'PHP_STRICT_HDD') {
-			self::$assetsUrlCompletion = TRUE;
+			static::$assetsUrlCompletion = TRUE;
 		} else {
-			self::$assetsUrlCompletion = FALSE;
+			static::$assetsUrlCompletion = FALSE;
 		}
 			
-		self::$systemConfigHash = md5(json_encode(self::$globalOptions));
+		static::$systemConfigHash = md5(json_encode(static::$globalOptions));
 	}
 
 	/**
@@ -446,7 +446,7 @@ abstract class Assets extends \MvcCore\Ext\Views\Helpers\AbstractHelper {
 	 * @return string
 	 */
 	protected static function getFileImprint ($fullPath) {
-		$fileChecking = self::$globalOptions['fileChecking'];
+		$fileChecking = static::$globalOptions['fileChecking'];
 		if ($fileChecking == 'filemtime') {
 			return filemtime($fullPath);
 		} else {
@@ -522,7 +522,7 @@ abstract class Assets extends \MvcCore\Ext\Views\Helpers\AbstractHelper {
 	 * @return string
 	 */
 	protected function getCtrlActionKey () {
-		return self::$ctrlActionKey;
+		return static::$ctrlActionKey;
 	}
 
 	/**
@@ -575,7 +575,7 @@ abstract class Assets extends \MvcCore\Ext\Views\Helpers\AbstractHelper {
 		$tmpFileName = $this->getTmpFileName($item->path, 'rendered');
 		$srcFileFullPath = $item->fullPath;
 		$tmpFileFullPath = $this->getTmpDir() . $tmpFileName;
-		if (self::$fileRendering) {
+		if (static::$fileRendering) {
 			if (file_exists($srcFileFullPath)) {
 				$srcFileModDate = filemtime($srcFileFullPath);
 			} else {
@@ -609,14 +609,14 @@ abstract class Assets extends \MvcCore\Ext\Views\Helpers\AbstractHelper {
 	protected function addFileModImprint2HrefUrl ($url, $fullPath) {
 		$questionMarkPos = strpos($url, '?');
 		$separator = ($questionMarkPos === FALSE) ? '?' : '&';
-		if (self::$globalOptions['fileChecking'] == 'filemtime') {
-			$fileMTime = self::getFileImprint($fullPath);
+		if (static::$globalOptions['fileChecking'] == 'filemtime') {
+			$fileMTime = static::getFileImprint($fullPath);
 			$url .= $separator . '_fmt=' . date(
-				self::FILE_MODIFICATION_DATE_FORMAT,
+				static::FILE_MODIFICATION_DATE_FORMAT,
 				(int)$fileMTime
 			);
 		} else {
-			$url .= $separator . '_md5=' . self::getFileImprint($fullPath);
+			$url .= $separator . '_md5=' . static::getFileImprint($fullPath);
 		}
 		return $url;
 	}
@@ -652,7 +652,7 @@ abstract class Assets extends \MvcCore\Ext\Views\Helpers\AbstractHelper {
 	protected function getTmpFileName ($path, $prefix) {
 		return '/' . implode('_', [
 			$prefix,
-			self::$systemConfigHash,
+			static::$systemConfigHash,
 			trim(str_replace('/', '_', $path), "_"),
 		]);
 	}
@@ -668,7 +668,7 @@ abstract class Assets extends \MvcCore\Ext\Views\Helpers\AbstractHelper {
 	protected function move2TmpGetPath ($path,$srcFileFullPath, $type) {
 		$tmpFileName = $this->getTmpFileName($path, 'moved');
 		$tmpFileFullPath = $this->getTmpDir() . $tmpFileName;
-		if (self::$fileRendering) {
+		if (static::$fileRendering) {
 			if (file_exists($srcFileFullPath)) {
 				$srcFileModDate = filemtime($srcFileFullPath);
 			} else {
@@ -707,17 +707,17 @@ abstract class Assets extends \MvcCore\Ext\Views\Helpers\AbstractHelper {
 	 * @return string
 	 */
 	protected function getTmpDir () {
-		if (!self::$tmpDir) {
-			$tmpDir = static::$docRoot . self::$globalOptions['tmpDir'];
-			if (self::$fileChecking) {
+		if (!static::$tmpDir) {
+			$tmpDir = static::$docRoot . static::$globalOptions['tmpDir'];
+			if (static::$fileChecking) {
 				if (!is_dir($tmpDir)) 
 					@mkdir($tmpDir, 0777, TRUE);
 				if (is_dir($tmpDir) && !is_writable($tmpDir)) 
 					@chmod($tmpDir, 0777);
 			}
-			self::$tmpDir = $tmpDir;
+			static::$tmpDir = $tmpDir;
 		}
-		return self::$tmpDir;
+		return static::$tmpDir;
 	}
 
 	/**
@@ -728,7 +728,7 @@ abstract class Assets extends \MvcCore\Ext\Views\Helpers\AbstractHelper {
 	 * @return void
 	 */
 	protected function saveFileContent ($fullPath = '', $fileContent = '') {
-		$toolClass = self::$app->GetToolClass();
+		$toolClass = static::$app->GetToolClass();
 		$toolClass::AtomicWrite($fullPath, $fileContent);
 		@chmod($fullPath, 0766);
 	}
@@ -740,7 +740,7 @@ abstract class Assets extends \MvcCore\Ext\Views\Helpers\AbstractHelper {
 	 * @return void
 	 */
 	protected function log ($msg, $logType = 'debug') {
-		if (self::$loggingAndExceptions)
+		if (static::$loggingAndExceptions)
 			\MvcCore\Debug::Log($msg, $logType);
 	}
 
@@ -751,7 +751,7 @@ abstract class Assets extends \MvcCore\Ext\Views\Helpers\AbstractHelper {
 	 * @return void
 	 */
 	protected function exception ($msg) {
-		if (self::$loggingAndExceptions)
+		if (static::$loggingAndExceptions)
 			throw new \Exception('[' . get_class($this) . '] ' . $msg);
 	}
 
@@ -762,7 +762,7 @@ abstract class Assets extends \MvcCore\Ext\Views\Helpers\AbstractHelper {
 	 * @return void
 	 */
 	protected function warning ($msg) {
-		if (self::$loggingAndExceptions)
+		if (static::$loggingAndExceptions)
 			\MvcCore\Debug::BarDump('[' . get_class($this) . '] ' . $msg, \MvcCore\IDebug::DEBUG);
 	}
 
@@ -772,7 +772,7 @@ abstract class Assets extends \MvcCore\Ext\Views\Helpers\AbstractHelper {
 	 * @return void
 	 */
 	protected function exceptionHandler ($e) {
-		if (self::$loggingAndExceptions)
+		if (static::$loggingAndExceptions)
 			throw $e;
 	}
 
