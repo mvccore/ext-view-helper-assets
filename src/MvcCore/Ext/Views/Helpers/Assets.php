@@ -683,7 +683,7 @@ abstract class Assets extends \MvcCore\Ext\Views\Helpers\AbstractHelper {
 			if ($srcFileModDate !== FALSE && $tmpFileModDate !== FALSE) {
 				if ($srcFileModDate > $tmpFileModDate) {
 					if ($tmpFileExists) {
-						$removed = @unlink($tmpFileExists);
+						$removed = @unlink($tmpFileFullPath);
 						if (!$removed) $this->exception(
 							"Not possible to remove previous "
 							."tmp file to move {$type}: `{$path}`."
