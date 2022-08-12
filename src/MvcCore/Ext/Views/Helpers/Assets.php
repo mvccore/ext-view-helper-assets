@@ -97,7 +97,7 @@ abstract class Assets extends \MvcCore\Ext\Views\Helpers\AbstractHelper {
 		'jsMinify'		=> 0,
 		'cssJoin'		=> 0,
 		'cssMinify'		=> 0,
-		'tmpDir'		=> '/Var/Tmp',
+		'tmpDir'		=> '~/Var/Tmp',
 		'fileChecking'	=> 'filemtime',
 		'assetsUrl'		=> NULL,
 	];
@@ -650,6 +650,9 @@ abstract class Assets extends \MvcCore\Ext\Views\Helpers\AbstractHelper {
 	 * @return string
 	 */
 	protected function getTmpFileName ($path, $prefix) {
+		$path = mb_strpos($path, '~/') === 0
+			? mb_substr($path, 1)
+			: $path;
 		return '/' . implode('_', [
 			$prefix,
 			static::$systemConfigHash,
@@ -665,7 +668,7 @@ abstract class Assets extends \MvcCore\Ext\Views\Helpers\AbstractHelper {
 	 * @param  string $type
 	 * @return string
 	 */
-	protected function move2TmpGetPath ($path,$srcFileFullPath, $type) {
+	protected function move2TmpGetPath ($path, $srcFileFullPath, $type) {
 		$tmpFileName = $this->getTmpFileName($path, 'moved');
 		$tmpFileFullPath = $this->getTmpDir() . $tmpFileName;
 		if (static::$fileRendering) {
@@ -701,6 +704,23 @@ abstract class Assets extends \MvcCore\Ext\Views\Helpers\AbstractHelper {
 	}
 
 	/**
+	 * Get significant file sub-path from full path.
+	 * @param  string $path
+	 * @param  int    $maxPathSegments
+	 * @return string
+	 */
+	protected function getSignificantPathPartFromFullPath ($absPath, $maxPathSegments = 5) {
+		$pathParts = explode('/', str_replace('\\', '/', $absPath));
+		$pathPartsCount = count($pathParts);
+		$partsCount = min($pathPartsCount, $maxPathSegments);
+		$parts = [];
+		for ($i = 0; $i < $partsCount; $i++)
+			$parts[] = $pathParts[$pathPartsCount - 1 - $i];
+		$parts[] = '';
+		return implode('/', array_reverse($parts));
+	}
+
+	/**
 	 * Return and store application document root 
 	 * from controller view request object.
 	 * @throws \Exception
@@ -708,7 +728,10 @@ abstract class Assets extends \MvcCore\Ext\Views\Helpers\AbstractHelper {
 	 */
 	protected function getTmpDir () {
 		if (!static::$tmpDir) {
-			$tmpDir = static::$docRoot . static::$globalOptions['tmpDir'];
+			$tmpDir = static::$globalOptions['tmpDir'];
+			$tmpDir = mb_strpos($tmpDir, '~/') === 0
+				? static::$docRoot . mb_substr($tmpDir, 1)
+				: $tmpDir;
 			if (static::$fileChecking) {
 				if (!is_dir($tmpDir)) 
 					@mkdir($tmpDir, 0777, TRUE);

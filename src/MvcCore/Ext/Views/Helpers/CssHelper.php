@@ -458,12 +458,24 @@ class CssHelper extends Assets {
 			if ($duplication !== NULL) 
 				$this->warning("Style sheet `{$path}` is already added in css group: `{$duplication}`.");
 		}
-		if ($vendor)
+		$docRootPrefix = mb_strpos($path, '~/') === 0;
+		if ($vendor) {
+			if ($docRootPrefix) {
+				$vendorFullPath = static::$vendorDocRoot . mb_substr($path, 1);
+			} else {
+				$vendorFullPath = $path;
+				$path = $this->getSignificantPathPartFromFullPath($path);
+			}
 			$path = $this->move2TmpGetPath(
-				$path, static::$vendorDocRoot . $path, 'css'
+				$path, $vendorFullPath, 'css', 
 			);
+			$publicFullPath = static::$docRoot . $path;
+		} else {
+			if ($docRootPrefix) $path = mb_substr($path, 1);
+			$publicFullPath = static::$docRoot . $path;
+		}
 		return (object) [
-			'fullPath'		=> static::$docRoot . $path,
+			'fullPath'		=> $publicFullPath,
 			'path'			=> $path,
 			'media'			=> $this->getMediaType($media),
 			'notMin'		=> $notMin,

@@ -432,13 +432,29 @@ class JsHelper extends Assets {
 			$duplication = $this->isDuplicateScript($path, $vendor);
 			if ($duplication !== NULL) 
 				$this->warning("Script `{$path}` is already added in js group: `{$duplication}`.");
-	}
-		if ($vendor) 
+		}
+		$docRootPrefix = mb_strpos($path, '~/') === 0;
+		if ($vendor) {
+			if ($docRootPrefix) {
+				$vendorFullPath = static::$vendorDocRoot . mb_substr($path, 1);
+			} else {
+				$vendorFullPath = $path;
+				$path = $this->getSignificantPathPartFromFullPath($path);
+			}
 			$path = $this->move2TmpGetPath(
-				$path, static::$vendorDocRoot . $path, 'js'
+				$path, $vendorFullPath, 'js'
 			);
+			$publicFullPath = static::$docRoot . $path;
+		} else {
+			if ($docRootPrefix) {
+				$path = mb_substr($path, 1);
+				$publicFullPath = static::$docRoot . $path;
+			} else {
+				$publicFullPath = $path;
+			}
+		}
 		return (object) [
-			'fullPath'	=> static::$docRoot . $path,
+			'fullPath'	=> $publicFullPath,
 			'path'		=> $path,
 			'async'		=> $async,
 			'defer'		=> $defer,
