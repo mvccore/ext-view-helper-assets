@@ -152,7 +152,7 @@ abstract class Assets extends \MvcCore\Ext\Views\Helpers\AbstractHelper {
 	 * all exceptions are thrown.
 	 * @var bool|NULL
 	 */
-	protected static $loggingAndExceptions = NULL;
+	protected static $devMode = NULL;
 
 	/**
 	 * If true, all assets sources existences are checked
@@ -415,7 +415,7 @@ abstract class Assets extends \MvcCore\Ext\Views\Helpers\AbstractHelper {
 		static::$basePath = $req->GetBasePath();
 		static::$scriptName = ltrim($req->GetScriptName(), '/.');
 		
-		static::$loggingAndExceptions = static::$app->GetEnvironment()->IsDevelopment();
+		static::$devMode = static::$app->GetEnvironment()->IsDevelopment();
 
 		$mvcCoreCompiledMode = static::$app->GetCompiled();
 
@@ -435,8 +435,8 @@ abstract class Assets extends \MvcCore\Ext\Views\Helpers\AbstractHelper {
 		} else {
 			static::$assetsUrlCompletion = FALSE;
 		}
-			
-		static::$systemConfigHash = md5(json_encode(static::$globalOptions));
+		
+		static::$systemConfigHash = hash("crc32b", serialize(static::$globalOptions));
 	}
 
 	/**
@@ -467,6 +467,14 @@ abstract class Assets extends \MvcCore\Ext\Views\Helpers\AbstractHelper {
 		if (!isset($this->groupStore[$ctrlActionKey][$name]))
 			$this->groupStore[$ctrlActionKey][$name] = [];
 		return $this->groupStore[$ctrlActionKey][$name];
+	}
+
+	/**
+	 * Return unique hash by params.
+	 * @param array $args 
+	 */
+	protected function getGroupStoreReverseKey (array $args) {
+		return hash("crc32b", serialize($args));
 	}
 
 	/**
@@ -572,7 +580,7 @@ abstract class Assets extends \MvcCore\Ext\Views\Helpers\AbstractHelper {
 	 * @return string
 	 */
 	protected function render2TmpGetPath ($item, $minify, $type) {
-		$tmpFileName = $this->getTmpFileName($item->path, 'rendered');
+		$tmpFileName = $this->getTmpFileName($item->fullPath, $item->path, 'r');
 		$srcFileFullPath = $item->fullPath;
 		$tmpFileFullPath = $this->getTmpDir() . $tmpFileName;
 		if (static::$fileRendering) {
@@ -649,13 +657,17 @@ abstract class Assets extends \MvcCore\Ext\Views\Helpers\AbstractHelper {
 	 * @param  string $prefix Prefix in tmp dir.
 	 * @return string
 	 */
-	protected function getTmpFileName ($path, $prefix) {
+	protected function getTmpFileName ($fullPathOrUrl, $path, $prefix) {
 		$path = mb_strpos($path, '~/') === 0
 			? mb_substr($path, 1)
 			: $path;
+		$hash = hash("crc32b", serialize([
+			static::$systemConfigHash,
+			$fullPathOrUrl
+		]));
 		return '/' . implode('_', [
 			$prefix,
-			static::$systemConfigHash,
+			$hash,
 			trim(str_replace('/', '_', $path), "_"),
 		]);
 	}
@@ -665,11 +677,12 @@ abstract class Assets extends \MvcCore\Ext\Views\Helpers\AbstractHelper {
 	 * assets tmp dir. Return new asset path in tmp directory.
 	 * @param  string $path 
 	 * @param  string $fullPath 
-	 * @param  string $type
-	 * @return string
+	 * @param  string $type 
+	 * @return [bool, string]
 	 */
 	protected function move2TmpGetPath ($path, $srcFileFullPath, $type) {
-		$tmpFileName = $this->getTmpFileName($path, 'moved');
+		$copied = FALSE;
+		$tmpFileName = $this->getTmpFileName($srcFileFullPath, $path, 'm');
 		$tmpFileFullPath = $this->getTmpDir() . $tmpFileName;
 		if (static::$fileRendering) {
 			if (file_exists($srcFileFullPath)) {
@@ -700,7 +713,10 @@ abstract class Assets extends \MvcCore\Ext\Views\Helpers\AbstractHelper {
 				}
 			}
 		}
-		return mb_substr($tmpFileFullPath, mb_strlen(static::$docRoot));
+		return [
+			$copied,
+			mb_substr($tmpFileFullPath, mb_strlen(static::$docRoot))
+		];
 	}
 
 	/**
@@ -763,7 +779,7 @@ abstract class Assets extends \MvcCore\Ext\Views\Helpers\AbstractHelper {
 	 * @return void
 	 */
 	protected function log ($msg, $logType = 'debug') {
-		if (static::$loggingAndExceptions)
+		if (static::$devMode)
 			\MvcCore\Debug::Log($msg, $logType);
 	}
 
@@ -774,7 +790,7 @@ abstract class Assets extends \MvcCore\Ext\Views\Helpers\AbstractHelper {
 	 * @return void
 	 */
 	protected function exception ($msg) {
-		if (static::$loggingAndExceptions)
+		if (static::$devMode)
 			throw new \Exception('[' . get_class($this) . '] ' . $msg);
 	}
 
@@ -785,7 +801,7 @@ abstract class Assets extends \MvcCore\Ext\Views\Helpers\AbstractHelper {
 	 * @return void
 	 */
 	protected function warning ($msg) {
-		if (static::$loggingAndExceptions)
+		if (static::$devMode)
 			\MvcCore\Debug::BarDump('[' . get_class($this) . '] ' . $msg, \MvcCore\IDebug::DEBUG);
 	}
 
@@ -795,7 +811,7 @@ abstract class Assets extends \MvcCore\Ext\Views\Helpers\AbstractHelper {
 	 * @return void
 	 */
 	protected function exceptionHandler ($e) {
-		if (static::$loggingAndExceptions)
+		if (static::$devMode)
 			throw $e;
 	}
 

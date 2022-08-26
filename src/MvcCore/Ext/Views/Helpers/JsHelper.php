@@ -12,13 +12,12 @@
  */
 
 namespace MvcCore\Ext\Views\Helpers;
+use MvcCore\Ext\Models\Db\Exception;
 
 /**
  * @method \MvcCore\Ext\Views\Helpers\JsHelper GetInstance()
  */
 class JsHelper extends Assets {
-
-	protected static $instance = NULL;
 
 	/**
 	 * Whatever Expires header is send over http scheme,
@@ -27,6 +26,24 @@ class JsHelper extends Assets {
 	 * @const integer
 	 */
 	const EXTERNAL_MIN_CACHE_TIME = 86400;
+
+	/**
+	 * TypeScript source map detection substring in JavaScript source end.
+	 */
+	const TS_MAP_DETECT_SUBSTR = '//# sourceMappingURL=';
+
+	/**
+	 * Buffer length to load last bytes from source file,
+	 * where could be TypeScript source map definition.
+	 */
+	const TS_MAP_DETECT_MAX_MAP_FILENAME_LENGTH = 512;
+
+
+	/**
+	 * @inheritDocs
+	 * @var \MvcCore\Ext\Views\Helpers\JsHelper|NULL
+	 */
+	protected static $instance = NULL;
 
 	/**
 	 * View Helper Method, returns current object instance.
@@ -315,7 +332,7 @@ class JsHelper extends Assets {
 	 * @return bool
 	 */
 	protected function execContains ($path, $async, $defer, $notMin, $vendor) {
-		$reverseKey = $this->getGroupStoreReverseKey([$path, $async, $defer, $notMin, $vendor]);
+		$reverseKey = $this->getGroupStoreReverseKey(func_get_args());
 		return isset($this->groupStoreReverseKeys[$reverseKey]);
 	}
 
@@ -441,7 +458,7 @@ class JsHelper extends Assets {
 				$vendorFullPath = $path;
 				$path = $this->getSignificantPathPartFromFullPath($path);
 			}
-			$path = $this->move2TmpGetPath(
+			list(, $path) = $this->move2TmpGetPath(
 				$path, $vendorFullPath, 'js'
 			);
 			$publicFullPath = static::$docRoot . $path;
@@ -462,6 +479,101 @@ class JsHelper extends Assets {
 			'vendor'	=> $vendor,
 			'external'	=> $external,
 		];
+	}
+
+	/**
+	 * Move file from any vendor assets directory into 
+	 * assets tmp dir. Return new asset path in tmp directory.
+	 * @param  string $path 
+	 * @param  string $fullPath 
+	 * @return array[bool, string]
+	 */
+	protected function move2TmpGetPath ($path, $srcFileFullPath, $type) {
+		list($coppied, $newPath) = parent::move2TmpGetPath($path, $srcFileFullPath, $type);
+		if ($coppied && static::$devMode)
+			$this->move2TmpTsMapAndSource($newPath);
+		return [$coppied, $newPath];
+	}
+
+	/**
+	 * Try to detect TypeScript map definition in the last line 
+	 * of JS source file. If there is TS source definition,
+	 * create new TS map file base od original map file in tmp dir
+	 * and move TypeScript source into tmp dir with tmp file name.
+	 * @param  string $newPath 
+	 * @return void
+	 */
+	protected function move2TmpTsMapAndSource ($newPath) {
+		try {
+			$tmpFileFullPath = static::$docRoot . $newPath;
+			// load last 1024 bytes:
+			$handle = fopen($tmpFileFullPath, 'a+');
+			$fileSize = filesize($tmpFileFullPath);
+			$tsMapDetectSubstr = static::TS_MAP_DETECT_SUBSTR;
+			$tsMapDetectSubstrLen = strlen($tsMapDetectSubstr);
+			$bufferSize = $tsMapDetectSubstrLen + static::TS_MAP_DETECT_MAX_MAP_FILENAME_LENGTH + 2;
+			fseek($handle, $fileSize - $bufferSize);
+			$lastContent = fread($handle, $bufferSize);
+			$lastContentNormalized = trim(str_replace(["\r\n", "\r"], "\n", $lastContent));
+			$lastLines = explode("\n", $lastContentNormalized);
+			// get last source line:
+			$lastLine = $lastLines[count($lastLines) - 1];
+			unset($lastContentNormalized, $lastLines);
+			// check if there is TS map definition:
+			if (mb_strpos($lastLine, $tsMapDetectSubstr) !== 0) 
+				throw new \Exception("No TS map definition.");
+			// get TS map file name:
+			$tsMapFileName = mb_substr($lastLine, $tsMapDetectSubstrLen);
+			// load JSON map:
+			$lastSlashPos = mb_strrpos($srcFileFullPath, '/');
+			if ($lastSlashPos === FALSE) 
+				throw new \Exception("Not possible to complete source dir.");
+			$srcFileDir = mb_substr($srcFileFullPath, 0, $lastSlashPos);
+			$lastSlashPos = mb_strrpos($tmpFileFullPath, '/');
+			if ($lastSlashPos === FALSE) 
+				throw new \Exception("Not possible to complete target dir.");
+			$targetFileDir = mb_substr($tmpFileFullPath, 0, $lastSlashPos);
+			$targetFileName = mb_substr($tmpFileFullPath, $lastSlashPos + 1);
+			$mapSrcFileFullPath = $srcFileDir . '/' . $tsMapFileName;
+			$rawMapJson = file_get_contents($mapSrcFileFullPath);
+			$toolClass = static::$app->GetToolClass();
+			$mapJson = $toolClass::JsonDecode($rawMapJson);
+			if (!(is_array($mapJson->sources) && count($mapJson->sources) === 1))
+				throw new \Exception("TS source is not single file.");
+			// get previous source location:
+			$origSource = $mapJson->sources[0];
+			// change js source file and new map location in tmp:
+			$mapJson->file = $targetFileName;
+			$tmpTsName = mb_substr($targetFileName, 0, -2) . 'ts';
+			$mapJson->sources = ['./' . $tmpTsName];
+			// define new map name and save map:
+			$rawMapJson = $toolClass::JsonEncode($mapJson);
+			$tmpMapName = $targetFileName . '.map';
+			$mapTargetFileFullPath = $targetFileDir . '/' . $tmpMapName;
+			if (file_exists($mapTargetFileFullPath))
+				unlink($mapTargetFileFullPath);
+			$toolClass::AtomicWrite($mapTargetFileFullPath, $rawMapJson);
+			unset($mapJson, $rawMapJson);
+			// change JS map definition in moved js file:
+			$tsDefPosInLastContent = strpos($lastContent, $tsMapDetectSubstr);
+			$tsDefPosInBuffer = $bufferSize - $tsDefPosInLastContent;
+			$tsDefPosInFile = $fileSize - $tsDefPosInBuffer;
+			if ($tsDefPosInFile < 0) $tsDefPosInFile = 0;
+			ftruncate($handle, $tsDefPosInFile);
+			fseek($handle, $tsDefPosInFile);
+			fwrite($handle, $tsMapDetectSubstr . $tmpMapName);
+			fclose($handle);
+			unset($handle, $fileSize, $bufferSize, $lastContent);
+			// move source typescript into tmp:
+			$tsSrcFullPath = $toolClass::RealPathVirtual($srcFileDir . '/' . $origSource);
+			$tmpTsFullPath = $targetFileDir . '/' . $tmpTsName;
+			if (file_exists($tmpTsFullPath))
+				unlink($tmpTsFullPath);
+			$copied = copy($tsSrcFullPath, $tmpTsFullPath);
+			if (!$copied) 
+				throw new \Exception("Not possible to copy TS source.");
+		} catch (\Throwable $e) {
+		}
 	}
 	
 	/**
@@ -672,7 +784,7 @@ class JsHelper extends Assets {
 	 */
 	protected function download2TmpGetPath ($item, $minify) {
 		$path = $item->path;
-		$tmpFileName = $this->getTmpFileName($item->path, 'external');
+		$tmpFileName = $this->getTmpFileName($item->path, $item->path, 'e');
 		$tmpFileFullPath = $this->getTmpDir() . $tmpFileName;
 		if (static::$fileRendering) {
 			if (file_exists($tmpFileFullPath)) {

@@ -466,8 +466,8 @@ class CssHelper extends Assets {
 				$vendorFullPath = $path;
 				$path = $this->getSignificantPathPartFromFullPath($path);
 			}
-			$path = $this->move2TmpGetPath(
-				$path, $vendorFullPath, 'css', 
+			list(, $path) = $this->move2TmpGetPath(
+				$path, $vendorFullPath, 'css' 
 			);
 			$publicFullPath = static::$docRoot . $path;
 		} else {
