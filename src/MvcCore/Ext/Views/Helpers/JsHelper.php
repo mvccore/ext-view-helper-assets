@@ -491,7 +491,7 @@ class JsHelper extends Assets {
 	protected function move2TmpGetPath ($path, $srcFileFullPath, $type) {
 		list($coppied, $newPath) = parent::move2TmpGetPath($path, $srcFileFullPath, $type);
 		if ($coppied && static::$devMode)
-			$this->move2TmpTsMapAndSource($newPath);
+			$this->move2TmpTsMapAndSource($newPath, $srcFileFullPath);
 		return [$coppied, $newPath];
 	}
 
@@ -501,9 +501,10 @@ class JsHelper extends Assets {
 	 * create new TS map file base od original map file in tmp dir
 	 * and move TypeScript source into tmp dir with tmp file name.
 	 * @param  string $newPath 
+	 * @param  string $srcFileFullPath 
 	 * @return void
 	 */
-	protected function move2TmpTsMapAndSource ($newPath) {
+	protected function move2TmpTsMapAndSource ($newPath, $srcFileFullPath) {
 		try {
 			$tmpFileFullPath = static::$docRoot . $newPath;
 			// load last 1024 bytes:
