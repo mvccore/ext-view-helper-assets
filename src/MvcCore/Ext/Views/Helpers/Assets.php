@@ -706,6 +706,7 @@ abstract class Assets extends \MvcCore\Ext\Views\Helpers\AbstractHelper {
 						);
 					}
 					$copied = copy($srcFileFullPath, $tmpFileFullPath);
+					@chmod($tmpFileFullPath, 0554);
 					if (!$copied) $this->exception(
 						"Not possible to copy {$type}: `{$path}` into tmp file."
 					);
@@ -750,9 +751,9 @@ abstract class Assets extends \MvcCore\Ext\Views\Helpers\AbstractHelper {
 				: $tmpDir;
 			if (static::$fileChecking) {
 				if (!is_dir($tmpDir)) 
-					@mkdir($tmpDir, 0777, TRUE);
+					@mkdir($tmpDir, 0754);
 				if (is_dir($tmpDir) && !is_writable($tmpDir)) 
-					@chmod($tmpDir, 0777);
+					@chmod($tmpDir, 0754);
 			}
 			static::$tmpDir = $tmpDir;
 		}
@@ -769,7 +770,7 @@ abstract class Assets extends \MvcCore\Ext\Views\Helpers\AbstractHelper {
 	protected function saveFileContent ($fullPath = '', $fileContent = '') {
 		$toolClass = static::$app->GetToolClass();
 		$toolClass::AtomicWrite($fullPath, $fileContent);
-		@chmod($fullPath, 0766);
+		@chmod($fullPath, 0554);
 	}
 
 	/**

@@ -554,6 +554,7 @@ class JsHelper extends Assets {
 			if (file_exists($mapTargetFileFullPath))
 				unlink($mapTargetFileFullPath);
 			$toolClass::AtomicWrite($mapTargetFileFullPath, $rawMapJson);
+			@chmod($mapTargetFileFullPath, 0554);
 			unset($mapJson, $rawMapJson);
 			// change JS map definition in moved js file:
 			$tsDefPosInLastContent = strpos($lastContent, $tsMapDetectSubstr);
@@ -571,6 +572,7 @@ class JsHelper extends Assets {
 			if (file_exists($tmpTsFullPath))
 				unlink($tmpTsFullPath);
 			$copied = copy($tsSrcFullPath, $tmpTsFullPath);
+			@chmod($tmpTsFullPath, 0554);
 			if (!$copied) 
 				throw new \Exception("Not possible to copy TS source.");
 		} catch (\Throwable $e) {
