@@ -23,7 +23,7 @@ abstract class Assets extends \MvcCore\Ext\Views\Helpers\AbstractHelper {
 	 * Comparison by PHP function version_compare();
 	 * @see http://php.net/manual/en/function.version-compare.php
 	 */
-	const VERSION = '5.1.7';
+	const VERSION = '5.1.8';
 
 	/**
 	 * Default link group name
@@ -699,6 +699,7 @@ abstract class Assets extends \MvcCore\Ext\Views\Helpers\AbstractHelper {
 			if ($srcFileModDate !== FALSE && $tmpFileModDate !== FALSE) {
 				if ($srcFileModDate > $tmpFileModDate) {
 					if ($tmpFileExists) {
+						@chmod($tmpFileFullPath, 0777);
 						$removed = @unlink($tmpFileFullPath);
 						if (!$removed) $this->exception(
 							"Not possible to remove previous "
