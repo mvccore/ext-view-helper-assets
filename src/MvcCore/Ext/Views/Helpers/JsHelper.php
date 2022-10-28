@@ -551,8 +551,10 @@ class JsHelper extends Assets {
 			$rawMapJson = $toolClass::JsonEncode($mapJson);
 			$tmpMapName = $targetFileName . '.map';
 			$mapTargetFileFullPath = $targetFileDir . '/' . $tmpMapName;
-			if (file_exists($mapTargetFileFullPath))
+			if (file_exists($mapTargetFileFullPath)) {
+				@chmod($mapTargetFileFullPath, 0777);
 				unlink($mapTargetFileFullPath);
+			}
 			$toolClass::AtomicWrite($mapTargetFileFullPath, $rawMapJson);
 			@chmod($mapTargetFileFullPath, 0554);
 			unset($mapJson, $rawMapJson);
@@ -569,8 +571,10 @@ class JsHelper extends Assets {
 			// move source typescript into tmp:
 			$tsSrcFullPath = $toolClass::RealPathVirtual($srcFileDir . '/' . $origSource);
 			$tmpTsFullPath = $targetFileDir . '/' . $tmpTsName;
-			if (file_exists($tmpTsFullPath))
+			if (file_exists($tmpTsFullPath)) {
+				@chmod($tmpTsFullPath, 0777);
 				unlink($tmpTsFullPath);
+			}
 			$copied = copy($tsSrcFullPath, $tmpTsFullPath);
 			@chmod($tmpTsFullPath, 0554);
 			if (!$copied) 
