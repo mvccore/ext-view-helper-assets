@@ -508,6 +508,7 @@ class JsHelper extends Assets {
 		try {
 			$tmpFileFullPath = static::$docRoot . $newPath;
 			// load last 1024 bytes:
+			@chmod($tmpFileFullPath, 0777);
 			$handle = fopen($tmpFileFullPath, 'a+');
 			$fileSize = filesize($tmpFileFullPath);
 			$tsMapDetectSubstr = static::TS_MAP_DETECT_SUBSTR;
@@ -567,6 +568,7 @@ class JsHelper extends Assets {
 			fseek($handle, $tsDefPosInFile);
 			fwrite($handle, $tsMapDetectSubstr . $tmpMapName);
 			fclose($handle);
+			@chmod($tmpFileFullPath, 0554);
 			unset($handle, $fileSize, $bufferSize, $lastContent);
 			// move source typescript into tmp:
 			$tsSrcFullPath = $toolClass::RealPathVirtual($srcFileDir . '/' . $origSource);
