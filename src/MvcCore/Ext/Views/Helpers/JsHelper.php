@@ -508,7 +508,8 @@ class JsHelper extends Assets {
 		try {
 			$tmpFileFullPath = static::$docRoot . $newPath;
 			// load last 1024 bytes:
-			@chmod($tmpFileFullPath, 0777);
+			$fileMask = static::$globalOptions['fileMask'];
+			@chmod($tmpFileFullPath, $fileMask);
 			$handle = fopen($tmpFileFullPath, 'a+');
 			$fileSize = filesize($tmpFileFullPath);
 			$tsMapDetectSubstr = static::TS_MAP_DETECT_SUBSTR;
@@ -553,11 +554,11 @@ class JsHelper extends Assets {
 			$tmpMapName = $targetFileName . '.map';
 			$mapTargetFileFullPath = $targetFileDir . '/' . $tmpMapName;
 			if (file_exists($mapTargetFileFullPath)) {
-				@chmod($mapTargetFileFullPath, 0777);
+				@chmod($mapTargetFileFullPath, $fileMask);
 				unlink($mapTargetFileFullPath);
 			}
 			$toolClass::AtomicWrite($mapTargetFileFullPath, $rawMapJson);
-			@chmod($mapTargetFileFullPath, 0554);
+			@chmod($mapTargetFileFullPath, $fileMask);
 			unset($mapJson, $rawMapJson);
 			// change JS map definition in moved js file:
 			$tsDefPosInLastContent = strpos($lastContent, $tsMapDetectSubstr);
@@ -568,17 +569,17 @@ class JsHelper extends Assets {
 			fseek($handle, $tsDefPosInFile);
 			fwrite($handle, $tsMapDetectSubstr . $tmpMapName);
 			fclose($handle);
-			@chmod($tmpFileFullPath, 0554);
+			@chmod($tmpFileFullPath, $fileMask);
 			unset($handle, $fileSize, $bufferSize, $lastContent);
 			// move source typescript into tmp:
 			$tsSrcFullPath = $toolClass::RealPathVirtual($srcFileDir . '/' . $origSource);
 			$tmpTsFullPath = $targetFileDir . '/' . $tmpTsName;
 			if (file_exists($tmpTsFullPath)) {
-				@chmod($tmpTsFullPath, 0777);
+				@chmod($tmpTsFullPath, $fileMask);
 				unlink($tmpTsFullPath);
 			}
 			$copied = copy($tsSrcFullPath, $tmpTsFullPath);
-			@chmod($tmpTsFullPath, 0554);
+			@chmod($tmpTsFullPath, $fileMask);
 			if (!$copied) 
 				throw new \Exception("Not possible to copy TS source.");
 		} catch (\Throwable $e) {

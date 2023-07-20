@@ -23,7 +23,7 @@ abstract class Assets extends \MvcCore\Ext\Views\Helpers\AbstractHelper {
 	 * Comparison by PHP function version_compare();
 	 * @see http://php.net/manual/en/function.version-compare.php
 	 */
-	const VERSION = '5.1.10';
+	const VERSION = '5.1.11';
 
 	/**
 	 * Default link group name
@@ -98,6 +98,8 @@ abstract class Assets extends \MvcCore\Ext\Views\Helpers\AbstractHelper {
 		'cssJoin'		=> 0,
 		'cssMinify'		=> 0,
 		'tmpDir'		=> '~/Var/Tmp',
+		'dirMask'		=> 0754,
+		'fileMask'		=> 0664,
 		'fileChecking'	=> 'filemtime',
 		'assetsUrl'		=> NULL,
 	];
@@ -700,13 +702,16 @@ abstract class Assets extends \MvcCore\Ext\Views\Helpers\AbstractHelper {
 				if ($srcFileModDate > $tmpFileModDate) {
 					if ($tmpFileExists) {
 						$removed = @unlink($tmpFileFullPath);
-						if (!$removed) $this->exception(
+						if (!$removed) {
+							x($tmpFileFullPath);$this->exception(
 							"Not possible to remove previous "
 							."tmp file to move {$type}: `{$path}`."
 						);
+						}
 					}
 					$copied = copy($srcFileFullPath, $tmpFileFullPath);
-					@chmod($tmpFileFullPath, 0554);
+					$fileMask = static::$globalOptions['fileMask'];
+					@chmod($tmpFileFullPath, $fileMask);
 					if (!$copied) $this->exception(
 						"Not possible to copy {$type}: `{$path}` into tmp file."
 					);
@@ -746,14 +751,15 @@ abstract class Assets extends \MvcCore\Ext\Views\Helpers\AbstractHelper {
 	protected function getTmpDir () {
 		if (!static::$tmpDir) {
 			$tmpDir = static::$globalOptions['tmpDir'];
+			$dirMask = static::$globalOptions['dirMask'];
 			$tmpDir = mb_strpos($tmpDir, '~/') === 0
 				? static::$docRoot . mb_substr($tmpDir, 1)
 				: $tmpDir;
 			if (static::$fileChecking) {
 				if (!is_dir($tmpDir)) 
-					@mkdir($tmpDir, 0754);
+					@mkdir($tmpDir, $dirMask);
 				if (is_dir($tmpDir) && !is_writable($tmpDir)) 
-					@chmod($tmpDir, 0754);
+					@chmod($tmpDir, $dirMask);
 			}
 			static::$tmpDir = $tmpDir;
 		}
@@ -770,7 +776,8 @@ abstract class Assets extends \MvcCore\Ext\Views\Helpers\AbstractHelper {
 	protected function saveFileContent ($fullPath = '', $fileContent = '') {
 		$toolClass = static::$app->GetToolClass();
 		$toolClass::AtomicWrite($fullPath, $fileContent);
-		@chmod($fullPath, 0554);
+		$fileMask = static::$globalOptions['fileMask'];
+		@chmod($fullPath, $fileMask);
 	}
 
 	/**
