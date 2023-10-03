@@ -40,7 +40,7 @@ class JsHelper extends Assets {
 
 
 	/**
-	 * @inheritDocs
+	 * @inheritDoc
 	 * @var \MvcCore\Ext\Views\Helpers\JsHelper|NULL
 	 */
 	protected static $instance = NULL;
@@ -771,7 +771,7 @@ class JsHelper extends Assets {
 
 
 	/**
-	 * @inheritDocs
+	 * @inheritDoc
 	 * @throws \Exception
 	 * @param  \stdClass  $item 
 	 * @param  string     $srcFileFullPath 

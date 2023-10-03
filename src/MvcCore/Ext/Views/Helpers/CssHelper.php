@@ -39,7 +39,7 @@ class CssHelper extends Assets {
 	const MEDIA_PRINT	= 2;
 
 	/**
-	 * @inheritDocs
+	 * @inheritDoc
 	 * @var \MvcCore\Ext\Views\Helpers\CssHelper|NULL
 	 */
 	protected static $instance = NULL;
@@ -685,7 +685,7 @@ class CssHelper extends Assets {
 
 
 	/**
-	 * @inheritDocs
+	 * @inheritDoc
 	 * @throws \Exception
 	 * @param  \stdClass  $item 
 	 * @param  string     $srcFileFullPath 

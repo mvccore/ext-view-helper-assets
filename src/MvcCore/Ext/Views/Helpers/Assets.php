@@ -176,6 +176,12 @@ abstract class Assets extends \MvcCore\Ext\Views\Helpers\AbstractHelper {
 	protected static $assetsUrlCompletion = NULL;
 
 	/**
+	 * System serialization function name (it could be `igbinary_serialize` if installed).
+	 * @var string
+	 */
+	protected static $serializeFn = 'serialize';
+
+	/**
 	 * Hash completed as md5(json_encode()) from static::$globalOptions
 	 * @var string
 	 */
@@ -437,8 +443,10 @@ abstract class Assets extends \MvcCore\Ext\Views\Helpers\AbstractHelper {
 		} else {
 			static::$assetsUrlCompletion = FALSE;
 		}
+
+		self::$serializeFn = function_exists('igbinary_serialize') ? 'igbinary_serialize' : 'serialize';
 		
-		static::$systemConfigHash = hash("crc32b", serialize(static::$globalOptions));
+		static::$systemConfigHash = hash("crc32b", call_user_func(self::$serializeFn, static::$globalOptions));
 	}
 
 	/**
@@ -476,7 +484,7 @@ abstract class Assets extends \MvcCore\Ext\Views\Helpers\AbstractHelper {
 	 * @param array $args 
 	 */
 	protected function getGroupStoreReverseKey (array $args) {
-		return hash("crc32b", serialize($args));
+		return hash("crc32b", call_user_func(self::$serializeFn, $args));
 	}
 
 	/**
@@ -522,7 +530,7 @@ abstract class Assets extends \MvcCore\Ext\Views\Helpers\AbstractHelper {
 	 * @return \MvcCore\Ext\Views\Helpers\Assets
 	 */
 	protected function setUpGroupStoreReverseKey ($args) {
-		$reverseKey = md5(serialize($args));
+		$reverseKey = md5(call_user_func(self::$serializeFn, $args));
 		$this->groupStoreReverseKeys[$reverseKey] = TRUE;
 		return $this;
 	}
@@ -663,7 +671,7 @@ abstract class Assets extends \MvcCore\Ext\Views\Helpers\AbstractHelper {
 		$path = mb_strpos($path, '~/') === 0
 			? mb_substr($path, 1)
 			: $path;
-		$hash = hash("crc32b", serialize([
+		$hash = hash("crc32b", call_user_func(self::$serializeFn, [
 			static::$systemConfigHash,
 			$fullPathOrUrl
 		]));
