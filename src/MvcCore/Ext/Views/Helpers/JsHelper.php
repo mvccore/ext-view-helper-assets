@@ -468,6 +468,13 @@ class JsHelper extends Assets {
 				$publicFullPath = static::$docRoot . $path;
 			} else {
 				$publicFullPath = $path;
+				if (mb_strpos($publicFullPath, static::$docRoot) !== 0) {
+					$path = $this->getSignificantPathPartFromFullPath($path);
+					list(, $path) = $this->move2TmpGetPath(
+						$path, $publicFullPath, 'js'
+					);
+					$publicFullPath = static::$docRoot . $path;
+				}
 			}
 		}
 		return (object) [
