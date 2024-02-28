@@ -23,7 +23,7 @@ abstract class Assets extends \MvcCore\Ext\Views\Helpers\AbstractHelper {
 	 * Comparison by PHP function version_compare();
 	 * @see http://php.net/manual/en/function.version-compare.php
 	 */
-	const VERSION = '5.2.3';
+	const VERSION = '5.2.4';
 
 	/**
 	 * Default link group name
@@ -734,12 +734,14 @@ abstract class Assets extends \MvcCore\Ext\Views\Helpers\AbstractHelper {
 	}
 
 	/**
-	 * Get significant file sub-path from full path.
+	 * Get significant file sub-path from full path or url.
 	 * @param  string $path
 	 * @param  int    $maxPathSegments
 	 * @return string
 	 */
 	protected function getSignificantPathPartFromFullPath ($absPath, $maxPathSegments = 5) {
+		if (mb_strpos($absPath, 'https://') === 0 || mb_strpos($absPath, 'http://') === 0)
+			$absPath = mb_substr($absPath, mb_strpos($absPath, '://') + 3);
 		$pathParts = explode('/', str_replace('\\', '/', $absPath));
 		$pathPartsCount = count($pathParts);
 		$partsCount = min($pathPartsCount, $maxPathSegments);
