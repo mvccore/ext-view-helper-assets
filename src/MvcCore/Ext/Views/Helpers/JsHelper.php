@@ -162,7 +162,7 @@ class JsHelper extends Assets {
 	 * @param  bool   $notMin
 	 * @return \MvcCore\Ext\Views\Helpers\JsHelper
 	 */
-	public function OffsetExternal ($index, $path, $async = FALSE, $defer = FALSE, $notMin = FALSE) {
+	public function ExternalOffset ($index, $path, $async = FALSE, $defer = FALSE, $notMin = FALSE) {
 		return $this->execOffset($index, $path, $async, $defer, $notMin, FALSE, TRUE);
 	}
 
@@ -176,7 +176,7 @@ class JsHelper extends Assets {
 	 * @param  bool   $notMin
 	 * @return \MvcCore\Ext\Views\Helpers\JsHelper
 	 */
-	public function AppendExternal ($path, $async = FALSE, $defer = FALSE, $notMin = FALSE) {
+	public function ExternalAppend ($path, $async = FALSE, $defer = FALSE, $notMin = FALSE) {
 		return $this->execAppend($path, $async, $defer, $notMin, FALSE, TRUE);
 	}
 
@@ -190,7 +190,7 @@ class JsHelper extends Assets {
 	 * @param  bool   $notMin
 	 * @return \MvcCore\Ext\Views\Helpers\JsHelper
 	 */
-	public function PrependExternal ($path, $async = FALSE, $defer = FALSE, $notMin = FALSE) {
+	public function ExternalPrepend ($path, $async = FALSE, $defer = FALSE, $notMin = FALSE) {
 		return $this->execPrepend($path, $async, $defer, $notMin, FALSE, TRUE);
 	}
 
@@ -269,55 +269,6 @@ class JsHelper extends Assets {
 	 */
 	public function VendorPrepend ($path, $async = FALSE, $defer = FALSE, $notMin = FALSE) {
 		return $this->execPrepend($path, $async, $defer, $notMin, TRUE, FALSE);
-	}
-
-	/**
-	 * Add script into given index of scripts 
-	 * group array for later render process
-	 * with downloading external content.
-	 * This method is necessary to use 
-	 * in vendor application packages.
-	 * @param  int    $index
-	 * @param  string $path
-	 * @param  bool   $async
-	 * @param  bool   $defer
-	 * @param  bool   $notMin
-	 * @return \MvcCore\Ext\Views\Helpers\JsHelper
-	 */
-	public function VendorOffsetExternal ($index, $path, $async = FALSE, $defer = FALSE, $notMin = FALSE) {
-		return $this->execOffset($index, $path, $async, $defer, $notMin, TRUE, TRUE);
-	}
-
-	/**
-	 * Append script after all group scripts 
-	 * for later render process with downloading 
-	 * external content.
-	 * This method is necessary to use 
-	 * in vendor application packages.
-	 * @param  string $path
-	 * @param  bool   $async
-	 * @param  bool   $defer
-	 * @param  bool   $notMin
-	 * @return \MvcCore\Ext\Views\Helpers\JsHelper
-	 */
-	public function VendorAppendExternal ($path, $async = FALSE, $defer = FALSE, $notMin = FALSE) {
-		return $this->execAppend($path, $async, $defer, $notMin, TRUE, TRUE);
-	}
-
-	/**
-	 * Prepend script before all group 
-	 * scripts for later render process 
-	 * with downloading external content.
-	 * This method is necessary to use 
-	 * in vendor application packages.
-	 * @param  string $path
-	 * @param  bool   $async
-	 * @param  bool   $defer
-	 * @param  bool   $notMin
-	 * @return \MvcCore\Ext\Views\Helpers\JsHelper
-	 */
-	public function VendorPrependExternal ($path, $async = FALSE, $defer = FALSE, $notMin = FALSE) {
-		return $this->execPrepend($path, $async, $defer, $notMin, TRUE, TRUE);
 	}
 
 
@@ -450,30 +401,36 @@ class JsHelper extends Assets {
 			if ($duplication !== NULL) 
 				$this->warning("Script `{$path}` is already added in js group: `{$duplication}`.");
 		}
-		$docRootPrefix = mb_strpos($path, '~/') === 0;
-		if ($vendor) {
-			if ($docRootPrefix) {
-				$vendorFullPath = static::$vendorDocRoot . mb_substr($path, 1);
-			} else {
-				$vendorFullPath = $path;
-				$path = $this->getSignificantPathPartFromFullPath($path);
-			}
-			list(, $path) = $this->move2TmpGetPath(
-				$path, $vendorFullPath, 'js'
-			);
-			$publicFullPath = static::$docRoot . $path;
+		if ($external) {
+			$url = $path;
+			$path = $this->getSignificantPathPartFromFullPath($url);
+			$publicFullPath = $this->download2TmpGetPath($url, $path);
 		} else {
-			if ($docRootPrefix) {
-				$path = mb_substr($path, 1);
-				$publicFullPath = static::$docRoot . $path;
-			} else {
-				$publicFullPath = $path;
-				if (mb_strpos($publicFullPath, static::$docRoot) !== 0) {
+			$docRootPrefix = mb_strpos($path, '~/') === 0;
+			if ($vendor) {
+				if ($docRootPrefix) {
+					$vendorFullPath = static::$vendorDocRoot . mb_substr($path, 1);
+				} else {
+					$vendorFullPath = $path;
 					$path = $this->getSignificantPathPartFromFullPath($path);
-					list(, $path) = $this->move2TmpGetPath(
-						$path, $publicFullPath, 'js'
-					);
+				}
+				list(, $path) = $this->move2TmpGetPath(
+					$path, $vendorFullPath, 'js'
+				);
+				$publicFullPath = static::$docRoot . $path;
+			} else if (!$external) {
+				if ($docRootPrefix) {
+					$path = mb_substr($path, 1);
 					$publicFullPath = static::$docRoot . $path;
+				} else {
+					$publicFullPath = $path;
+					if (mb_strpos($publicFullPath, static::$docRoot) !== 0) {
+						$path = $this->getSignificantPathPartFromFullPath($path);
+						list(, $path) = $this->move2TmpGetPath(
+							$path, $publicFullPath, 'js'
+						);
+						$publicFullPath = static::$docRoot . $path;
+					}
 				}
 			}
 		}
@@ -680,19 +637,13 @@ class JsHelper extends Assets {
 		// complete tmp filename by source filenames and source files modification times
 		$filesGroupInfo = [];
 		foreach ($itemsToRender as $item) {
-			if ($item->external) {
-				$item->path = $this->download2TmpGetPath($item, $minify);
-				$item->fullPath = static::$docRoot . $item->path;
+			if (static::$fileChecking) {
+				if (!file_exists($item->fullPath)) {
+					$this->exception("File not found in JS view rendering process ('{$item->fullPath}').");
+				}
 				$filesGroupInfo[] = $item->path . '?_' . static::getFileImprint($item->fullPath);
 			} else {
-				if (static::$fileChecking) {
-					if (!file_exists($item->fullPath)) {
-						$this->exception("File not found in JS view rendering process ('{$item->fullPath}').");
-					}
-					$filesGroupInfo[] = $item->path . '?_' . static::getFileImprint($item->fullPath);
-				} else {
-					$filesGroupInfo[] = $item->path;
-				}
+				$filesGroupInfo[] = $item->path;
 			}
 		}
 		$tmpFileFullPath = $this->getTmpFileFullPathByPartFilesInfo(
@@ -705,11 +656,7 @@ class JsHelper extends Assets {
 				// load all items and join them together
 				$resultContents = [];
 				foreach ($itemsToRender as & $item) {
-					if ($item->external) {
-						$item->path = $this->download2TmpGetPath($item, $minify);
-						$item->fullPath = static::$docRoot . $item->path;
-						$fileContent = file_get_contents($item->fullPath);
-					} else if ($minify) {
+					if ($minify) {
 						$fileContent = file_get_contents($item->fullPath);
 						if ($minify) $fileContent = $this->minify($fileContent, $item->path);
 					} else {
@@ -743,9 +690,7 @@ class JsHelper extends Assets {
 		if (static::$fileRendering) 
 			$resultItems[] = '<!-- js group begin: ' . $this->currentGroupName . ' -->';
 		foreach ($items as $item) {
-			if ($item->external) {
-				$item->src = $this->CssJsFileUrl($this->download2TmpGetPath($item, $minify));
-			} else if ($minify && !$item->notMin) {
+			if ($minify && !$item->notMin) {
 				$item->src = $this->CssJsFileUrl($this->render2TmpGetPath($item, $minify , 'js'));
 			} else {
 				$item->src = $this->CssJsFileUrl($item->path);
@@ -794,14 +739,14 @@ class JsHelper extends Assets {
 
 	/**
 	 * Download js file by path and store result 
-	 * in tmp directory and return new href value.
-	 * @param \stdClass $item
-	 * @param bool      $minify
+	 * in tmp directory and return new fullpath value.
+	 * @param  string $url
+	 * @param  string $path
 	 * @return string
 	 */
-	protected function download2TmpGetPath ($item, $minify) {
-		$path = $item->path;
-		$tmpFileName = $this->getTmpFileName($item->path, $item->path, 'e');
+	protected function download2TmpGetPath ($url, $path) {
+		$currentPath = $url;
+		$tmpFileName = $this->getTmpFileName($url, $path, 'e');
 		$tmpFileFullPath = $this->getTmpDir() . $tmpFileName;
 		if (static::$fileRendering) {
 			if (file_exists($tmpFileFullPath)) {
@@ -811,14 +756,14 @@ class JsHelper extends Assets {
 			}
 			if (time() > $cacheFileTime + static::EXTERNAL_MIN_CACHE_TIME) {
 				while (TRUE) {
-					$newPath = $this->getPossiblyRedirectedPath($path);
-					if ($newPath === $path) {
+					$newPath = $this->getPossiblyRedirectedPath($currentPath);
+					if ($newPath === $currentPath) {
 						break;
 					} else {
-						$path = $newPath;
+						$currentPath = $newPath;
 					}
 				}
-				$fr = fopen($path, 'r');
+				$fr = fopen($currentPath, 'r');
 				$fileContents = [];
 				$bufferLength = 102400; // 100 KB
 				$buffer = '';
@@ -827,14 +772,11 @@ class JsHelper extends Assets {
 				}
 				fclose($fr);
 				$fileContent = implode('', $fileContents);
-				if ($minify) 
-					$fileContent = $this->minify($fileContent, $path);
 				$this->saveFileContent($tmpFileFullPath, $fileContent);
 				$this->log("External js file downloaded: `{$tmpFileFullPath}`.", 'debug');
 			}
 		}
-		$tmpPath = substr($tmpFileFullPath, strlen(static::$docRoot));
-		return $tmpPath;
+		return $tmpFileFullPath;
 	}
 
 	/**
