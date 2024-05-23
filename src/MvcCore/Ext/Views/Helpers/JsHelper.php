@@ -15,7 +15,7 @@ namespace MvcCore\Ext\Views\Helpers;
 use MvcCore\Ext\Models\Db\Exception;
 
 /**
- * @method \MvcCore\Ext\Views\Helpers\JsHelper GetInstance()
+ * @method static \MvcCore\Ext\Views\Helpers\JsHelper GetInstance()
  */
 class JsHelper extends Assets {
 

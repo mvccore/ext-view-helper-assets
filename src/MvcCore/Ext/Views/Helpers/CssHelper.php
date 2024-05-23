@@ -14,7 +14,7 @@
 namespace MvcCore\Ext\Views\Helpers;
 
 /**
- * @method \MvcCore\Ext\Views\Helpers\CssHelper GetInstance()
+ * @method static \MvcCore\Ext\Views\Helpers\CssHelper GetInstance()
  */
 class CssHelper extends Assets {
 	
