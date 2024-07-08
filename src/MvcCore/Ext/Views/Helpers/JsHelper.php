@@ -12,7 +12,9 @@
  */
 
 namespace MvcCore\Ext\Views\Helpers;
-use MvcCore\Ext\Models\Db\Exception;
+
+use \MvcCore\Ext\Views\Helpers\Assets\Item,
+	\MvcCore\Ext\Views\Helpers\JsHelpers\JsItem;
 
 /**
  * @method static \MvcCore\Ext\Views\Helpers\JsHelper GetInstance()
@@ -58,7 +60,7 @@ class JsHelper extends Assets {
 	
 	/**
 	 * Render script elements as html code with links
-	 * to original files or temporary downloaded files.
+	 * to original files or to temporary downloaded files.
 	 * @param  int    $indent
 	 * @return string
 	 */
@@ -95,7 +97,10 @@ class JsHelper extends Assets {
 	 * @return bool
 	 */
 	public function Contains ($path, $async = FALSE, $defer = FALSE, $notMin = FALSE) {
-		return $this->execContains($path, $async, $defer, $notMin, FALSE);
+		return $this->execContains(
+			$path, $async, $defer, $notMin, 
+			/*vendor: */FALSE
+		);
 	}
 
 	/**
@@ -108,7 +113,10 @@ class JsHelper extends Assets {
 	 * @return bool
 	 */
 	public function Remove ($path, $async = FALSE, $defer = FALSE, $notMin = FALSE) {
-		return $this->execRemove($path, $async, $defer, $notMin, FALSE);
+		return $this->execRemove(
+			$path, $async, $defer, $notMin, 
+			/*vendor: */FALSE, /*external: */FALSE
+		);
 	}
 	
 	/**
@@ -122,7 +130,10 @@ class JsHelper extends Assets {
 	 * @return \MvcCore\Ext\Views\Helpers\JsHelper
 	 */
 	public function Offset ($index, $path, $async = FALSE, $defer = FALSE, $notMin = FALSE) {
-		return $this->execOffset($index, $path, $async, $defer, $notMin, FALSE, FALSE);
+		return $this->execOffset(
+			$index, $path, $async, $defer, $notMin, 
+			/*vendor: */FALSE, /*external: */FALSE
+		);
 	}
 
 	/**
@@ -135,7 +146,10 @@ class JsHelper extends Assets {
 	 * @return \MvcCore\Ext\Views\Helpers\JsHelper
 	 */
 	public function Append ($path, $async = FALSE, $defer = FALSE, $notMin = FALSE) {
-		return $this->execAppend($path, $async, $defer, $notMin, FALSE, FALSE);
+		return $this->execAppend(
+			$path, $async, $defer, $notMin, 
+			/*vendor: */FALSE, /*external: */FALSE
+		);
 	}
 
 	/**
@@ -148,7 +162,10 @@ class JsHelper extends Assets {
 	 * @return \MvcCore\Ext\Views\Helpers\JsHelper
 	 */
 	public function Prepend ($path, $async = FALSE, $defer = FALSE, $notMin = FALSE) {
-		return $this->execPrepend($path, $async, $defer, $notMin, FALSE, FALSE);
+		return $this->execPrepend(
+			$path, $async, $defer, $notMin, 
+			/*vendor: */FALSE, /*external: */FALSE
+		);
 	}
 
 	/**
@@ -163,7 +180,10 @@ class JsHelper extends Assets {
 	 * @return \MvcCore\Ext\Views\Helpers\JsHelper
 	 */
 	public function ExternalOffset ($index, $path, $async = FALSE, $defer = FALSE, $notMin = FALSE) {
-		return $this->execOffset($index, $path, $async, $defer, $notMin, FALSE, TRUE);
+		return $this->execOffset(
+			$index, $path, $async, $defer, $notMin, 
+			/*vendor: */FALSE, /*external: */TRUE
+		);
 	}
 
 	/**
@@ -177,7 +197,10 @@ class JsHelper extends Assets {
 	 * @return \MvcCore\Ext\Views\Helpers\JsHelper
 	 */
 	public function ExternalAppend ($path, $async = FALSE, $defer = FALSE, $notMin = FALSE) {
-		return $this->execAppend($path, $async, $defer, $notMin, FALSE, TRUE);
+		return $this->execAppend(
+			$path, $async, $defer, $notMin, 
+			/*vendor: */FALSE, /*external: */TRUE
+		);
 	}
 
 	/**
@@ -191,7 +214,10 @@ class JsHelper extends Assets {
 	 * @return \MvcCore\Ext\Views\Helpers\JsHelper
 	 */
 	public function ExternalPrepend ($path, $async = FALSE, $defer = FALSE, $notMin = FALSE) {
-		return $this->execPrepend($path, $async, $defer, $notMin, FALSE, TRUE);
+		return $this->execPrepend(
+			$path, $async, $defer, $notMin, 
+			/*vendor: */FALSE, /*external: */TRUE
+		);
 	}
 
 
@@ -207,7 +233,10 @@ class JsHelper extends Assets {
 	 * @return bool
 	 */
 	public function VendorContains ($path, $async = FALSE, $defer = FALSE, $notMin = FALSE) {
-		return $this->execContains($path, $async, $defer, $notMin, TRUE);
+		return $this->execContains(
+			$path, $async, $defer, $notMin, 
+			/*vendor: */TRUE
+		);
 	}
 
 	/**
@@ -222,7 +251,10 @@ class JsHelper extends Assets {
 	 * @return bool
 	 */
 	public function VendorRemove ($path, $async = FALSE, $defer = FALSE, $notMin = FALSE) {
-		return $this->execRemove($path, $async, $defer, $notMin, TRUE);
+		return $this->execRemove(
+			$path, $async, $defer, $notMin, 
+			/*vendor: */TRUE, /*external: */FALSE
+		);
 	}
 	
 	/**
@@ -238,7 +270,10 @@ class JsHelper extends Assets {
 	 * @return \MvcCore\Ext\Views\Helpers\JsHelper
 	 */
 	public function VendorOffset ($index, $path, $async = FALSE, $defer = FALSE, $notMin = FALSE) {
-		return $this->execOffset($index, $path, $async, $defer, $notMin, TRUE, FALSE);
+		return $this->execOffset(
+			$index, $path, $async, $defer, $notMin, 
+			/*vendor: */TRUE, /*external: */FALSE
+		);
 	}
 
 	/**
@@ -253,7 +288,10 @@ class JsHelper extends Assets {
 	 * @return \MvcCore\Ext\Views\Helpers\JsHelper
 	 */
 	public function VendorAppend ($path, $async = FALSE, $defer = FALSE, $notMin = FALSE) {
-		return $this->execAppend($path, $async, $defer, $notMin, TRUE, FALSE);
+		return $this->execAppend(
+			$path, $async, $defer, $notMin, 
+			/*vendor: */TRUE, /*external: */FALSE
+		);
 	}
 
 	/**
@@ -268,7 +306,10 @@ class JsHelper extends Assets {
 	 * @return \MvcCore\Ext\Views\Helpers\JsHelper
 	 */
 	public function VendorPrepend ($path, $async = FALSE, $defer = FALSE, $notMin = FALSE) {
-		return $this->execPrepend($path, $async, $defer, $notMin, TRUE, FALSE);
+		return $this->execPrepend(
+			$path, $async, $defer, $notMin, 
+			/*vendor: */TRUE, /*external: */FALSE
+		);
 	}
 
 
@@ -326,6 +367,7 @@ class JsHelper extends Assets {
 	 * @param  bool   $async
 	 * @param  bool   $defer
 	 * @param  bool   $notMin
+	 * @param  bool   $vendor
 	 * @param  bool   $external
 	 * @return \MvcCore\Ext\Views\Helpers\JsHelper
 	 */
@@ -343,7 +385,8 @@ class JsHelper extends Assets {
 				$currentItems, $index, 
 				$currentItemsCount - $index, FALSE
 			));
-		return $this->setGroupStore($newItems);
+		$this->setGroupStore($newItems);
+		return $this;
 	}
 
 	/**
@@ -387,13 +430,13 @@ class JsHelper extends Assets {
 
 	/**
 	 * Create data item to store for render process.
-	 * @param  string    $path
-	 * @param  string    $async
-	 * @param  bool      $defer
-	 * @param  bool      $notMin
-	 * @param  bool      $vendor
-	 * @param  bool      $external
-	 * @return \stdClass
+	 * @param  string $path
+	 * @param  bool   $async
+	 * @param  bool   $defer
+	 * @param  bool   $notMin
+	 * @param  bool   $vendor
+	 * @param  bool   $external
+	 * @return JsItem
 	 */
 	protected function completeItem ($path, $async, $defer, $notMin, $vendor, $external) {
 		if (static::$fileChecking) {
@@ -418,7 +461,7 @@ class JsHelper extends Assets {
 					$path, $vendorFullPath, 'js'
 				);
 				$publicFullPath = static::$docRoot . $path;
-			} else if (!$external) {
+			} else /*if (!$external)*/ {
 				if ($docRootPrefix) {
 					$path = mb_substr($path, 1);
 					$publicFullPath = static::$docRoot . $path;
@@ -434,23 +477,19 @@ class JsHelper extends Assets {
 				}
 			}
 		}
-		return (object) [
-			'fullPath'	=> $publicFullPath,
-			'path'		=> $path,
-			'async'		=> $async,
-			'defer'		=> $defer,
-			'notMin'	=> $notMin,
-			'vendor'	=> $vendor,
-			'external'	=> $external,
-		];
+		return new JsItem(
+			$publicFullPath, $path, $notMin, $vendor, 
+			$external, $async, $defer
+		);
 	}
 
 	/**
 	 * Move file from any vendor assets directory into 
 	 * assets tmp dir. Return new asset path in tmp directory.
 	 * @param  string $path 
-	 * @param  string $fullPath 
-	 * @return array[bool, string]
+	 * @param  string $srcFileFullPath
+	 * @param  string $type
+	 * @return array{"0":bool,"1":string}
 	 */
 	protected function move2TmpGetPath ($path, $srcFileFullPath, $type) {
 		list($coppied, $newPath) = parent::move2TmpGetPath($path, $srcFileFullPath, $type);
@@ -593,9 +632,9 @@ class JsHelper extends Assets {
 	 * Render data items as one <script> html tag 
 	 * or all another <script> html tags after 
 	 * with files which is not possible to minify.
-	 * @param  \stdClass[] $items
-	 * @param  int	       $indent
-	 * @param  bool        $minify
+	 * @param  array<JsItem> $items
+	 * @param  int	         $indent
+	 * @param  bool          $minify
 	 * @return string
 	 */
 	protected function renderItemsTogether (array & $items, $indent, $minify) {
@@ -629,8 +668,8 @@ class JsHelper extends Assets {
 	/**
 	 * Render all items in group together, when application 
 	 * is compiled, do not check source files and changes.
-	 * @param  \stdClass[] $itemsToRender
-	 * @param  bool        $minify
+	 * @param  array<JsItem> $itemsToRender
+	 * @param  bool          $minify
 	 * @return string
 	 */
 	protected function renderItemsTogetherAsGroup (array & $itemsToRender, $minify) {
@@ -658,7 +697,7 @@ class JsHelper extends Assets {
 				foreach ($itemsToRender as & $item) {
 					if ($minify) {
 						$fileContent = file_get_contents($item->fullPath);
-						if ($minify) $fileContent = $this->minify($fileContent, $item->path);
+						$fileContent = $this->minify($fileContent, $item->path);
 					} else {
 						$fileContent = file_get_contents($item->fullPath);
 					}
@@ -671,17 +710,17 @@ class JsHelper extends Assets {
 		}
 
 		// complete <script> tag with tmp file path in $tmpFileFullPath variable
-		$firstItem = array_merge((array) $itemsToRender[0], []);
+		$firstItemClone = clone $itemsToRender[0];
 		$pathToTmp = mb_substr($tmpFileFullPath, mb_strlen(static::$docRoot));
-		$firstItem['src'] = $this->CssJsFileUrl($pathToTmp);
-		return $this->renderItemSeparated((object) $firstItem);
+		$firstItemClone->src = $this->CssJsFileUrl($pathToTmp);
+		return $this->renderItemSeparated($firstItemClone);
 	}
 
 	/**
 	 * Render data items as separated <script> html tags.
-	 * @param  \stdClass[] $items
-	 * @param  int	       $indent
-	 * @param  bool        $minify
+	 * @param  array<JsItem> $items
+	 * @param  int	         $indent
+	 * @param  bool          $minify
 	 * @return string
 	 */
 	protected function renderItemsSeparated (array & $items, $indent, $minify) {
@@ -691,12 +730,12 @@ class JsHelper extends Assets {
 			$resultItems[] = '<!-- js group begin: ' . $this->currentGroupName . ' -->';
 		foreach ($items as $item) {
 			if ($minify && !$item->notMin) {
-				$item->src = $this->CssJsFileUrl($this->render2TmpGetPath($item, $minify , 'js'));
+				$item->src = $this->CssJsFileUrl($this->render2TmpGetPath($item, $minify));
 			} else {
 				$item->src = $this->CssJsFileUrl($item->path);
 			}
 			if (static::$fileChecking)
-				$item->src = $this->addFileModImprint2HrefUrl($item->src, $item->fullPath);
+				$item->src = $this->addFileModImprint2HrefUrl($item, $item->src);
 			$resultItems[] = $this->renderItemSeparated($item);
 		}
 		if (static::$fileRendering) 
@@ -706,10 +745,10 @@ class JsHelper extends Assets {
 	
 	/**
 	 * Create HTML script element from data item
-	 * @param  \stdClass $item
+	 * @param  JsItem $item
 	 * @return string
 	 */
-	protected function renderItemSeparated (\stdClass $item) {
+	protected function renderItemSeparated (JsItem $item) {
 		$result = ['<script type="text/javascript"'];
 		if ($nonceAttr = static::getNonce(TRUE)) $result[] = $nonceAttr;
 		if ($item->async) $result[] = ' async="async"';
@@ -724,13 +763,13 @@ class JsHelper extends Assets {
 
 	/**
 	 * @inheritDoc
+	 * @param  JsItem $item 
+	 * @param  string $srcFileFullPath 
+	 * @param  bool   $minify 
 	 * @throws \Exception
-	 * @param  \stdClass  $item 
-	 * @param  string     $srcFileFullPath 
-	 * @param  string     $minify 
 	 * @return string
 	 */
-	protected function render2TmpGetPathExec (\stdClass $item, $srcFileFullPath, $minify) {
+	protected function render2TmpGetPathExec (Item $item, $srcFileFullPath, $minify) {
 		$fileContent = file_get_contents($srcFileFullPath);
 		if ($minify)
 			$fileContent = $this->minify($fileContent, $item->path);
