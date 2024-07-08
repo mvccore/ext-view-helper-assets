@@ -1,0 +1,7 @@
+parameters:
+	level: 6
+	paths:
+		- src
+	parallel:
+		maximumNumberOfProcesses: 4
+	ignoreErrors:
