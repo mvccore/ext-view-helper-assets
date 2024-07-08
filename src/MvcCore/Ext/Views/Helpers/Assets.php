@@ -13,6 +13,8 @@
 
 namespace MvcCore\Ext\Views\Helpers;
 
+use \MvcCore\Ext\Views\Helpers\Assets\Item;
+
 /**
  * @method static \MvcCore\Ext\Views\Helpers\Assets GetInstance()
  */
@@ -23,7 +25,7 @@ abstract class Assets extends \MvcCore\Ext\Views\Helpers\AbstractHelper {
 	 * Comparison by PHP function version_compare();
 	 * @see http://php.net/manual/en/function.version-compare.php
 	 */
-	const VERSION = '5.2.6';
+	const VERSION = '5.2.7';
 
 	/**
 	 * Default link group name
@@ -52,13 +54,13 @@ abstract class Assets extends \MvcCore\Ext\Views\Helpers\AbstractHelper {
 	
 	/**
 	 * Array with all defined files to create specific link tags.
-	 * @var array<string, <string, \stdClass[]>>
+	 * @var array<string,array<string,array<Item>>>
 	 */
 	protected $groupStore = [];
 	
 	/**
 	 * Reverse map with unique keys into group store tree.
-	 * @var array<string, string[]>
+	 * @var array<string,array<string>>
 	 */
 	protected $groupStoreReverseKeys = [];
 
@@ -90,7 +92,7 @@ abstract class Assets extends \MvcCore\Ext\Views\Helpers\AbstractHelper {
 	 *								  '?controller=controller&action=asset&path=...', by default, this switch is
 	 *								  automatically detected by application compile mode. In every compile mode except
 	 *								  development mode and strict HDD mode is this switch configured internally to true.
-	 * @var array
+	 * @var array<string,mixed>
 	 */
 	protected static $globalOptions = [
 		'jsJoin'		=> 0,
@@ -157,8 +159,8 @@ abstract class Assets extends \MvcCore\Ext\Views\Helpers\AbstractHelper {
 	protected static $devMode = NULL;
 
 	/**
-	 * If true, all assets sources existences are checked
-	 * @var bool|NULL
+	 * If `1` or `2`, all assets sources existences are checked, no checking for `0`.
+	 * @var int|NULL
 	 */
 	protected static $fileChecking = NULL;
 
@@ -195,7 +197,7 @@ abstract class Assets extends \MvcCore\Ext\Views\Helpers\AbstractHelper {
 	
 	/**
 	 * Supporting assets nonce attribute for CSP policy, completed only if necessary.
-	 * @var \bool[]|\string[]|\NULL[]
+	 * @var array{"0":bool|string|NULL,"1":bool|string|NULL}
 	 */
 	protected static $nonces = [NULL, NULL];
 
@@ -206,14 +208,13 @@ abstract class Assets extends \MvcCore\Ext\Views\Helpers\AbstractHelper {
 	 * example: append() method as another param.
 	 *
 	 * @see \MvcCore\Ext\Views\Helpers\Assets::$globalOptions
-	 * @param  array $options whether or not to auto escape output
+	 * @param  array<string,mixed> $options whether or not to auto escape output
 	 * @return void
 	 */
 	public static function SetGlobalOptions ($options = []) {
 		static::$globalOptions = array_merge(static::$globalOptions, (array) $options);
-		if (isset($options['assetsUrl']) && !is_null($options['assetsUrl'])) {
+		if (isset($options['assetsUrl']))
 			static::$assetsUrlCompletion = (bool) $options['assetsUrl'];
-		}
 	}
 
 	/**
@@ -285,7 +286,7 @@ abstract class Assets extends \MvcCore\Ext\Views\Helpers\AbstractHelper {
 	 * @param  string $path relative path from application document root with slash in begin
 	 * @return string
 	 */
-	public function AssetUrl ($path = '') {
+	public function AssetUrl ($path) {
 		$result = '';
 		if (static::$assetsUrlCompletion) {
 			// for static::$app->GetCompiled() equal to: 'PHAR', 'SFU', 'PHP_STRICT_PACKAGE', 'PHP_PRESERVE_PACKAGE', 'PHP_PRESERVE_HDD'
@@ -318,7 +319,7 @@ abstract class Assets extends \MvcCore\Ext\Views\Helpers\AbstractHelper {
 	 * @param  string $path relative path from application document root with slash in begin
 	 * @return string
 	 */
-	public function CssJsFileUrl ($path = '') {
+	public function CssJsFileUrl ($path) {
 		$result = '';
 		if (static::$assetsUrlCompletion) {
 			// for static::$app->GetCompiled() equal to: 'PHAR', 'SFU', 'PHP_STRICT_PACKAGE', 'PHP_PRESERVE_PACKAGE', 'PHP_PRESERVE_HDD'
@@ -330,18 +331,25 @@ abstract class Assets extends \MvcCore\Ext\Views\Helpers\AbstractHelper {
 		return $result;
 	}
 	
+	/**
+	 * Render script or link elements as html code with links
+	 * to original files or to temporary downloaded files.
+	 * @param  int    $indent
+	 * @return string
+	 */
+	public abstract function Render ($indent = 0);
 
 	/**
 	 * Load (or render) asset file, process any 
 	 * custom replacements, call `$this->minify()` 
 	 * if necessary and return result content.
+	 * @param  Item   $item 
+	 * @param  string $srcFileFullPath 
+	 * @param  bool   $minify 
 	 * @throws \Exception
-	 * @param  \stdClass  $item 
-	 * @param  string     $srcFileFullPath 
-	 * @param  string     $minify 
 	 * @return string
 	 */
-	protected abstract function render2TmpGetPathExec (\stdClass $item, $srcFileFullPath, $minify);
+	protected abstract function render2TmpGetPathExec (Item $item, $srcFileFullPath, $minify);
 	
 	/**
 	 * Get inline `<script>` or `<style>` nonce attribute 
@@ -359,8 +367,8 @@ abstract class Assets extends \MvcCore\Ext\Views\Helpers\AbstractHelper {
 				: ' nonce="' . static::$nonces[$nonceIndex] . '"';
 		$cspClassFullName = '\\MvcCore\\Ext\\Tools\\Csp';
 		if (class_exists($cspClassFullName)) {
-			/** @var \MvcCore\Ext\Tools\Csp $csp */
 			$assetsNonce = FALSE;
+			/** @var \MvcCore\Ext\Tools\Csp $csp */
 			$csp = $cspClassFullName::GetInstance();
 			$defaultScrNonce = $csp->IsAllowedNonce($cspClassFullName::FETCH_DEFAULT_SRC);
 			if ((
@@ -429,7 +437,7 @@ abstract class Assets extends \MvcCore\Ext\Views\Helpers\AbstractHelper {
 
 		// file checking is true only for classic development mode, not for single file mode
 		if (!$mvcCoreCompiledMode) 
-			static::$fileChecking = TRUE;
+			static::$fileChecking = static::$globalOptions['fileChecking'] === 'filemtime' ? 1 : 2;
 
 		// file rendering is true for classic development state, SFU app mode
 		if (!$mvcCoreCompiledMode || $mvcCoreCompiledMode == 'SFU') {
@@ -456,18 +464,13 @@ abstract class Assets extends \MvcCore\Ext\Views\Helpers\AbstractHelper {
 	 * @return string
 	 */
 	protected static function getFileImprint ($fullPath) {
-		$fileChecking = static::$globalOptions['fileChecking'];
-		if ($fileChecking == 'filemtime') {
-			return filemtime($fullPath);
-		} else {
-			return (string) call_user_func($fileChecking, $fullPath);
-		}
+		return (string) call_user_func(static::$globalOptions['fileChecking'], $fullPath);
 	}
 
 
 	/**
 	 * Get actually dispatched controller/action group name.
-	 * @return \stdClass[]
+	 * @return array<Item>
 	 */
 	protected function & getGroupStore () {
 		$ctrlActionKey = $this->getCtrlActionKey();
@@ -481,18 +484,19 @@ abstract class Assets extends \MvcCore\Ext\Views\Helpers\AbstractHelper {
 
 	/**
 	 * Return unique hash by params.
-	 * @param array $args 
+	 * @param  array<mixed> $args 
+	 * @return string
 	 */
 	protected function getGroupStoreReverseKey (array $args) {
-		return hash("crc32b", call_user_func(self::$serializeFn, $args));
+		return hash("crc32b", call_user_func_array(self::$serializeFn, $args));
 	}
 
 	/**
 	 * Set actually dispatched controller/action group name.
-	 * @param  \stdClass[] $items
-	 * @return \MvcCore\Ext\Views\Helpers\CssHelper
+	 * @param  array<Item> $items
+	 * @return \MvcCore\Ext\Views\Helpers\Assets
 	 */
-	protected function setGroupStore ($items) {
+	protected function setGroupStore (array $items) {
 		$ctrlActionKey = $this->getCtrlActionKey();
 		$name = $this->currentGroupName;
 		if (!isset($this->groupStore[$ctrlActionKey]))
@@ -526,7 +530,7 @@ abstract class Assets extends \MvcCore\Ext\Views\Helpers\AbstractHelper {
 	/**
 	 * Set up reverse group store to detect 
 	 * if style/script is already contained.
-	 * @param  \mixed[] $args
+	 * @param  array<mixed> $args
 	 * @return \MvcCore\Ext\Views\Helpers\Assets
 	 */
 	protected function setUpGroupStoreReverseKey ($args) {
@@ -546,8 +550,8 @@ abstract class Assets extends \MvcCore\Ext\Views\Helpers\AbstractHelper {
 	/**
 	 * Look for every item to render if there is any 
 	 * 'notMin' record to render item separately.
-	 * @param  \stdClass[]   $items
-	 * @return \stdClass[][] $itemsToRenderMinimized $itemsToRenderSeparately
+	 * @param  array<Item> $items
+	 * @return array{"0":array<string,array<Item>>,"1":array<string,array<Item>>} $itemsToRenderMinimized $itemsToRenderSeparately
 	 */
 	protected function separateItemsToMinifiedGroups ($items) {
 		$itemsToRenderMinimized = [];
@@ -584,12 +588,11 @@ abstract class Assets extends \MvcCore\Ext\Views\Helpers\AbstractHelper {
 	/**
 	 * Render js file by path and store result 
 	 * in tmp directory and return new src value.
-	 * @param  \stdClass $item
-	 * @param  bool      $minify
-	 * @param  string    $type
+	 * @param  Item   $item
+	 * @param  bool   $minify
 	 * @return string
 	 */
-	protected function render2TmpGetPath ($item, $minify, $type) {
+	protected function render2TmpGetPath (Item $item, $minify) {
 		$tmpFileName = $this->getTmpFileName($item->fullPath, $item->path, 'r');
 		$srcFileFullPath = $item->fullPath;
 		$tmpFileFullPath = $this->getTmpDir() . $tmpFileName;
@@ -610,7 +613,7 @@ abstract class Assets extends \MvcCore\Ext\Views\Helpers\AbstractHelper {
 						$item, $srcFileFullPath, $minify	
 					);
 					$this->saveFileContent($tmpFileFullPath, $fileContent);
-					$this->log(ucfirst($type) . " file rendered ('{$tmpFileFullPath}').", 'debug');
+					$this->log(ucfirst($item->type) . " file rendered ('{$tmpFileFullPath}').", 'debug');
 				}
 			}
 		}
@@ -620,21 +623,25 @@ abstract class Assets extends \MvcCore\Ext\Views\Helpers\AbstractHelper {
 
 	/**
 	 * Add to href URL file modification param by original file.
+	 * @param  Item   $item
 	 * @param  string $url
-	 * @param  string $fullPath
 	 * @return string
 	 */
-	protected function addFileModImprint2HrefUrl ($url, $fullPath) {
+	protected function addFileModImprint2HrefUrl (Item $item, $url) {
 		$questionMarkPos = strpos($url, '?');
 		$separator = ($questionMarkPos === FALSE) ? '?' : '&';
-		if (static::$globalOptions['fileChecking'] == 'filemtime') {
-			$fileMTime = static::getFileImprint($fullPath);
+		if (!file_exists($item->fullPath)) {
+			$typeUc = strtoupper($item->type);
+			$this->exception("File not found in {$typeUc} view rendering process ('{$item->fullPath}').");
+		}
+		if (static::$fileChecking === 1) {
+			$fileMTime = static::getFileImprint($item->fullPath);
 			$url .= $separator . '_fmt=' . date(
 				static::FILE_MODIFICATION_DATE_FORMAT,
 				(int)$fileMTime
 			);
 		} else {
-			$url .= $separator . '_md5=' . static::getFileImprint($fullPath);
+			$url .= $separator . '_hash=' . static::getFileImprint($item->fullPath);
 		}
 		return $url;
 	}
@@ -663,8 +670,9 @@ abstract class Assets extends \MvcCore\Ext\Views\Helpers\AbstractHelper {
 
 	/**
 	 * Return filename in assets tmp dir.
-	 * @param  string $path   Originaly defined path.
-	 * @param  string $prefix Prefix in tmp dir.
+	 * @param  string $fullPathOrUrl File full path or URL to download from.
+	 * @param  string $path          Originaly defined path.
+	 * @param  string $prefix        Prefix in tmp dir.
 	 * @return string
 	 */
 	protected function getTmpFileName ($fullPathOrUrl, $path, $prefix) {
@@ -686,9 +694,9 @@ abstract class Assets extends \MvcCore\Ext\Views\Helpers\AbstractHelper {
 	 * Move file from any vendor assets directory into 
 	 * assets tmp dir. Return new asset path in tmp directory.
 	 * @param  string $path 
-	 * @param  string $fullPath 
+	 * @param  string $srcFileFullPath 
 	 * @param  string $type 
-	 * @return [bool, string]
+	 * @return array{"0":bool,"1":string}
 	 */
 	protected function move2TmpGetPath ($path, $srcFileFullPath, $type) {
 		$copied = FALSE;
@@ -711,10 +719,10 @@ abstract class Assets extends \MvcCore\Ext\Views\Helpers\AbstractHelper {
 					if ($tmpFileExists) {
 						$removed = @unlink($tmpFileFullPath);
 						if (!$removed) {
-							x($tmpFileFullPath);$this->exception(
-							"Not possible to remove previous "
-							."tmp file to move {$type}: `{$path}`."
-						);
+							$this->exception(
+								"Not possible to remove previous "
+								."tmp file to move {$type}: `{$path}`."
+							);
 						}
 					}
 					$copied = copy($srcFileFullPath, $tmpFileFullPath);
@@ -735,7 +743,7 @@ abstract class Assets extends \MvcCore\Ext\Views\Helpers\AbstractHelper {
 
 	/**
 	 * Get significant file sub-path from full path or url.
-	 * @param  string $path
+	 * @param  string $absPath
 	 * @param  int    $maxPathSegments
 	 * @return string
 	 */
@@ -836,8 +844,9 @@ abstract class Assets extends \MvcCore\Ext\Views\Helpers\AbstractHelper {
 	/**
 	 * Complete items group tmp directory file 
 	 * name by group source files info.
-	 * @param  array  $filesGroupInfo
-	 * @param  bool   $minify
+	 * @param  array<string> $filesGroupInfo
+	 * @param  bool          $minify
+	 * @param  string        $extension
 	 * @return string
 	 */
 	protected function getTmpFileFullPathByPartFilesInfo ($filesGroupInfo, $minify, $extension) {
