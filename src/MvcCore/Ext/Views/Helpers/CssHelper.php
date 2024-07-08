@@ -13,6 +13,9 @@
 
 namespace MvcCore\Ext\Views\Helpers;
 
+use \MvcCore\Ext\Views\Helpers\Assets\Item,
+	\MvcCore\Ext\Views\Helpers\CssHelpers\CssItem;
+
 /**
  * @method static \MvcCore\Ext\Views\Helpers\CssHelper GetInstance()
  */
@@ -46,7 +49,7 @@ class CssHelper extends Assets {
 	
 	/**
 	 * Allowed media types for <link> tag.
-	 * @var \string[]
+	 * @var array<int,string>
 	 */
 	protected static $mediaTypes = [
 		self::MEDIA_ALL		=> 'all',
@@ -54,6 +57,24 @@ class CssHelper extends Assets {
 		self::MEDIA_PRINT	=> 'print',
 	];
 
+
+	/**
+	 * Add all possible media types options.
+	 * @param  array<int,string> $mediaTypes
+	 * @return array<int,string>
+	 */
+	public static function AddMediaTypes (array $mediaTypes) {
+		return static::$mediaTypes = array_merge([], static::$mediaTypes, $mediaTypes);
+	}
+
+	/**
+	 * Set all possible media types options.
+	 * @param  array<int,string> $mediaTypes
+	 * @return array<int,string>
+	 */
+	public static function SetMediaTypes (array $mediaTypes) {
+		return static::$mediaTypes = $mediaTypes;
+	}
 
 	/**
 	 * View Helper Method, returns current object instance.
@@ -68,7 +89,7 @@ class CssHelper extends Assets {
 	
 	/**
 	 * Render link elements as html code with links 
-	 * to original files or temporary rendered files.
+	 * to original files or to temporary rendered files.
 	 * @param  int    $indent
 	 * @return string
 	 */
@@ -400,7 +421,8 @@ class CssHelper extends Assets {
 				$currentItems, $index, 
 				$currentItemsCount - $index, FALSE
 			));
-		return $this->setGroupStore($newItems);
+		$this->setGroupStore($newItems);
+		return $this;
 	}
 
 	/**
@@ -450,7 +472,7 @@ class CssHelper extends Assets {
 	 * @param  bool       $notMin
 	 * @param  bool       $vendor
 	 * @param  bool       $render
-	 * @return \stdClass
+	 * @return CssItem
 	 */
 	protected function completeItem ($path, $media, $notMin, $vendor, $render) {
 		if (static::$fileChecking) {
@@ -467,28 +489,24 @@ class CssHelper extends Assets {
 				$path = $this->getSignificantPathPartFromFullPath($path);
 			}
 			list(, $path) = $this->move2TmpGetPath(
-				$path, $vendorFullPath, 'css' 
+				$path, $vendorFullPath, 'css'
 			);
 			$publicFullPath = static::$docRoot . $path;
 		} else {
 			if ($docRootPrefix) $path = mb_substr($path, 1);
 			$publicFullPath = static::$docRoot . $path;
 		}
-		return (object) [
-			'fullPath'		=> $publicFullPath,
-			'path'			=> $path,
-			'media'			=> $this->getMediaType($media),
-			'notMin'		=> $notMin,
-			'vendor'		=> $vendor,
-			'render'		=> $render,
-		];
+		return new CssItem(
+			$publicFullPath, $path, $notMin, $vendor, 
+			$render, $this->getMediaType($media)
+		);
 	}
 
 	/**
 	 * Get media type integer by input string 
 	 * (or validate and return int type if input is int).
 	 * @throws \Exception
-	 * @param  string|NULL $media 
+	 * @param  int|string|NULL $media 
 	 * @return int
 	 */
 	protected function getMediaType ($media) {
@@ -550,9 +568,9 @@ class CssHelper extends Assets {
 	 * Render data items as one <link> html tag or all 
 	 * another <link> html tags after with files which 
 	 * is not possible to minify.
-	 * @param  \stdClass[] $items
-	 * @param  int	       $indent
-	 * @param  bool        $minify
+	 * @param  array<CssItem> $items
+	 * @param  int	          $indent
+	 * @param  bool           $minify
 	 * @return string
 	 */
 	protected function renderItemsTogether (array & $items, $indent, $minify) {
@@ -586,8 +604,8 @@ class CssHelper extends Assets {
 	/**
 	 * Render all items in group together, when application 
 	 * is compiled, do not check source files and changes.
-	 * @param  \stdClass[] $itemsToRender
-	 * @param  bool        $minify
+	 * @param  array<CssItem> $itemsToRender
+	 * @param  bool           $minify
 	 * @return string
 	 */
 	protected function renderItemsTogetherAsGroup (array & $itemsToRender, $minify) {
@@ -633,17 +651,17 @@ class CssHelper extends Assets {
 		}
 
 		// complete <link> tag with tmp file path in $tmpFileFullPath variable
-		$firstItem = array_merge([], (array) $itemsToRender[0]);
+		$firstItemClone = clone $itemsToRender[0];
 		$pathToTmp = substr($tmpFileFullPath, strlen(static::$docRoot));
-		$firstItem['href'] = $this->CssJsFileUrl($pathToTmp);
-		return $this->renderItemSeparated((object) $firstItem);
+		$firstItemClone->href = $this->CssJsFileUrl($pathToTmp);
+		return $this->renderItemSeparated($firstItemClone);
 	}
 
 	/**
 	 * Render data items as separated <link> html tags.
-	 * @param  \stdClass[] $items
-	 * @param  int	       $indent
-	 * @param  bool        $minify
+	 * @param  array<CssItem> $items
+	 * @param  int	          $indent
+	 * @param  bool           $minify
 	 * @return string
 	 */
 	protected function renderItemsSeparated (array & $items, $indent, $minify) {
@@ -653,12 +671,12 @@ class CssHelper extends Assets {
 			$resultItems[] = '<!-- css group begin: ' . $this->currentGroupName . ' -->';
 		foreach ($items as $item) {
 			if ($item->render || ($minify && !$item->notMin)) {
-				$item->href = $this->CssJsFileUrl($this->render2TmpGetPath($item, $minify, 'css'));
+				$item->href = $this->CssJsFileUrl($this->render2TmpGetPath($item, $minify));
 			} else {
 				$item->href = $this->CssJsFileUrl($item->path);
 			}
 			if (static::$fileChecking)
-				$item->href = $this->addFileModImprint2HrefUrl($item->href, $item->fullPath);
+				$item->href = $this->addFileModImprint2HrefUrl($item, $item->href);
 			$resultItems[] = $this->renderItemSeparated($item);
 		}
 		if (static::$fileRendering) 
@@ -668,10 +686,10 @@ class CssHelper extends Assets {
 	
 	/**
 	 * Create HTML link element from data item
-	 * @param  \stdClass $item
+	 * @param  CssItem $item
 	 * @return string
 	 */
-	protected function renderItemSeparated (\stdClass $item) {
+	protected function renderItemSeparated (CssItem $item) {
 		$result = ['<link rel="stylesheet"'];
 		if ($nonceAttr = static::getNonce(FALSE)) $result[] = $nonceAttr;
 		if ($item->media !== static::MEDIA_ALL) 
@@ -686,13 +704,13 @@ class CssHelper extends Assets {
 
 	/**
 	 * @inheritDoc
+	 * @param  CssItem $item 
+	 * @param  string  $srcFileFullPath 
+	 * @param  bool    $minify 
 	 * @throws \Exception
-	 * @param  \stdClass  $item 
-	 * @param  string     $srcFileFullPath 
-	 * @param  string     $minify 
 	 * @return string
 	 */
-	protected function render2TmpGetPathExec (\stdClass $item, $srcFileFullPath, $minify) {
+	protected function render2TmpGetPathExec (Item $item, $srcFileFullPath, $minify) {
 		if ($item->render) {
 			$fileContent = $this->renderFile($srcFileFullPath);
 		} else if ($minify) {
