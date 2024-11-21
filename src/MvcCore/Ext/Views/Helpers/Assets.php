@@ -85,7 +85,7 @@ abstract class Assets extends \MvcCore\Ext\Views\Helpers\AbstractHelper {
 	 * - jsMinify		- boolean	- minify JS file in any group by default (it's possible to override for each file)
 	 * - cssJoin		- boolean	- join CSS files in CSS group together into single file in tmp dir
 	 * - cssMinify		- boolean	- minify CSS file in any group by default (it's possible to override for each file)
-	 * - tmpDir			- string	- relative path to temporary dir from application document root, by default: '/Var/Tmp'
+	 * - tmpDir			- string	- relative path to temporary dir from application document root, by default: '~/static/tmp'
 	 * - fileChecking	- string	- php function names: md5_file | filemtime (filemtime is not working for PHAR packages,
 	 *								  for PHAR packages use slower 'md5_file' value)
 	 * - assetsUrl		- boolean	- strictly enable or disable special packge assets URL completion in form:
@@ -99,7 +99,7 @@ abstract class Assets extends \MvcCore\Ext\Views\Helpers\AbstractHelper {
 		'jsMinify'		=> 0,
 		'cssJoin'		=> 0,
 		'cssMinify'		=> 0,
-		'tmpDir'		=> '~/Var/Tmp',
+		'tmpDir'		=> '~/static/tmp',
 		'dirMask'		=> 0754,
 		'fileMask'		=> 0664,
 		'fileChecking'	=> 'filemtime',
