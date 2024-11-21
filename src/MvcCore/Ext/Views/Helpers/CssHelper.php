@@ -483,7 +483,7 @@ class CssHelper extends Assets {
 		$docRootPrefix = mb_strpos($path, '~/') === 0;
 		if ($vendor) {
 			if ($docRootPrefix) {
-				$vendorFullPath = static::$vendorDocRoot . mb_substr($path, 1);
+				$vendorFullPath = static::$docRootVendor . mb_substr($path, 1);
 			} else {
 				$vendorFullPath = $path;
 				$path = $this->getSignificantPathPartFromFullPath($path);

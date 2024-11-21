@@ -130,7 +130,7 @@ abstract class Assets extends \MvcCore\Ext\Views\Helpers\AbstractHelper {
 	 * app root and request document root).
 	 * @var string|NULL
 	 */
-	protected static $vendorDocRoot = NULL;
+	protected static $docRootVendor = NULL;
 
 	/**
 	 * Relative path to store joined and minified files
@@ -409,22 +409,23 @@ abstract class Assets extends \MvcCore\Ext\Views\Helpers\AbstractHelper {
 	protected static function initCommonProps (\MvcCore\IView $view, \MvcCore\IRequest $req) {
 		static::$initialized = TRUE;
 
-		static::$app = $view->GetController()->GetApplication();
+		static::$app = $app = $view->GetController()->GetApplication();
 
-		static::$docRoot = $req->GetDocumentRoot();
+		static::$docRoot = $docRoot = $app->GetPathDocRoot(TRUE);
 
-		if (!static::$app->GetVendorAppDispatch()) {
-			static::$vendorDocRoot = static::$docRoot;
+		if (!$app->GetVendorAppDispatch()) {
+			static::$docRootVendor = $docRoot;
 		} else {
-			$vendorAppRoot = static::$app->GetVendorAppRoot();
-			$reqAppRoot = $req->GetAppRoot();
-			if ($reqAppRoot === static::$docRoot) {
-				static::$vendorDocRoot = $vendorAppRoot;
+			$vendorAppRoot = $app->GetPathAppRootVendor();
+			$appRoot = $app->GetPathAppRoot();
+			if ($appRoot === $docRoot) {
+				static::$docRootVendor = $vendorAppRoot;
 			} else {
 				$docRootAddition = mb_substr(
-					static::$docRoot, mb_strlen($reqAppRoot)
+					$docRoot, 
+					mb_strlen($appRoot)
 				);
-				static::$vendorDocRoot = $vendorAppRoot . $docRootAddition;
+				static::$docRootVendor = $vendorAppRoot . $docRootAddition;
 			}
 		}
 

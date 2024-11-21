@@ -34,10 +34,10 @@ namespace App\Controllers;
 class Base {
 	public function PreDispatch () {
 		parent::PreDispatch();
-		\MvcCore\Ext\Views\Helpers\Assets::SetGlobalOptions(array(
+		\MvcCore\Ext\Views\Helpers\Assets::SetGlobalOptions([
 			cssMinify	=> TRUE,
 			cssJoin		=> TRUE,
-		));
+		]);
 		$this->Css('head')
 			->AppendRendered('/app/root/rel/path/to/first.css')
 			->Append('/app/root/rel/path/to/second.css');
