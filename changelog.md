@@ -1,8 +1,4 @@
-### Added
-- new public methods for external manipulation:
-  - `$helper->GetItems(): array<Item> $items;`,
-  - `$helper->SetItems(array<Item> $items): static;`,
-  - `$helper->UnsetItems(int $index): bool;`.
-
-### Changed
-- internal properties names refactoring.
+### Updated
+- HTML comments are rendered only in:
+  - single file mode (`SFU`) with any environment value,
+  - no compiled mode with development environment.
