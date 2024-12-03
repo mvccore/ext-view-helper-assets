@@ -441,7 +441,7 @@ abstract class Assets extends \MvcCore\Ext\Views\Helpers\AbstractHelper {
 			static::$fileChecking = static::$globalOptions['fileChecking'] === 'filemtime' ? 1 : 2;
 
 		// file rendering is true for classic development state, SFU app mode
-		if ((!$mvcCoreCompiledMode && static::$devMode) || $mvcCoreCompiledMode == 'SFU') {
+		if (!$mvcCoreCompiledMode || $mvcCoreCompiledMode == 'SFU') {
 			static::$fileRendering = TRUE;
 		}
 

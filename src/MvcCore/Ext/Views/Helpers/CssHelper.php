@@ -582,7 +582,7 @@ class CssHelper extends Assets {
 
 		$indentStr = $this->getIndentString($indent);
 		$resultItems = [];
-		if (static::$fileRendering) 
+		if (static::$devMode) 
 			$resultItems[] = '<!-- css group begin: ' . $this->currentGroupName . ' -->';
 
 		// process array with groups, which are not possible to minimize
@@ -595,7 +595,7 @@ class CssHelper extends Assets {
 			$resultItems[] = $this->renderItemsTogetherAsGroup($itemsToRender, $minify);
 		}
 
-		if (static::$fileRendering) 
+		if (static::$devMode) 
 			$resultItems[] = '<!-- css group end: ' . $this->currentGroupName . ' -->';
 
 		return "\n" . $indentStr . implode("\n" . $indentStr, $resultItems);
@@ -667,7 +667,7 @@ class CssHelper extends Assets {
 	protected function renderItemsSeparated (array & $items, $indent, $minify) {
 		$indentStr = $this->getIndentString($indent);
 		$resultItems = [];
-		if (static::$fileRendering) 
+		if (static::$devMode) 
 			$resultItems[] = '<!-- css group begin: ' . $this->currentGroupName . ' -->';
 		foreach ($items as $item) {
 			if ($item->render || ($minify && !$item->notMin)) {
@@ -679,7 +679,7 @@ class CssHelper extends Assets {
 				$item->href = $this->addFileModImprint2HrefUrl($item, $item->href);
 			$resultItems[] = $this->renderItemSeparated($item);
 		}
-		if (static::$fileRendering) 
+		if (static::$devMode) 
 			$resultItems[] = '<!-- css group end: ' . $this->currentGroupName . ' -->';
 		return "\n" . $indentStr . implode("\n" . $indentStr, $resultItems);
 	}
