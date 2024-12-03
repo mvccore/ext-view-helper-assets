@@ -1,6 +1,8 @@
 ### Added
-- `"prefer-stable": true` into `composer.json`.
+- new public methods for external manipulation:
+  - `$helper->GetItems(): array<Item> $items;`,
+  - `$helper->SetItems(array<Item> $items): static;`,
+  - `$helper->UnsetItems(int $index): bool;`.
 
-### Updated
-- Compatibility with new application paths completition in MvcCore v5.3.
-- Default path to temporary public assets as `~/static/tmp`.
+### Changed
+- internal properties names refactoring.

@@ -83,7 +83,7 @@ class CssHelper extends Assets {
 	 */
 	public function Css ($groupName = self::GROUP_NAME_DEFAULT) {
 		$this->currentGroupName = $groupName;
-		$this->getGroupStore(); // prepare structure
+		$this->GetItems(); // prepare structure
 		return $this;
 	}
 	
@@ -94,7 +94,7 @@ class CssHelper extends Assets {
 	 * @return string
 	 */
 	public function Render ($indent = 0) {
-		$currentGroupRecords = & $this->getGroupStore();
+		$currentGroupRecords = & $this->GetItems();
 		if (count($currentGroupRecords) === 0) return '';
 		$minify = (bool) static::$globalOptions['cssMinify'];
 		$joinTogether = (bool) static::$globalOptions['cssJoin'];
@@ -109,7 +109,7 @@ class CssHelper extends Assets {
 				$indent, $minify
 			);
 		}
-		$this->setGroupStore([]);
+		$this->SetItems([]);
 		return $result;
 	}
 
@@ -361,8 +361,8 @@ class CssHelper extends Assets {
 	 * @return bool
 	 */
 	protected function execContains ($path, $media, $notMin, $vendor) {
-		$reverseKey = $this->getGroupStoreReverseKey(func_get_args());
-		return isset($this->groupStoreReverseKeys[$reverseKey]);
+		$reverseKey = $this->getItemsReverseKey(func_get_args());
+		return isset($this->itemsReverseKeys[$reverseKey]);
 	}
 
 	/**
@@ -377,7 +377,7 @@ class CssHelper extends Assets {
 	 */
 	protected function execRemove ($path, $media, $notMin, $vendor) {
 		$result = FALSE;
-		$linksGroup = & $this->getGroupStore();
+		$linksGroup = & $this->GetItems();
 		$mediaInt = $this->getMediaType($media);
 		foreach ($linksGroup as $index => $item) {
 			if (
@@ -386,9 +386,9 @@ class CssHelper extends Assets {
 				$item->notMin === $notMin && 
 				$item->vendor === $vendor
 			) {
-				$result = $this->unsetGroupStore($index);
-				$reverseKey = $this->getGroupStoreReverseKey(func_get_args());
-				unset($this->groupStoreReverseKeys[$reverseKey]);
+				$result = $this->UnsetItems($index);
+				$reverseKey = $this->getItemsReverseKey(func_get_args());
+				unset($this->itemsReverseKeys[$reverseKey]);
 				break;
 			}
 		}
@@ -409,19 +409,19 @@ class CssHelper extends Assets {
 	 */
 	protected function execOffset ($index, $path, $media, $notMin, $vendor, $render) {
 		$item = $this->completeItem($path, $media, $notMin, $vendor, $render);
-		$currentItems = & $this->getGroupStore();
+		$currentItems = & $this->GetItems();
 		$newItems = $index > 0
 			? array_slice($currentItems, 0, $index, FALSE)
 			: [];
 		$newItems[] = $item;
-		$this->setUpGroupStoreReverseKey([$path, $media, $notMin, $vendor]);
+		$this->setUpItemsReverseKey([$path, $media, $notMin, $vendor]);
 		$currentItemsCount = count($currentItems);
 		if ($index < count($currentItems)) 
 			$newItems = array_merge($newItems, array_slice(
 				$currentItems, $index, 
 				$currentItemsCount - $index, FALSE
 			));
-		$this->setGroupStore($newItems);
+		$this->SetItems($newItems);
 		return $this;
 	}
 
@@ -438,9 +438,9 @@ class CssHelper extends Assets {
 	 */
 	protected function execAppend ($path, $media, $notMin, $vendor, $render) {
 		$item = $this->completeItem($path, $media, $notMin, $vendor, $render);
-		$currentGroupRecords = & $this->getGroupStore();
+		$currentGroupRecords = & $this->GetItems();
 		array_push($currentGroupRecords, $item);
-		$this->setUpGroupStoreReverseKey([$path, $media, $notMin, $vendor]);
+		$this->setUpItemsReverseKey([$path, $media, $notMin, $vendor]);
 		return $this;
 	}
 
@@ -457,9 +457,9 @@ class CssHelper extends Assets {
 	 */
 	protected function execPrepend ($path, $media, $notMin, $vendor, $render) {
 		$item = $this->completeItem($path, $media, $notMin, $vendor, $render);
-		$currentGroupRecords = & $this->getGroupStore();
+		$currentGroupRecords = & $this->GetItems();
 		array_unshift($currentGroupRecords, $item);
-		$this->setUpGroupStoreReverseKey([$path, $media, $notMin, $vendor]);
+		$this->setUpItemsReverseKey([$path, $media, $notMin, $vendor]);
 		return $this;
 	}
 
@@ -531,7 +531,7 @@ class CssHelper extends Assets {
 	 */
 	protected function isDuplicateStyle ($path, $vendor) {
 		$result = NULL;
-		$currentRecords = $this->groupStore[$this->getCtrlActionKey()];
+		$currentRecords = $this->items[$this->getCtrlActionKey()];
 		foreach ($currentRecords as $groupName => $groupItems) {
 			foreach ($groupItems as $item) {
 				if ($item->path === $path && $item->vendor === $vendor) {

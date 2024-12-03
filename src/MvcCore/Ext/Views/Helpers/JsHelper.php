@@ -54,7 +54,7 @@ class JsHelper extends Assets {
 	 */
 	public function Js ($groupName = self::GROUP_NAME_DEFAULT) {
 		$this->currentGroupName = $groupName;
-		$this->getGroupStore(); // prepare structure
+		$this->GetItems(); // prepare structure
 		return $this;
 	}
 	
@@ -65,7 +65,7 @@ class JsHelper extends Assets {
 	 * @return string
 	 */
 	public function Render ($indent = 0) {
-		$currentGroupRecords = & $this->getGroupStore();
+		$currentGroupRecords = & $this->GetItems();
 		if (count($currentGroupRecords) === 0) return '';
 		$minify = (bool) static::$globalOptions['jsMinify'];
 		$joinTogether = (bool) static::$globalOptions['jsJoin'];
@@ -82,7 +82,7 @@ class JsHelper extends Assets {
 				$minify
 			);
 		}
-		$this->setGroupStore([]);
+		$this->SetItems([]);
 		return $result;
 	}
 
@@ -324,8 +324,8 @@ class JsHelper extends Assets {
 	 * @return bool
 	 */
 	protected function execContains ($path, $async, $defer, $notMin, $vendor) {
-		$reverseKey = $this->getGroupStoreReverseKey(func_get_args());
-		return isset($this->groupStoreReverseKeys[$reverseKey]);
+		$reverseKey = $this->getItemsReverseKey(func_get_args());
+		return isset($this->itemsReverseKeys[$reverseKey]);
 	}
 
 	/**
@@ -341,7 +341,7 @@ class JsHelper extends Assets {
 	 */
 	protected function execRemove ($path, $async, $defer, $notMin, $vendor, $external) {
 		$result = FALSE;
-		$scriptsGroup = & $this->getGroupStore();
+		$scriptsGroup = & $this->GetItems();
 		foreach ($scriptsGroup as $index => $item) {
 			if (
 				$item->path === $path &&
@@ -350,9 +350,9 @@ class JsHelper extends Assets {
 				$item->notMin === $notMin && 
 				$item->vendor === $vendor
 			) {
-				$result = $this->unsetGroupStore($index);
-				$reverseKey = $this->getGroupStoreReverseKey([$path, $async, $defer, $notMin, $vendor]);
-				unset($this->groupStoreReverseKeys[$reverseKey]);
+				$result = $this->UnsetItems($index);
+				$reverseKey = $this->getItemsReverseKey([$path, $async, $defer, $notMin, $vendor]);
+				unset($this->itemsReverseKeys[$reverseKey]);
 				break;
 			}
 		}
@@ -373,19 +373,19 @@ class JsHelper extends Assets {
 	 */
 	protected function execOffset ($index, $path, $async, $defer, $notMin, $vendor, $external) {
 		$item = $this->completeItem($path, $async, $defer, $notMin, $vendor, $external);
-		$currentItems = & $this->getGroupStore();
+		$currentItems = & $this->GetItems();
 		$newItems = $index > 0
 			? array_slice($currentItems, 0, $index, FALSE)
 			: [];
 		$newItems[] = $item;
-		$this->setUpGroupStoreReverseKey([$path, $async, $defer, $notMin, $vendor]);
+		$this->setUpItemsReverseKey([$path, $async, $defer, $notMin, $vendor]);
 		$currentItemsCount = count($currentItems);
 		if ($index < count($currentItems)) 
 			$newItems = array_merge($newItems, array_slice(
 				$currentItems, $index, 
 				$currentItemsCount - $index, FALSE
 			));
-		$this->setGroupStore($newItems);
+		$this->SetItems($newItems);
 		return $this;
 	}
 
@@ -402,9 +402,9 @@ class JsHelper extends Assets {
 	 */
 	protected function execAppend ($path, $async, $defer, $notMin, $vendor, $external) {
 		$item = $this->completeItem($path, $async, $defer, $notMin, $vendor, $external);
-		$currentGroupRecords = & $this->getGroupStore();
+		$currentGroupRecords = & $this->GetItems();
 		array_push($currentGroupRecords, $item);
-		$this->setUpGroupStoreReverseKey([$path, $async, $defer, $notMin, $vendor]);
+		$this->setUpItemsReverseKey([$path, $async, $defer, $notMin, $vendor]);
 		return $this;
 	}
 
@@ -421,9 +421,9 @@ class JsHelper extends Assets {
 	 */
 	protected function execPrepend ($path, $async, $defer, $notMin, $vendor, $external) {
 		$item = $this->completeItem($path, $async, $defer, $notMin, $vendor, $external);
-		$currentGroupRecords = & $this->getGroupStore();
+		$currentGroupRecords = & $this->GetItems();
 		array_unshift($currentGroupRecords, $item);
-		$this->setUpGroupStoreReverseKey([$path, $async, $defer, $notMin, $vendor]);
+		$this->setUpItemsReverseKey([$path, $async, $defer, $notMin, $vendor]);
 		return $this;
 	}
 
@@ -597,7 +597,7 @@ class JsHelper extends Assets {
 	 */
 	protected function isDuplicateScript ($path, $vendor) {
 		$result = NULL;
-		$allGroupItems = & $this->groupStore[$this->getCtrlActionKey()];
+		$allGroupItems = & $this->items[$this->getCtrlActionKey()];
 		foreach ($allGroupItems as $groupName => $groupItems) {
 			foreach ($groupItems as $item) {
 				if ($item->path === $path && $item->vendor === $vendor) {

@@ -56,16 +56,16 @@ abstract class Assets extends \MvcCore\Ext\Views\Helpers\AbstractHelper {
 	 * Array with all defined files to create specific link tags.
 	 * @var array<string,array<string,array<Item>>>
 	 */
-	protected $groupStore = [];
+	protected $items = [];
 	
 	/**
 	 * Reverse map with unique keys into group store tree.
 	 * @var array<string,array<string>>
 	 */
-	protected $groupStoreReverseKeys = [];
+	protected $itemsReverseKeys = [];
 
 	/**
-	 * Called `$this->groupStore[]` index through helper function Css() or Js()
+	 * Called `$this->items[]` index through helper function Css() or Js()
 	 * @var string
 	 */
 	protected $currentGroupName = '';
@@ -467,20 +467,19 @@ abstract class Assets extends \MvcCore\Ext\Views\Helpers\AbstractHelper {
 	protected static function getFileImprint ($fullPath) {
 		return (string) call_user_func(static::$globalOptions['fileChecking'], $fullPath);
 	}
-
-
+	
 	/**
 	 * Get actually dispatched controller/action group name.
 	 * @return array<Item>
 	 */
-	protected function & getGroupStore () {
+	public function & GetItems () {
 		$ctrlActionKey = $this->getCtrlActionKey();
 		$name = $this->currentGroupName;
-		if (!isset($this->groupStore[$ctrlActionKey]))
-			$this->groupStore[$ctrlActionKey] = [];
-		if (!isset($this->groupStore[$ctrlActionKey][$name]))
-			$this->groupStore[$ctrlActionKey][$name] = [];
-		return $this->groupStore[$ctrlActionKey][$name];
+		if (!isset($this->items[$ctrlActionKey]))
+			$this->items[$ctrlActionKey] = [];
+		if (!isset($this->items[$ctrlActionKey][$name]))
+			$this->items[$ctrlActionKey][$name] = [];
+		return $this->items[$ctrlActionKey][$name];
 	}
 
 	/**
@@ -488,7 +487,7 @@ abstract class Assets extends \MvcCore\Ext\Views\Helpers\AbstractHelper {
 	 * @param  array<mixed> $args 
 	 * @return string
 	 */
-	protected function getGroupStoreReverseKey (array $args) {
+	protected function getItemsReverseKey (array $args) {
 		return hash("crc32b", call_user_func_array(self::$serializeFn, $args));
 	}
 
@@ -497,14 +496,14 @@ abstract class Assets extends \MvcCore\Ext\Views\Helpers\AbstractHelper {
 	 * @param  array<Item> $items
 	 * @return \MvcCore\Ext\Views\Helpers\Assets
 	 */
-	protected function setGroupStore (array $items) {
+	public function SetItems (array $items) {
 		$ctrlActionKey = $this->getCtrlActionKey();
 		$name = $this->currentGroupName;
-		if (!isset($this->groupStore[$ctrlActionKey]))
-			$this->groupStore[$ctrlActionKey] = [];
-		if (!isset($this->groupStore[$ctrlActionKey][$name]))
-			$this->groupStore[$ctrlActionKey][$name] = [];
-		$this->groupStore[$ctrlActionKey][$name] = $items;
+		if (!isset($this->items[$ctrlActionKey]))
+			$this->items[$ctrlActionKey] = [];
+		if (!isset($this->items[$ctrlActionKey][$name]))
+			$this->items[$ctrlActionKey][$name] = [];
+		$this->items[$ctrlActionKey][$name] = $items;
 		return $this;
 	}
 
@@ -514,15 +513,15 @@ abstract class Assets extends \MvcCore\Ext\Views\Helpers\AbstractHelper {
 	 * @param  int  $index
 	 * @return bool
 	 */
-	protected function unsetGroupStore ($index) {
+	public function UnsetItems ($index) {
 		$ctrlActionKey = $this->getCtrlActionKey();
 		$name = $this->currentGroupName;
-		if (!isset($this->groupStore[$ctrlActionKey]))
-			$this->groupStore[$ctrlActionKey] = [];
-		if (!isset($this->groupStore[$ctrlActionKey][$name]))
-			$this->groupStore[$ctrlActionKey][$name] = [];
-		if (array_key_exists($index, $this->groupStore[$ctrlActionKey][$name])) {
-			unset($this->groupStore[$ctrlActionKey][$name][$index]);
+		if (!isset($this->items[$ctrlActionKey]))
+			$this->items[$ctrlActionKey] = [];
+		if (!isset($this->items[$ctrlActionKey][$name]))
+			$this->items[$ctrlActionKey][$name] = [];
+		if (array_key_exists($index, $this->items[$ctrlActionKey][$name])) {
+			unset($this->items[$ctrlActionKey][$name][$index]);
 			return TRUE;
 		}
 		return FALSE;
@@ -534,9 +533,9 @@ abstract class Assets extends \MvcCore\Ext\Views\Helpers\AbstractHelper {
 	 * @param  array<mixed> $args
 	 * @return \MvcCore\Ext\Views\Helpers\Assets
 	 */
-	protected function setUpGroupStoreReverseKey ($args) {
+	protected function setUpItemsReverseKey ($args) {
 		$reverseKey = md5(call_user_func(self::$serializeFn, $args));
-		$this->groupStoreReverseKeys[$reverseKey] = TRUE;
+		$this->itemsReverseKeys[$reverseKey] = TRUE;
 		return $this;
 	}
 
