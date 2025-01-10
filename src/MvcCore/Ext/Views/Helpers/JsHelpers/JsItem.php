@@ -19,27 +19,37 @@ class JsItem extends \MvcCore\Ext\Views\Helpers\Assets\Item {
 	 * If `TRUE`, file is defined as external URL to be downloaded into public temporary directory.
 	 * @var bool
 	 */
-	public bool $external;
+	public $external;
 
 	/**
 	 * If `TRUE`, script will be added into output with `async` HTML attribute.
 	 * @var bool
 	 */
-	public bool $async;
+	public $async;
 	
 	/**
 	 * If `TRUE`, script will be added into output with `defer` HTML attribute.
 	 * @var bool
 	 */
-	public bool $defer;
+	public $defer;
 
 	/**
 	 * Script `src` attribute, completed in rendering process in JS view helper by configured conditions.
 	 * @var ?string
 	 */
-	public ?string $src;
+	public $src;
 
-	public function __construct (string $fullPath, string $path, bool $notMin, bool $vendor, bool $external, bool $async, bool $defer) {
+	/**
+	 * @param  string $fullPath
+	 * @param  string $path
+	 * @param  bool   $notMin
+	 * @param  bool   $vendor
+	 * @param  bool   $external
+	 * @param  bool   $async
+	 * @param  bool   $defer
+	 * @return void
+	 */
+	public function __construct ($fullPath, $path, $notMin, $vendor, $external, $async, $defer) {
 		parent::__construct($fullPath, $path, $notMin, $vendor);
 		$this->type = 'js';
 		$this->external = $external;

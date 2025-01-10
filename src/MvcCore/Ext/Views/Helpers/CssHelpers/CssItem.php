@@ -27,21 +27,29 @@ class CssItem extends \MvcCore\Ext\Views\Helpers\Assets\Item {
 	 * `$this->Css($packageName)->Append($path, media: CssHelper::MEDIA_SCREEN | MyCssHelper::ANY_HOVER);`
 	 * @var int
 	 */
-	public int $media;
+	public $media;
 
 	/**
 	 * If `TRUE`, css file will be rendered with PHP engine.
 	 * @var bool
 	 */
-	public bool $render;
+	public $render;
 
 	/**
 	 * Link `href` attribute, completed in rendering process in CSS view helper by configured conditions.
 	 * @var ?string
 	 */
-	public ?string $href = NULL;
+	public $href = NULL;
 
-	public function __construct (string $fullPath, string $path, bool $notMin, bool $vendor, bool $render, int $media) {
+	/**
+	 * @param string $fullPath 
+	 * @param string $path 
+	 * @param bool   $notMin 
+	 * @param bool   $vendor 
+	 * @param bool   $render 
+	 * @param int    $media 
+	 */
+	public function __construct ($fullPath, $path, $notMin, $vendor, $render, $media) {
 		parent::__construct($fullPath, $path, $notMin, $vendor);
 		$this->type = 'css';
 		$this->render = $render;

@@ -22,33 +22,39 @@ class Item extends \stdClass {
 	 * Asset file full path on hard drive in directory vsible for clients.
 	 * @var string
 	 */
-	public string $fullPath;
+	public $fullPath;
 
 	/**
 	 * Relative application file path inside main app or inside composer package.
 	 * @var string
 	 */
-	public string $path;
+	public $path;
 
 	/**
 	 * If `TRUE`, file will never be minimalized.
 	 * @var bool
 	 */
-	public bool $notMin;
+	public $notMin;
 
 	/**
 	 * If `TRUE`, file exists inside composer package.
 	 * @var bool
 	 */
-	public bool $vendor;
+	public $vendor;
 
 	/**
 	 * Asset type, it could be `js` or `css`.
 	 * @var string
 	 */
-	public string $type;
+	public $type;
 
-	public function __construct (string $fullPath, string $path, bool $notMin, bool $vendor) {
+	/**
+	 * @param string $fullPath 
+	 * @param string $path 
+	 * @param bool   $notMin 
+	 * @param bool   $vendor 
+	 */
+	public function __construct ($fullPath, $path, $notMin, $vendor) {
 		$this->fullPath = $fullPath;
 		$this->path = $path;
 		$this->notMin = $notMin;
